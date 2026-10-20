@@ -1,6 +1,6 @@
 import {
   createStore, makeItem, setLetter, completeRow, moveInList, replan, replanAll, applyPlan, applyImport,
-  defaultOrder, dateOrder, emptyState, findItem, suggestedLetter,
+  defaultOrder, dateOrder, emptyState, findItem, suggestedLetter, uid,
 } from './store.js';
 import { quickAdd } from './parse.js';
 import { planImport } from './importer.js';
@@ -11,6 +11,7 @@ import { h, fill, icon, rank, tag, meta, mark, toast, openSheet, TYPE_META, fmtM
 import { hintFor, doneLine } from './coach.js';
 import { renderToday } from './views/today.js';
 import { renderRadar } from './views/radar.js';
+import { renderQuick } from './views/quick.js';
 import { renderGoals, openGoalSheet } from './views/goals.js';
 import { renderTools } from './views/tools.js';
 import { openEditor } from './views/editor.js';
@@ -22,7 +23,7 @@ import { sampleData } from './sample.js';
 const store = createStore();
 const ui = { day: 'today' };
 // [label, view, nav icon]
-const ROUTES = { today: ['Today', renderToday, 'today'], ahead: ['Ahead', renderRadar, 'radar'], goals: ['Goals', renderGoals, 'goals'], more: ['More', renderTools, 'tools'] };
+const ROUTES = { today: ['Today', renderToday, 'today'], quick: ['Quick', renderQuick, 'todo'], ahead: ['Ahead', renderRadar, 'radar'], goals: ['Goals', renderGoals, 'goals'], more: ['More', renderTools, 'tools'] };
 const OLD = { radar: 'ahead', tools: 'more', plan: 'today' };
 const main = document.getElementById('main');
 const today = () => todayISO();
@@ -50,7 +51,9 @@ function render() {
   const keepScroll = r === lastRendered;
   const y = window.scrollY;
   if (r !== 'today') ui.day = 'today';
+  const focused = main.contains(document.activeElement) ? document.activeElement.id : '';
   main.replaceChildren(ROUTES[r][1](ctx()));
+  if (focused) document.getElementById(focused)?.focus({ preventScroll: true });
   document.getElementById('where').textContent = r === 'today' && ui.day === 'tomorrow' ? 'Tomorrow' : ROUTES[r][0];
   drawNav(r);
   document.body.classList.toggle('no-tips', !store.state.settings.tips);
@@ -157,6 +160,24 @@ const act = {
     });
     toast('One session moved to today.');
   },
+  addTodo(title) {
+    const t = today();
+    store.commit((s) => {
+      s.todos = s.todos.filter((x) => !x.done || x.doneAt === t);
+      s.todos.unshift({ id: uid(), title, done: false, doneAt: null });
+    });
+  },
+  toggleTodo(id) {
+    store.commit((s) => {
+      const x = s.todos.find((y) => y.id === id);
+      if (x) { x.done = !x.done; x.doneAt = x.done ? today() : null; }
+    });
+  },
+  removeTodo(id) {
+    const x = store.state.todos.find((y) => y.id === id);
+    store.commit((s) => { s.todos = s.todos.filter((y) => y.id !== id); }, { undoable: true });
+    toast(`Deleted ${x?.title || 'to-do'}.`, { action: undo });
+  },
   lockPlan() {
     store.commit((s) => { s.meta.lastPlanned = today(); });
     toast('Locked in. Sleep on it.');
@@ -208,6 +229,7 @@ const act = {
       const d = sampleData(today(), s.settings);
       s.items.push(...d.items);
       s.goals.push(...d.goals);
+      s.todos.push(...d.todos);
       if (!s.mdp) s.mdp = d.mdp;
       s.meta.firstDone = { ...d.firstDone, ...s.meta.firstDone };
       s.meta.onboarded = true;
@@ -227,6 +249,8 @@ const REPEAT = { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', biweekl
 const EXAMPLES = ['Chem quiz thu 2pm', 'Essay due nov 3 25% #HIST', 'Lab every wed 2-5pm', 'Email TA about regrade'];
 
 function openQuickAdd(initial = '') {
+  // On the Quick tab, + and / write a plain to-do instead.
+  if (document.getElementById('todo-input')) { document.getElementById('todo-input').focus(); return; }
   if (document.getElementById('qa')) { document.getElementById('qa-input').focus(); return; }
   const input = h('input', { id: 'qa-input', class: 'qa-input', type: 'text', enterkeyhint: 'done', spellcheck: 'false', autocomplete: 'off',
     placeholder: 'Chem quiz thu 2pm', value: initial, 'aria-label': 'Write it down' });

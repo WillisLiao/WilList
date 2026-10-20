@@ -158,6 +158,30 @@ s = await state();
 assert.equal(find(s, 'Go to office hours').goalId, s.goals[0].id);
 step('goals');
 
+// 9b. the Quick tab: plain to-dos that never get a letter or reach Today
+await page.goto(`${base}/#quick`);
+await page.waitForSelector('#todo-input');
+await page.keyboard.press('/');
+assert.equal(await page.evaluate(() => document.activeElement?.id), 'todo-input', '/ writes a to-do here');
+assert.equal(await page.locator(sheet).count(), 0);
+await page.keyboard.type('Buy stamps');
+await page.keyboard.press('Enter');
+await page.keyboard.type('Charge laptop');
+await page.click('.todo-add button[type=submit]');
+assert.equal(await page.evaluate(() => document.activeElement?.id), 'todo-input', 'the field keeps focus');
+s = await state();
+assert.deepEqual(s.todos.map((t) => t.title), ['Charge laptop', 'Buy stamps']);
+assert.ok(!find(s, 'Buy stamps'), 'to-dos stay out of the ABCDE list');
+await page.click('.item.todo:has-text("Buy stamps") .check');
+await page.waitForSelector('.panel[aria-labelledby=done-h] .item.todo.is-done:has-text("Buy stamps")');
+assert.equal((await state()).todos.find((t) => t.title === 'Buy stamps').doneAt, '2026-10-20');
+await page.click('.item.todo:has-text("Charge laptop") button[aria-label^="Delete"]');
+assert.equal((await state()).todos.length, 1);
+await page.click('.toast-btn:has-text("Undo")');
+await page.waitForSelector('.item.todo:has-text("Charge laptop")');
+assert.equal(await page.locator('.nav a').count(), 5);
+step('quick list');
+
 // 10. import a pasted syllabus, then the same text again (no duplicates)
 await page.goto(`${base}/#more`);
 const syllabus = 'HIST 150\nWeek 9 Thu: Map quiz (5%)\nNov 13: Midterm exam (25%)\nDec 8: Final presentation (20%)';

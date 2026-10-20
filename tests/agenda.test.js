@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { occursOn, dayRows, unsorted, radar, vitalFew, scheduleOn, importantNotUrgent, isPast } from '../app/src/agenda.js';
-import { makeItem, completeRow, setLetter, moveInList, replan, replanAll, emptyState } from '../app/src/store.js';
+import { makeItem, completeRow, setLetter, moveInList, replan, replanAll, emptyState, normalize } from '../app/src/store.js';
 import { buildPlan } from '../app/src/plan.js';
 
 const settings = { sessionMin: 50, perDayMin: 120, bufferDays: 1 };
@@ -170,4 +170,10 @@ test('delegated and eliminated items get no study sessions', () => {
   assert.equal(s.items[0].sessions.length, 0);
   setLetter(s, s.items[0].id, 'A', today);
   assert.ok(s.items[0].sessions.length > 0);
+});
+
+test('quick to-dos survive a backup round trip; old backups and junk rows are handled', () => {
+  assert.deepEqual(normalize({ items: [] }).todos, []);
+  const kept = { id: 't1', title: 'Buy stamps', done: false, doneAt: null };
+  assert.deepEqual(normalize({ todos: [kept, null, { id: 2 }, 'x'] }).todos, [kept]);
 });

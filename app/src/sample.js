@@ -40,5 +40,8 @@ export function sampleData(today, settings) {
   // What the first finished thing was on recent days (A, another letter, or nothing).
   const firstDone = {};
   'AAABAA-AABA-AA'.split('').forEach((L, k) => { if (L !== '-') firstDone[d(-1 - k)] = L; });
-  return { items, goals: [goalGpa, goalFamily, goalSleep], mdp: 'I finish this semester with a 3.7 GPA', firstDone };
+  const todos = ['Get a blue book for the midterm', 'Return Jin’s calculator', 'Top up bus card']
+    .map((title) => ({ id: uid(), title, done: false, doneAt: null }));
+  todos.push({ id: uid(), title: 'Print the lab safety form', done: true, doneAt: today });
+  return { items, goals: [goalGpa, goalFamily, goalSleep], todos, mdp: 'I finish this semester with a 3.7 GPA', firstDone };
 }

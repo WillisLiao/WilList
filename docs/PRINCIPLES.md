@@ -87,6 +87,7 @@ These aren't from the seminar. They make the ideas above work for a student's ac
 | **Learn the real pace.** | A plan built on wishful estimates fails quietly, then all at once. | Focus mode logs real minutes. After three finished sessions of a type, Ahead shows the ratio ("Reading takes you 1.4× longer") and offers to adjust. |
 | **Load-aware planning.** | Sub-deadlines only help if the days they land on have room. | New sessions go to days with free study time first. The Ahead chart shows each day's load against your budget, and Balance gives A's first claim. |
 | **An honest day.** | A plan that silently overflows teaches you to ignore it. | Today's greeting states whether the rest of the day fits ("Tuesday. It all fits." or "Tuesday. 45 min too much."), from your classes, your work and the time left. |
+| **A quick list.** | Not everything earns a letter: sorting "buy stamps" takes longer than doing it. | The Quick tab: type it, tick it off. No letters, dates or plans, and it never reaches Today, so the A's stay first there. |
 | **Import with de-duplication.** | The semester changes; your list shouldn't fill with copies. | Re-importing adds what's new, updates changed dates and skips the rest. |
 | **The coach stays in Tracy's lane.** | Advice is only useful if it's about your items. | The coach sees a summary of your planner and is told to coach in the spirit of Tracy's methods, never to claim to be him. See [AI.md](AI.md). |
 

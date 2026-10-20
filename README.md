@@ -11,11 +11,12 @@
 
 Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.md](docs/PRINCIPLES.md).
 
-## Four tabs
+## Five tabs
 
 | | |
 |---|---|
 | **Today** | Your day in time order: classes as fixed blocks, your A1 card in the first free gap, a line for now, what you finished above it and what won't fit below the end of the day. The greeting says whether it all fits. Flip to **Tomorrow** in the evening to number your A's and lock in the plan. |
+| **Quick** | A plain checklist for small stuff: type it, tick it off. No letters, dates or planning, and it stays out of Today. Ticked items clear the next day. |
 | **Ahead** | Each A in the next two weeks as a peak, as high as its share of the grade and filled in as far as you've studied; then countdowns, study load against your budget, and the last 7 days. |
 | **Goals** | The one goal that matters most, your goals with their next step, and 21 days of starting with an A. |
 | **More** | Import semester, coach, Worry Buster, 20 Ideas, Pre-game, principles, calendar export, backup, settings. |

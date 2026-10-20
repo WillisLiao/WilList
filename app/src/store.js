@@ -29,6 +29,7 @@ export function emptyState() {
     v: SCHEMA,
     items: [],
     goals: [],
+    todos: [], // the Quick tab: plain to-dos, no letters
     mdp: '',
     exercise: {},
     worries: [],
@@ -47,8 +48,9 @@ export function normalize(raw) {
   const s = { ...base, ...raw };
   s.settings = { ...DEFAULT_SETTINGS, ...(raw.settings || {}) };
   s.meta = { ...base.meta, ...(raw.meta || {}) };
-  for (const k of ['items', 'goals', 'worries', 'storms', 'log']) s[k] = Array.isArray(raw[k]) ? raw[k] : [];
+  for (const k of ['items', 'goals', 'todos', 'worries', 'storms', 'log']) s[k] = Array.isArray(raw[k]) ? raw[k] : [];
   s.items = s.items.filter((it) => it && typeof it.id === 'string' && typeof it.title === 'string');
+  s.todos = s.todos.filter((t) => t && typeof t.id === 'string' && typeof t.title === 'string');
   s.coach = raw.coach && Array.isArray(raw.coach.messages) ? raw.coach : null;
   s.v = SCHEMA;
   return s;

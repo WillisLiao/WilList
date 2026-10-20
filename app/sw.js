@@ -1,6 +1,6 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
 // Bump VERSION whenever you ship changes so every file updates together.
-const VERSION = 'willist-v7';
+const VERSION = 'willist-v8';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
@@ -8,7 +8,7 @@ const SHELL = [
   'src/app.js', 'src/agenda.js', 'src/ai.js', 'src/coach.js', 'src/components.js', 'src/dates.js', 'src/focus.js',
   'src/ics.js', 'src/importer.js', 'src/insights.js', 'src/parse.js', 'src/plan.js', 'src/reminders.js', 'src/sample.js',
   'src/store.js', 'src/timeline.js', 'src/ui.js',
-  'src/views/coachview.js', 'src/views/editor.js', 'src/views/goals.js', 'src/views/importview.js',
+  'src/views/coachview.js', 'src/views/editor.js', 'src/views/goals.js', 'src/views/importview.js', 'src/views/quick.js',
   'src/views/radar.js', 'src/views/today.js', 'src/views/tools.js',
 ];
 // The coach's SDK (vendor/) is cached on first use only; it is not needed offline.

@@ -47,7 +47,7 @@ await shot('1-today-full', true);
 await page.click('.seg button:has-text("Tomorrow")');
 await shot('2-tomorrow');
 await page.click('.seg button:has-text("Today")');
-for (const [n, route] of [['3', 'ahead'], ['4', 'goals'], ['5', 'more']]) {
+for (const [n, route] of [['3', 'quick'], ['4', 'ahead'], ['5', 'goals'], ['6', 'more']]) {
   await page.goto(`${base}/#${route}`);
   await page.waitForSelector('.view');
   await shot(`${n}-${route}`);
@@ -56,14 +56,14 @@ await page.goto(`${base}/#today`);
 await page.waitForSelector('.qa1');
 await page.click('#fab');
 await page.fill('#qa-input', 'Organic chem final dec 10 9am 30% #CHEM210');
-await shot('6-add');
+await shot('7-add');
 await page.keyboard.press('Escape');
 await page.click('.notice.sort .btn');
-await shot('7-sort');
+await shot('8-sort');
 await page.keyboard.press('Escape');
 await page.click('.qa1 .btn.primary');
 await page.clock.runFor(9 * 60000);
-await shot('8-focus');
+await shot('9-focus');
 console.log(errors.length ? `Console errors:\n${errors.join('\n')}` : 'no console errors');
 await browser.close();
 server.close();

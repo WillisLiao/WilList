@@ -123,8 +123,8 @@ export function toast(message, { action, ms = 4500 } = {}) {
 }
 
 // A tear-off slip built on <dialog> for focus trapping and Esc-to-close.
-export function openSheet(title, body, { onClose } = {}) {
-  const dlg = h('dialog', { class: 'slip', 'aria-label': title });
+export function openSheet(title, body, { onClose, cls = '' } = {}) {
+  const dlg = h('dialog', { class: `slip ${cls}`.trim(), 'aria-label': title });
   const close = () => { if (dlg.open) dlg.close(); };
   dlg.append(
     h('div', { class: 'slip-head' },
@@ -137,6 +137,22 @@ export function openSheet(title, body, { onClose } = {}) {
   document.body.append(dlg);
   dlg.showModal();
   return close;
+}
+
+// An in-page "are you sure?" that resolves true or false. Native confirm() is
+// blocked in some installed-app and embedded views, so the app never uses it.
+export function ask(title, message, yes, { no = 'Cancel', danger = false } = {}) {
+  return new Promise((resolve) => {
+    let answer = false;
+    let close = null;
+    const pick = (v) => { answer = v; close(); };
+    const body = h('div', { class: 'fields' },
+      h('p', null, message),
+      h('div', { class: 'btn-row' },
+        h('button', { class: `btn ${danger ? 'ink' : 'primary'}`, type: 'button', onclick: () => pick(true) }, yes),
+        h('button', { class: 'btn quiet', type: 'button', onclick: () => pick(false) }, no)));
+    close = openSheet(title, body, { cls: 'confirm', onClose: () => resolve(answer) });
+  });
 }
 
 export function field(label, control, hint) {

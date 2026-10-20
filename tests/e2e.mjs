@@ -25,7 +25,8 @@ const page = await context.newPage();
 const errors = [];
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-page.on('dialog', (d) => d.accept());
+// The app never uses native alert/confirm/prompt (blocked in some embedded views).
+page.on('dialog', (d) => { errors.push(`native dialog: ${d.message()}`); d.dismiss(); });
 await page.clock.install({ time: new Date('2026-10-20T09:40:00') });
 const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('willist.v1') || '{}'));
 const find = (s, title) => s.items.find((x) => x.title === title);
@@ -233,7 +234,8 @@ const [bk] = await Promise.all([page.waitForEvent('download'), page.click(`${she
 const backup = JSON.parse(await readFile(bk));
 assert.equal(backup.items.length, (await state()).items.length);
 await page.click(`${sheet} button:has-text("Erase everything")`);
-assert.equal((await state()).items.length, 0);
+await page.click('dialog.confirm[open] button:has-text("Yes, erase")');
+await page.waitForFunction(() => JSON.parse(localStorage.getItem('willist.v1')).items.length === 0);
 await page.click('.toast-btn:has-text("Undo")');
 assert.equal((await state()).items.length, backup.items.length);
 step('downloads + erase/undo');
@@ -243,6 +245,12 @@ await page.goto(`${base}/#radar`);
 if (await page.locator('.btn.primary:has-text("Balance my plan")').count()) await page.click('.btn.primary:has-text("Balance my plan")');
 await page.goto(`${base}/#today`);
 await page.waitForSelector('.qa1');
+// starting a B while A's remain asks first, in the page
+await page.fill('#qa-input', 'Tidy desk !b');
+await page.press('#qa-input', 'Enter');
+await page.locator('.ans.dim:has-text("Tidy desk") .go').click();
+await page.click('dialog.confirm[open] button:has-text("Back to my A")');
+assert.equal(await page.locator('dialog.focus').count(), 0);
 await page.click('.qa1 button:has-text("Start now")');
 await page.waitForSelector('dialog.focus[open]');
 await page.clock.runFor(12 * 60000);

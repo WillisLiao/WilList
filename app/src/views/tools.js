@@ -1,4 +1,4 @@
-import { h, fill, icon, bubble, tag, sec, openSheet, field, toast, download, formLabel } from '../ui.js';
+import { h, fill, icon, bubble, tag, sec, openSheet, field, toast, download, formLabel, ask } from '../ui.js';
 import { fmtShort, diffDays } from '../dates.js';
 import { TIPS, PRINCIPLES } from '../coach.js';
 import { buildICS } from '../ics.js';
@@ -125,7 +125,7 @@ function backup(ctx) {
     try {
       const data = JSON.parse(await f.text());
       if (!data || !Array.isArray(data.items)) throw new Error('this is not a WilList backup');
-      if (!confirm(`Replace everything on this device with the backup (${data.items.length} items)?`)) return;
+      if (!(await ask('Restore this backup?', `It replaces everything on this device with the backup (${data.items.length} items). You can undo right after.`, 'Restore', { danger: true }))) return;
       ctx.store.replace(normalize(data));
       close();
       toast('Backup restored.', { action: { label: 'Undo', fn: () => ctx.store.undo() } });
@@ -141,8 +141,8 @@ function backup(ctx) {
     sec('Other'),
     h('div', { class: 'btn-row' },
       h('button', { class: 'btn', type: 'button', onclick: () => { close(); ctx.act.loadSample(); } }, 'Load a sample week'),
-      h('button', { class: 'btn ink', type: 'button', onclick: () => {
-        if (!confirm('Erase everything in WilList on this device?')) return;
+      h('button', { class: 'btn ink', type: 'button', onclick: async () => {
+        if (!(await ask('Erase everything?', 'Every item, goal and setting in WilList on this device. Download a backup first if you might want it back.', 'Yes, erase everything', { danger: true }))) return;
         ctx.act.resetAll();
         close();
       } }, 'Erase everything')));

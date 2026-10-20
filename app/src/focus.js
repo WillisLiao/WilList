@@ -1,16 +1,17 @@
 // Focus mode: one task and one big bubble that fills in as the session runs.
 // Real minutes are logged so WilList can learn how long things actually take.
 
-import { h, bubble, fmtMin, formLabel } from './ui.js';
+import { h, bubble, fmtMin, formLabel, ask } from './ui.js';
 import { TIPS } from './coach.js';
 import { dayRows } from './agenda.js';
 
 const mmss = (sec) => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
 
-export function openFocus(ctx, row) {
+export async function openFocus(ctx, row) {
   if (row.priority !== 'A') {
     const aLeft = dayRows(ctx.s.items, ctx.today).filter((r) => r.priority === 'A' && r.item.id !== row.item.id).length;
-    if (aLeft && !confirm(`${TIPS.bBeforeA}\n\nYou still have ${aLeft} A item${aLeft > 1 ? 's' : ''} today. Start this anyway?`)) return;
+    if (aLeft && !(await ask('Your A’s come first', `${TIPS.bBeforeA} You still have ${aLeft} A item${aLeft > 1 ? 's' : ''} today.`,
+      'Start this anyway', { no: 'Back to my A’s' }))) return;
   }
   const minutes = row.session?.minutes || ctx.s.settings.taskMin || 25;
   const total = minutes * 60;

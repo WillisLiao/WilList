@@ -299,6 +299,8 @@ setInterval(() => {
 }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !document.querySelector('dialog[open]')) render(); });
 
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+// Offline support belongs to the installable site (the page that links the manifest),
+// not to embedded previews, where service workers aren't available.
+if ('serviceWorker' in navigator && location.protocol !== 'file:' && document.querySelector('link[rel="manifest"]')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

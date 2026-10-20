@@ -10,8 +10,7 @@ const mmss = (sec) => `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String
 export async function openFocus(ctx, row) {
   if (row.priority !== 'A') {
     const aLeft = dayRows(ctx.s.items, ctx.today).filter((r) => r.priority === 'A' && r.item.id !== row.item.id).length;
-    if (aLeft && !(await ask('Your A’s come first', `${TIPS.bBeforeA} You still have ${aLeft} A item${aLeft > 1 ? 's' : ''} today.`,
-      'Start this anyway', { no: 'Back to my A’s' }))) return;
+    if (aLeft && !(await ask('A’s first?', `${aLeft} A${aLeft > 1 ? '’s' : ''} still open today.`, 'Start anyway', { no: 'Back to my A’s' }))) return;
   }
   const minutes = row.session?.minutes || ctx.s.settings.taskMin || 25;
   const total = minutes * 60;
@@ -24,7 +23,7 @@ export async function openFocus(ctx, row) {
   const active = () => elapsedMs + (runningSince ? Date.now() - runningSince : 0);
   const time = h('span', { class: 'time', role: 'timer' }, mmss(total));
   const ring = h('div', { class: 'ring', 'aria-hidden': 'true' }, time);
-  const tip = h('p', { class: 'tip' }, `${TIPS.focus} ${TIPS.start}`);
+  const tip = h('p', { class: 'tip' }, TIPS.focus);
   const pauseBtn = h('button', { class: 'btn', type: 'button', onclick: () => {
     if (runningSince) { elapsedMs += Date.now() - runningSince; runningSince = null; pauseBtn.replaceChildren('Resume'); }
     else { runningSince = Date.now(); pauseBtn.replaceChildren('Pause'); }
@@ -32,7 +31,7 @@ export async function openFocus(ctx, row) {
 
   const dlg = h('dialog', { class: 'focus', 'aria-label': `Focus: ${row.item.title}` },
     h('div', { class: 'focus-inner' },
-      h('div', { class: 'kicker' }, rank(row.label, row.priority), 'Focus. One thing, until it’s done.'),
+      h('div', { class: 'kicker' }, rank(row.label, row.priority)),
       h('h1', { class: 'display' }, row.item.title),
       row.session ? h('p', { class: 'muted' }, `${row.session.label} · ${fmtMin(minutes)}`) : null,
       ring,

@@ -1,8 +1,7 @@
 // The coach slip: key setup when there is no key, otherwise a chat about your actual planner.
 
-import { h, fill, sec, openSheet, field, toast } from '../ui.js';
+import { h, fill, openSheet, field, toast } from '../ui.js';
 import { getKey, setKey, newConversation, ask, visibleText, MODEL } from '../ai.js';
-import { openImport } from './importview.js';
 
 const STARTERS = [
   'I have three exams next week. Where do I start?',
@@ -13,28 +12,27 @@ const STARTERS = [
 
 export function openCoach(ctx) {
   const body = h('div', { class: 'fields' });
-  let close = null;
   let busy = false;
 
   function setup() {
     const input = h('input', { id: 'coach-key', type: 'password', autocomplete: 'off', placeholder: 'sk-ant-…', spellcheck: 'false' });
     fill(body,
-      h('p', null, 'The coach reads your planner and answers in the spirit of Brian Tracy’s methods: what to do first, how to break a big task down, what to do when you are behind. It can also read a messy syllabus for you.'),
-      h('ul', { class: 'how' },
-        h('li', null, h('b', null, 'Needs'), h('span', null, 'An Anthropic API key. Create one at console.anthropic.com → API keys.')),
-        h('li', null, h('b', null, 'Costs'), h('span', null, 'Billed to your Anthropic account. WilList shows the token count and cost after every answer.')),
-        h('li', null, h('b', null, 'Privacy'), h('span', null, 'The key stays in this browser and is never in backups. Your question and a summary of your planner go straight from this device to Anthropic.')),
-        h('li', null, h('b', null, 'Model'), h('span', null, 'Claude Opus 5.5. If it declines a request, Anthropic’s recommended fallback model answers instead.'))),
-      field('Your API key', input),
+      h('p', null, 'Ask for help planning, in Tracy’s spirit. Uses your own Anthropic API key, billed to you.'),
+      h('details', null, h('summary', { class: 'small' }, 'Details'),
+        h('ul', { class: 'how' },
+          h('li', null, h('b', null, 'Key'), h('span', null, 'console.anthropic.com → API keys.')),
+          h('li', null, h('b', null, 'Cost'), h('span', null, 'Shown after every answer.')),
+          h('li', null, h('b', null, 'Privacy'), h('span', null, 'Key stays in this browser, never in backups. Questions and a planner summary go to Anthropic.')),
+          h('li', null, h('b', null, 'Model'), h('span', null, 'Claude Opus 5.5, with Anthropic’s fallback model if it declines.')))),
+      field('API key', input),
       h('div', { class: 'btn-row sticky-actions' },
         h('button', { class: 'btn primary', type: 'button', onclick: () => {
           const v = input.value.trim();
-          if (!/^sk-ant-/.test(v)) { toast('That does not look like an Anthropic key. It starts with “sk-ant-”.'); return; }
+          if (!/^sk-ant-/.test(v)) { toast('Keys start with “sk-ant-”.'); return; }
           setKey(v);
           toast('Coach turned on.');
           chat();
-        } }, 'Turn on the coach'),
-        h('button', { class: 'btn quiet', type: 'button', onclick: () => close() }, 'Not now')));
+        } }, 'Turn on the coach')));
   }
 
   function chat() {
@@ -85,9 +83,8 @@ export function openCoach(ctx) {
         h('button', { class: 'link', type: 'button', onclick: () => { ctx.act.setCoach(null); chat(); } }, 'New conversation'),
         h('button', { class: 'link', type: 'button', onclick: () => { setKey(''); toast('Coach key removed from this browser.'); setup(); } }, 'Remove key')),
       convo?.messages?.length ? null : h('section', { class: 'part' },
-        sec('Try asking'),
         h('div', { class: 'starters' }, STARTERS.map((q) => h('button', { type: 'button', onclick: () => send(q) }, q))),
-        h('p', { class: 'small' }, 'Or ', h('button', { class: 'link', type: 'button', onclick: () => { close(); openImport(ctx, { tab: 'paste' }); } }, 'let the coach read a syllabus'), '.')),
+        null),
       log,
       h('div', { class: 'composer sticky-actions' }, box,
         h('button', { class: 'btn primary', type: 'button', onclick: () => send(box.value) }, 'Ask')));
@@ -95,5 +92,5 @@ export function openCoach(ctx) {
   }
 
   if (getKey()) chat(); else setup();
-  close = openSheet('Coach', body);
+  openSheet('Coach', body);
 }

@@ -62,7 +62,7 @@ export function openImport(ctx, { tab = 'file' } = {}) {
     const r = parseSyllabus(st.text, { now: ctx.now, dateOrder: dateOrder(ctx.store.state), course: st.course.trim() || null, week1: st.week1 || null });
     st.past = r.past;
     st.cost = null;
-    if (!r.rows.length) toast('No dated lines found. Each item needs a date like “Oct 30” or “10/30”, or a week number with “Week 1 starts on”.', { ms: 7000 });
+    if (!r.rows.length) toast('No dates found. Use dates like “Oct 30”, or set Week 1.', { ms: 6000 });
     setRows(r.rows, 'text');
   }
 
@@ -72,9 +72,8 @@ export function openImport(ctx, { tab = 'file' } = {}) {
     const counts = { new: 0, update: 0, same: 0 };
     for (const r of st.rows) counts[r.kind]++;
     return h('section', { class: 'part' },
-      sec('Found', { count: st.rows.length, note: `${counts.new} new · ${counts.update} changed · ${counts.same} already there${st.past ? ` · ${st.past} past, skipped` : ''}` }),
+      sec('Found', { count: st.rows.length, note: `${counts.new} new · ${counts.update} changed · ${counts.same} already in` }),
       st.cost ? h('p', { class: 'mono muted' }, `Coach read it: ${st.cost.tokens.toLocaleString()} tokens ≈ $${st.cost.usd.toFixed(3)}`) : null,
-      h('p', { class: 'small muted' }, 'Ticked items get added. Tap a tick to skip or keep an item. You can fix anything later.'),
       h('ul', { class: 'pick' }, st.rows.map((r) => {
         const f = r.fields;
         return h('li', { class: r.keep ? 'on' : 'off' },
@@ -102,27 +101,25 @@ export function openImport(ctx, { tab = 'file' } = {}) {
   function render() {
     const tabs = segmented([['file', 'Calendar file'], ['paste', 'Paste text']], st.tab, (k) => { st.tab = k; st.rows = []; render(); }, { ariaLabel: 'Source', tabs: true });
     const fileTab = [
-      h('p', null, 'Most course sites and calendars can give you an .ics file with every assignment, quiz and class. Bring it in once; bring it in again later and changed dates update instead of duplicating.'),
-      h('ul', { class: 'how' }, HOW.map(([name, how]) => h('li', null, h('b', null, name), h('span', null, how)))),
-      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => fileInput.click() }, icon('import'), 'Choose .ics file'), fileInput),
-      st.ignored ? h('p', { class: 'small muted' }, `${st.ignored} entries were skipped (no date, or “quiz opens” notices).`) : null,
+      h('p', null, 'Your course calendar as an .ics file.'),
+      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => fileInput.click() }, icon('import'), 'Choose file'), fileInput),
+      h('details', null, h('summary', { class: 'small' }, 'Where do I find it?'),
+        h('ul', { class: 'how' }, HOW.map(([name, how]) => h('li', null, h('b', null, name), h('span', null, how))))),
     ];
-    const ta = h('textarea', { class: 'ruled', rows: '8', placeholder: 'Paste a syllabus schedule, a professor’s email, or a list of due dates…',
+    const ta = h('textarea', { class: 'ruled', rows: '7', placeholder: 'Paste a syllabus or a list of due dates',
       value: st.text, oninput: (e) => { st.text = e.target.value; } });
     const pasteTab = [
       ta,
       h('div', { class: 'two' },
-        field('Course code', h('input', { type: 'text', value: st.course, placeholder: 'HIST150', oninput: (e) => { st.course = e.target.value; } }), 'Added to everything without one.'),
-        field('Week 1 starts on', h('input', { type: 'date', value: st.week1, onchange: (e) => { st.week1 = e.target.value; } }), 'Only needed for “Week 5: Quiz” style schedules.')),
+        field('Course', h('input', { type: 'text', value: st.course, placeholder: 'HIST150', oninput: (e) => { st.course = e.target.value; } })),
+        field('Week 1 starts', h('input', { type: 'date', value: st.week1, onchange: (e) => { st.week1 = e.target.value; } }))),
       h('div', { class: 'btn-row' },
         h('button', { class: 'btn primary', type: 'button', disabled: st.busy, onclick: () => readText(false) }, 'Read it'),
-        getKey()
-          ? h('button', { class: 'btn', type: 'button', disabled: st.busy, onclick: () => readText(true) }, st.busy ? 'The coach is reading…' : 'Read it with the coach')
-          : h('span', { class: 'small muted' }, 'Messy text? Turn on the coach in Tools for a smarter read.')),
+        getKey() ? h('button', { class: 'btn', type: 'button', disabled: st.busy, onclick: () => readText(true) }, st.busy ? 'Reading…' : 'Read with coach') : null),
     ];
     fill(body, tabs, st.rows.length ? null : (st.tab === 'file' ? fileTab : pasteTab), preview());
   }
 
   render();
-  close = openSheet('Bring in your semester', body);
+  close = openSheet('Import semester', body);
 }

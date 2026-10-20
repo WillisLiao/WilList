@@ -10,24 +10,24 @@ export const LETTER_HELP = {
 };
 
 export const TIPS = {
-  consequences: 'If you don’t do it, what happens?',
+  consequences: 'If you skip it, what happens?',
   a1: 'What is the most valuable use of my time right now?',
-  bBeforeA: 'Tracy’s rule: never work on a B while an A is still undone.',
-  tooManyA: (n) => `${n} A’s. If everything is an A, nothing is. About 20% of a list carries 80% of the value.`,
+  bBeforeA: 'A’s first: never a B while an A is undone.',
+  tooManyA: (n) => `${n} A’s. If everything is an A, nothing is.`,
   exam: 'Cramming loses most of what you learn within weeks. WilList spreads your prep into spaced sessions instead.',
   planTonight: 'Make tomorrow’s list tonight. Your subconscious works on it while you sleep.',
   planMorning: 'No plan from last night? Take two minutes now. Every minute spent planning saves 5–15 minutes doing.',
-  try: '“I’ll try” excuses failure in advance. Decide instead: I will, or I won’t.',
-  wish: '“I wish” is a goal with no energy behind it. Give it a date and a first step.',
-  haveTo: 'Swap “I have to” for “I choose to”. You’re the one in control.',
-  problem: 'Call it a “situation” or a “challenge”. Your mind starts solving instead of stressing.',
-  missed: 'Missed sessions happen. No blame: say “next time I will…”, then re-plan from today.',
-  focus: 'Single-handle it. Once you start, stay with it until it is 100% done.',
+  try: '“Try” → decide: I will.',
+  wish: '“Wish” → give it a date.',
+  haveTo: '“Have to” → “choose to”.',
+  problem: '“Problem” → “challenge”.',
+  missed: 'No blame. Re-plan from today.',
+  focus: 'One thing. Stay with it until it’s done.',
   start: 'You can act your way into feeling. Start moving and the motivation follows.',
-  breakTime: 'Take a 5–10 minute break. You remember most from the start and the end of a session, so several short sessions beat one marathon.',
+  breakTime: 'Take a 5–10 minute break.',
   delegate: 'Delegation is not abdication. Inspect what you expect.',
   eliminate: 'Do first things first, and second things not at all.',
-  short: 'Not enough time left at your daily study budget. Start now, raise the budget for this week, or ask early for help or an extension.',
+  short: 'Not enough time left at your daily budget. Start now or ask for help early.',
   sleep: 'Keep the last session before an exam light, and sleep early.',
   goalsBalance: 'Keep a few goals in every area. Personal goals are your “why”; school and career goals are the “what”.',
   goalsMany: 'Your mind can work on 10–15 goals at a time. Beyond that, pick the vital few.',
@@ -39,11 +39,11 @@ export const TIPS = {
 };
 
 export const DONE_LINES = [
-  'Done. Every finished task gives you a jolt of energy and self-esteem.',
-  'Done. Keep the tempo up: speed builds momentum.',
-  'Done. Big results are thousands of small finished tasks.',
-  'Done. Discipline is doing what you should, when you should, whether you feel like it or not.',
-  'Done. Persistence is your measure of belief in yourself.',
+  'Done. Next one.',
+  'Done. Momentum builds.',
+  'Done. Small wins add up.',
+  'Done. Keep the tempo.',
+  'Done. That’s discipline.',
 ];
 
 export function doneLine(n) {

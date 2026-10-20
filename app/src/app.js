@@ -11,7 +11,6 @@ import { h, fill, icon, rank, tag, meta, toast, openSheet, TYPE_META, fmtMin } f
 import { hintFor, doneLine } from './coach.js';
 import { renderToday } from './views/today.js';
 import { renderRadar } from './views/radar.js';
-import { renderPlan } from './views/planview.js';
 import { renderGoals, openGoalSheet } from './views/goals.js';
 import { renderTools } from './views/tools.js';
 import { openEditor } from './views/editor.js';
@@ -21,12 +20,19 @@ import { startReminders } from './reminders.js';
 import { sampleData } from './sample.js';
 
 const store = createStore();
-const ui = { radarDays: 14, planTab: 'tonight', dump: '' };
-const ROUTES = { today: ['Today', renderToday], radar: ['Radar', renderRadar], plan: ['Plan', renderPlan], goals: ['Goals', renderGoals], tools: ['Tools', renderTools] };
+const ui = { day: 'today' };
+// [label, view, nav icon]
+const ROUTES = { today: ['Today', renderToday, 'today'], ahead: ['Ahead', renderRadar, 'radar'], goals: ['Goals', renderGoals, 'goals'], more: ['More', renderTools, 'tools'] };
+const OLD = { radar: 'ahead', tools: 'more', plan: 'today' };
 const main = document.getElementById('main');
 const today = () => todayISO();
 
-const route = () => (ROUTES[location.hash.slice(1)] ? location.hash.slice(1) : 'today');
+function route() {
+  const hash = location.hash.slice(1);
+  if (hash === 'plan') ui.day = 'tomorrow';
+  const r = OLD[hash] || hash;
+  return ROUTES[r] ? r : 'today';
+}
 const go = (r) => { location.hash = r; };
 
 function ctx() {
@@ -43,8 +49,10 @@ function render() {
   const r = route();
   const keepScroll = r === lastRendered;
   const y = window.scrollY;
+  if (r !== 'today') ui.day = 'today';
   main.replaceChildren(ROUTES[r][1](ctx()));
   document.body.dataset.section = r;
+  document.body.toggleAttribute('data-night', r === 'today' && ui.day === 'tomorrow');
   drawNav(r);
   document.body.classList.toggle('no-tips', !store.state.settings.tips);
   document.title = r === 'today' ? 'WilList' : `${ROUTES[r][0]} · WilList`;
@@ -53,13 +61,8 @@ function render() {
 }
 
 function addedMessage(it) {
-  if (it.type === 'event') return `Added to your timetable${it.recur ? ', repeating' : ''}: ${it.title}.`;
-  const parts = [`Added “${it.title}”.`];
   const open = (it.sessions || []).filter((s) => !s.done);
-  if (open.length) parts.push(`Start ${relDay(open[0].date, today())}, ${open.length} session${open.length > 1 ? 's' : ''}.`);
-  if (it.shortfallMin > 0) parts.push('Not enough time left at your study budget.');
-  if (!it.priority) parts.push('Fill in its letter.');
-  return parts.join(' ');
+  return `${it.title}${open.length ? ` · start ${relDay(open[0].date, today())}` : ''}${it.shortfallMin > 0 ? ' · short on time' : ''}`;
 }
 
 function topOrder(s, letter) {
@@ -72,10 +75,7 @@ const undo = { label: 'Undo', fn: () => store.undo() };
 const act = {
   letter(id, L) {
     store.commit((s) => setLetter(s, id, L, today()));
-    if (L === 'D') {
-      const it = findItem(store.state, id);
-      toast(`Who can do “${it?.title}” instead? Add their name.`, { action: { label: 'Add', fn: () => edit(id) } });
-    }
+    if (L === 'D') toast('Who can do it? Add a name.', { action: { label: 'Add', fn: () => edit(id) } });
   },
   acceptSuggestions(ids) {
     store.commit((s) => {
@@ -84,14 +84,13 @@ const act = {
         if (it && !it.priority) setLetter(s, id, suggestedLetter(it.type, it.weightPct), today());
       }
     }, { undoable: true });
-    toast(`${ids.length} letters filled in. Change any of them by opening the item.`, { action: undo });
+    toast(`${ids.length} letters filled in.`, { action: undo });
   },
   complete(row) {
     const t = today();
     let res = null;
     store.commit((s) => { res = completeRow(s, { itemId: row.item.id, sessionId: row.session?.id, recurring: row.recurring }, t); }, { undoable: true });
-    const extra = res?.finishedItem && row.session ? ' That was the last session, so it is complete.' : '';
-    toast(`${doneLine(store.state.meta.doneCount)}${extra}`, { action: undo });
+    toast(res?.finishedItem && row.session ? 'Done. All sessions finished.' : doneLine(store.state.meta.doneCount), { action: undo });
   },
   move(key, dir, rows) {
     const list = rows || dayRows(store.state.items, today());
@@ -100,14 +99,14 @@ const act = {
   remove(id) {
     const it = findItem(store.state, id);
     store.commit((s) => { s.items = s.items.filter((x) => x.id !== id); }, { undoable: true });
-    toast(`Deleted “${it?.title || 'item'}”.`, { action: undo });
+    toast(`Deleted ${it?.title || 'item'}.`, { action: undo });
   },
   createItem(fields) {
     const s = store.state;
     const it = makeItem(fields, s.settings, today(), s.items);
     if (it.priority && fields.rank === 1) it.order = topOrder(s, it.priority);
     store.commit((d) => { d.items.push(it); d.meta.onboarded = true; });
-    toast(addedMessage(it), { action: { label: 'Edit', fn: () => edit(it.id) } });
+    toast(`Added: ${addedMessage(it)}`, { action: { label: 'Edit', fn: () => edit(it.id) } });
     return it;
   },
   saveItem(draft, { replan: doReplan, priorityChanged }) {
@@ -132,24 +131,23 @@ const act = {
       items.push(makeItem(p, s.settings, today(), [...s.items, ...items]));
     }
     store.commit((d) => { d.items.push(...items); d.meta.onboarded = true; }, { undoable: true });
-    const unl = items.filter((x) => !x.priority && x.type !== 'event').length;
-    toast(`${items.length} added.${unl ? ' Fill in their letters.' : ''}`, { action: undo });
+    toast(`${items.length} added.`, { action: undo });
   },
   importItems(incoming) {
     const plan = planImport(store.state.items, incoming);
     store.commit((s) => { applyImport(s, plan, today()); s.meta.onboarded = true; }, { undoable: true });
     go('today');
-    toast(`${plan.adds.length} added, ${plan.updates.length} updated${plan.same ? `, ${plan.same} already there` : ''}. Fill in their letters on Today.`, { action: undo, ms: 7000 });
+    toast(`${plan.adds.length} added, ${plan.updates.length} updated.`, { action: undo });
   },
   replanMissed() {
     const t = today();
     store.commit((s) => { for (const m of missedSessions(s.items, t)) replan(s, m.item.id, t); });
-    toast('Re-planned from today. No blame, just the next step.');
+    toast('Re-planned from today.');
   },
   balance() {
     let n = 0;
     store.commit((s) => { n = replanAll(s, today()); }, { undoable: true });
-    toast(`Re-spread ${n} item${n === 1 ? '' : 's'} around your daily budget, A’s first.`, { action: undo });
+    toast(`Re-spread ${n} item${n === 1 ? '' : 's'}, A’s first.`, { action: undo });
   },
   pullForward(id) {
     const t = today();
@@ -158,20 +156,19 @@ const act = {
       const first = it?.sessions?.find((x) => !x.done);
       if (first) { first.date = t; it.sessions.sort((a, b) => a.date.localeCompare(b.date)); }
     });
-    toast('One session moved to today. It is on your list.');
+    toast('One session moved to today.');
   },
   lockPlan() {
     store.commit((s) => { s.meta.lastPlanned = today(); });
-    toast('Locked in. Your subconscious works on it while you sleep.');
+    toast('Locked in. Sleep on it.');
   },
-  setTodayMode(m) { store.commit((s) => { s.settings.todayMode = m; }); },
   keep(id) { store.commit((s) => { const it = findItem(s, id); if (it) it.createdAt = today(); }); },
-  setMdp(v) { store.commit((s) => { s.mdp = v; }); toast(v ? 'Major definite purpose saved.' : 'Cleared.'); },
+  setMdp(v) { store.commit((s) => { s.mdp = v; }); },
   setExercise(i, v) { store.commit((s) => { s.exercise = { ...(s.exercise || {}), [i]: v }; }); },
   setCoach(convo) { store.commit((s) => { s.coach = convo; }); },
   setCalib(type, ratio) {
     store.commit((s) => { s.settings.calib = { ...(s.settings.calib || {}), [type]: ratio }; });
-    toast(`New ${type === 'deadline' ? 'homework' : type} plans will use ${ratio}× the usual estimate.`);
+    toast(`Plans now use ${ratio}×.`);
   },
   logFocus(row, minutes, completed) {
     if (minutes < 1) return;
@@ -183,7 +180,7 @@ const act = {
       const i = s.goals.findIndex((x) => x.id === g.id);
       if (i >= 0) s.goals[i] = g; else s.goals.push(g);
     });
-    toast('Goal saved. Now give it a next step.');
+    toast('Goal saved.');
   },
   removeGoal(id) {
     store.commit((s) => {
@@ -205,7 +202,7 @@ const act = {
       s.settings = { ...s.settings, ...next };
       if (planChanged) replanAll(s, today());
     });
-    toast(planChanged ? 'Saved. Upcoming work is re-planned with the new settings.' : 'Settings saved.');
+    toast(planChanged ? 'Saved and re-planned.' : 'Saved.');
   },
   loadSample() {
     store.commit((s) => {
@@ -217,11 +214,11 @@ const act = {
       replanAll(s, today());
     }, { undoable: true });
     go('today');
-    toast('Sample week loaded. Change or delete anything.', { action: undo });
+    toast('Sample loaded.', { action: undo });
   },
   resetAll() {
     store.replace(emptyState());
-    toast('Everything erased.', { action: undo });
+    toast('Erased.', { action: undo });
   },
 };
 
@@ -242,7 +239,6 @@ function openQuickAdd(initial = '') {
     const t = today();
     const hint = store.state.settings.tips ? hintFor(p.hints) : null;
     fill(preview,
-      h('span', { class: 'lbl' }, 'Reads as'),
       p.priority ? rank(p.rank ? `${p.priority}${p.rank}` : p.priority, p.priority) : null,
       h('span', { class: 'qa-title' }, p.title),
       meta(
@@ -257,11 +253,15 @@ function openQuickAdd(initial = '') {
   };
   input.addEventListener('input', renderPreview);
   let close = null;
+  const examples = store.state.items.length < 5
+    ? h('div', { class: 'examples', 'aria-label': 'Examples' }, EXAMPLES.map((ex) => h('button', { type: 'button', onclick: () => { input.value = ex; renderPreview(); input.focus(); } }, ex)))
+    : h('span');
   const form = h('form', { id: 'qa', class: 'qa', autocomplete: 'off', onsubmit: (e) => {
     e.preventDefault();
     if (!input.value.trim()) { input.focus(); return; }
     const it = act.createItem(parseInput());
     added.prepend(h('li', null, icon('check'), h('span', null, addedMessage(it))));
+    examples.remove();
     input.value = '';
     renderPreview();
     input.focus();
@@ -274,11 +274,10 @@ function openQuickAdd(initial = '') {
         const prefill = input.value.trim() ? parseInput() : {};
         close();
         edit(null, prefill);
-      } }, 'Add with details'),
-      h('button', { type: 'button', class: 'btn quiet', onclick: () => { close(); openImport(ctx()); } }, icon('import'), 'A whole semester')),
-    h('div', { class: 'examples', 'aria-label': 'Examples' }, EXAMPLES.map((ex) => h('button', { type: 'button', onclick: () => { input.value = ex; renderPreview(); input.focus(); } }, ex))),
+      } }, 'Details')),
+    examples,
     added);
-  close = openSheet('Write it down', form, { cls: 'qa-sheet' });
+  close = openSheet('Add', form, { cls: 'qa-sheet' });
   renderPreview();
   setTimeout(() => input.focus(), 30);
 }
@@ -299,8 +298,8 @@ const nav = document.getElementById('nav');
 const links = h('div', { class: 'nav-links', style: { display: 'contents' } });
 nav.append(h('span', { class: 'brand', 'aria-hidden': 'true' }, 'Wil', h('span', { class: 'hl' }, 'List')), links);
 function drawNav(current) {
-  fill(links, Object.entries(ROUTES).map(([key, [label]]) => h('a', { href: `#${key}`, 'data-s': key, 'aria-current': key === current ? 'page' : null },
-    h('span', { class: 'pill' }, icon(key)), h('span', null, label))));
+  fill(links, Object.entries(ROUTES).map(([key, [label, , ic]]) => h('a', { href: `#${key}`, 'data-s': key, 'aria-current': key === current ? 'page' : null },
+    h('span', { class: 'pill' }, icon(ic)), h('span', null, label))));
 }
 
 store.subscribe(render);
@@ -313,7 +312,7 @@ let lastDay = today();
 setInterval(() => {
   const busy = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.querySelector('dialog[open]');
   if (busy) return;
-  if (today() !== lastDay || route() === 'today' || route() === 'radar') { lastDay = today(); render(); }
+  if (today() !== lastDay || route() === 'today' || route() === 'ahead') { lastDay = today(); render(); }
 }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !document.querySelector('dialog[open]')) render(); });
 

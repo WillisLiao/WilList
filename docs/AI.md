@@ -7,7 +7,7 @@ key. It does two things:
    "I keep putting off my essay. What do I do right now?". It answers from your actual items and
    dates, in the spirit of Brian Tracy's methods, and ends with one thing you can start in the
    next ten minutes. It coaches *like* Tracy's teaching; it never claims to be him.
-2. **Reads messy text into items.** In **Bring in your semester → Paste text**, "Read it with the
+2. **Reads messy text into items.** In **More → Import semester → Paste text**, "Read with
    coach" turns a syllabus, a professor's email or a brain dump into dated, typed items with grade
    weights and realistic prep hours. You review every line before anything is added, exactly as
    with the built-in reader.
@@ -16,7 +16,7 @@ key. It does two things:
 
 1. Create a key at [console.anthropic.com](https://console.anthropic.com/) → API keys. It starts
    with `sk-ant-`.
-2. In WilList: **Tools → Coach**, paste the key, **Turn on the coach**.
+2. In WilList: **More → Coach**, paste the key, **Turn on the coach**.
 
 **Remove key** on the same screen deletes it from the browser.
 

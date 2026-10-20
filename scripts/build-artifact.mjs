@@ -10,24 +10,13 @@ const repo = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const app = path.join(repo, 'app');
 const out = path.resolve(process.argv[2] || 'artifact');
 const html = fs.readFileSync(path.join(app, 'index.html'), 'utf8');
-const css = fs.readFileSync(path.join(app, 'styles.css'), 'utf8');
-
-// The viewer's own theme switch sets data-theme on <html>; follow it both ways.
-const light = css.match(/\n:root \{([\s\S]*?)\n\}/)[1];
-const dark = css.match(/@media \(prefers-color-scheme: dark\) \{\s*:root \{([\s\S]*?)\n {2}\}/)[1];
-const tokens = (block) => block.split('\n').map((l) => l.trim()).filter((l) => /^(--[\w-]+:|color-scheme:)/.test(l))
-  .filter((l) => !/^--(f-|nav-h|max|rail|gut)/.test(l)).map((l) => l.replace(/\s*\/\*.*\*\//, '')).join(' ');
-const themeCSS = `:root[data-theme="dark"] { ${tokens(dark)} }\n@media (prefers-color-scheme: dark) { :root[data-theme="light"] { ${tokens(light)} } }`;
-
+// styles.css follows the viewer's theme switch itself (:root[data-theme]) as well as the OS setting.
 const body = html.match(/<body>([\s\S]*)<\/body>/)[1].trim();
 fs.mkdirSync(out, { recursive: true });
 fs.writeFileSync(path.join(out, 'willist.html'), `<title>WilList</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preload" href="fonts/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
-<style>
-${themeCSS}
-</style>
 ${body}
 `);
 

@@ -1,4 +1,4 @@
-import { h, fill, icon, tag, sec, band, lbl, openSheet, field, toast, download, ask } from '../ui.js';
+import { h, fill, icon, tag, sec, lbl, openSheet, field, toast, download, ask, titleRow, panel } from '../ui.js';
 import { fmtShort, diffDays } from '../dates.js';
 import { PRINCIPLES } from '../coach.js';
 import { buildICS } from '../ics.js';
@@ -91,7 +91,7 @@ function principles() {
         h('div', { class: 'fields' },
           h('p', null, idea),
           h('p', null, lbl('In WilList: '), how),
-          h('p', { class: 'mono muted' }, src)))))));
+          h('p', { class: 'small muted' }, src)))))));
   openSheet('Principles', body);
 }
 
@@ -172,24 +172,35 @@ function settings(ctx) {
   close = openSheet('Settings', body);
 }
 
-// [label, icon, colour (a divider), open]
+// [group, [label, icon, open]]
 const TOOLS = [
-  ['Import semester', 'import', 'today', (ctx) => openImport(ctx)],
-  ['Coach', 'coach', 'plan', (ctx) => openCoach(ctx)],
-  ['Worry Buster', 'worry', 'ahead', worryBuster],
-  ['20 Ideas', 'ideas', 'today', mindStorm],
-  ['Pre-game', 'pregame', 'goals', preGame],
-  ['Principles', 'principles', 'more', () => principles()],
-  ['Add to calendar', 'calendar', 'ahead', exportCalendar],
-  ['Backup', 'backup', 'goals', backup],
-  ['Settings', 'settings', null, settings],
+  ['Think it through', [
+    ['Coach', 'coach', (ctx) => openCoach(ctx)],
+    ['Worry Buster', 'worry', worryBuster],
+    ['20 Ideas', 'ideas', mindStorm],
+    ['Pre-game', 'pregame', preGame],
+    ['Principles', 'principles', () => principles()],
+  ]],
+  ['Your semester', [
+    ['Import semester', 'import', (ctx) => openImport(ctx)],
+    ['Add to calendar', 'calendar', exportCalendar],
+  ]],
+  ['This device', [
+    ['Backup', 'backup', backup],
+    ['Settings', 'settings', settings],
+  ]],
 ];
 
+const menu = (rows, ctx) => h('ul', { class: 'menu' }, rows.map(([label, ic, fn]) => h('li', null,
+  h('button', { type: 'button', onclick: () => fn(ctx) }, icon(ic), h('span', null, label), icon('next')))));
+
 export function renderTools(ctx) {
+  const [think, semester, device] = TOOLS;
   return h('div', { class: 'view tools' },
-    band('More', h('h1', { class: 'display' }, 'More')),
-    h('div', { class: 'col page' },
-      h('ul', { class: 'menu' }, TOOLS.map(([label, ic, s, fn]) => h('li', null,
-        h('button', { type: 'button', 'data-s': s, onclick: () => fn(ctx) },
-          h('span', { class: 'ti' }, icon(ic)), h('b', null, label), icon('next')))))));
+    titleRow(h('h1', null, 'More'), 'Tools for the hard days, and your data.'),
+    h('div', { class: 'grid' },
+      panel(think[0], { cls: 'span-6 stretch', id: 'think-h' }, menu(think[1], ctx)),
+      h('div', { class: 'side-col span-6' },
+        panel(semester[0], { id: 'sem-h' }, menu(semester[1], ctx)),
+        panel(device[0], { id: 'dev-h' }, menu(device[1], ctx)))));
 }

@@ -7,7 +7,7 @@ import { planImport } from './importer.js';
 import { dayRows, missedSessions } from './agenda.js';
 import { logFocus } from './insights.js';
 import { todayISO, fmtRelDay, relDay } from './dates.js';
-import { h, fill, icon, rank, tag, meta, toast, openSheet, TYPE_META, fmtMin } from './ui.js';
+import { h, fill, icon, rank, tag, meta, mark, toast, openSheet, TYPE_META, fmtMin } from './ui.js';
 import { hintFor, doneLine } from './coach.js';
 import { renderToday } from './views/today.js';
 import { renderRadar } from './views/radar.js';
@@ -51,8 +51,7 @@ function render() {
   const y = window.scrollY;
   if (r !== 'today') ui.day = 'today';
   main.replaceChildren(ROUTES[r][1](ctx()));
-  document.body.dataset.section = r;
-  document.body.toggleAttribute('data-night', r === 'today' && ui.day === 'tomorrow');
+  document.getElementById('where').textContent = r === 'today' && ui.day === 'tomorrow' ? 'Tomorrow' : ROUTES[r][0];
   drawNav(r);
   document.body.classList.toggle('no-tips', !store.state.settings.tips);
   document.title = r === 'today' ? 'WilList' : `${ROUTES[r][0]} · WilList`;
@@ -210,6 +209,7 @@ const act = {
       s.items.push(...d.items);
       s.goals.push(...d.goals);
       if (!s.mdp) s.mdp = d.mdp;
+      s.meta.firstDone = { ...d.firstDone, ...s.meta.firstDone };
       s.meta.onboarded = true;
       replanAll(s, today());
     }, { undoable: true });
@@ -248,7 +248,7 @@ function openQuickAdd(initial = '') {
         p.durationMin ? tag(fmtMin(p.durationMin)) : null,
         p.weightPct ? tag(`${p.weightPct}% of grade`, 'stake') : null,
         p.course ? tag(p.course, 'code') : null),
-      hint ? h('span', { class: 'qa-hint hand' }, hint) : null);
+      hint ? h('span', { class: 'qa-hint' }, hint) : null);
     preview.classList.add('show');
   };
   input.addEventListener('input', renderPreview);
@@ -293,13 +293,12 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- nav: one divider tab per section ----
+// ---- nav: a sidebar on desktop, a tab bar on phones ----
 const nav = document.getElementById('nav');
-const links = h('div', { class: 'nav-links', style: { display: 'contents' } });
-nav.append(h('span', { class: 'brand', 'aria-hidden': 'true' }, 'Wil', h('span', { class: 'hl' }, 'List')), links);
+document.querySelector('.brand .mark').replaceWith(mark());
 function drawNav(current) {
-  fill(links, Object.entries(ROUTES).map(([key, [label, , ic]]) => h('a', { href: `#${key}`, 'data-s': key, 'aria-current': key === current ? 'page' : null },
-    h('span', { class: 'pill' }, icon(ic)), h('span', null, label))));
+  fill(nav, Object.entries(ROUTES).map(([key, [label, , ic]]) => h('a', { href: `#${key}`, 'aria-current': key === current ? 'page' : null },
+    icon(ic), h('span', null, label))));
 }
 
 store.subscribe(render);

@@ -55,13 +55,13 @@ export function hintFor(hints) {
   return null;
 }
 
-// The library on the Tools tab. Grouped so it reads in a minute, not an hour.
+// The library under More → Principles. Grouped so it reads in a minute, not an hour.
 export const PRINCIPLES = [
   {
     group: 'Take control',
     items: [
-      ['The law of control', 'You feel good about yourself to the degree you feel in control of your life. Time management is control over the sequence of events.', 'Everything lives in one place, and Radar shows the next two weeks at a glance.', 'S2, S17'],
-      ['Failing to plan is planning to fail', 'Most people drift by the law of accident: no plan, no goals, just reacting.', 'The Plan tab: two minutes each night, a short review each week.', 'S2'],
+      ['The law of control', 'You feel good about yourself to the degree you feel in control of your life. Time management is control over the sequence of events.', 'Everything lives in one place: Today lays out your day, Ahead shows the next two weeks.', 'S2, S17'],
+      ['Failing to plan is planning to fail', 'Most people drift by the law of accident: no plan, no goals, just reacting.', 'Today → Tomorrow: two minutes each night, then lock it in.', 'S2'],
       ['Think on paper', 'Get everything out of your head and onto a list. Don’t try to carry it in your mind.', 'Quick-add understands plain language, so capturing takes seconds.', 'S17, S20'],
       ['Make tomorrow’s list tonight', 'The best time to plan a day is the night before; your subconscious works on it while you sleep.', 'A “Plan tomorrow” prompt appears each evening.', 'S17'],
       ['Everything counts', 'Nothing is neutral. Everything either moves you toward your goals or away from them.', 'E for Eliminate: drop what doesn’t matter instead of carrying it.', 'S9, S11'],
@@ -71,9 +71,9 @@ export const PRINCIPLES = [
     group: 'Prioritize',
     items: [
       ['ABCDE', 'A = must do, B = should do, C = nice to do, D = delegate, E = eliminate. Number your A’s (A1, A2, A3) and never work on an A2 or a B until A1 is done.', 'Every item gets a letter. B’s stay dimmed while any A is open.', 'S17'],
-      ['Consider consequences', 'An A is anything with serious consequences if you don’t do it. The more serious the consequence, the higher the priority.', 'The sort tray asks one question: “If you don’t do it, what happens?”', 'Eat That Frog!'],
+      ['Consider consequences', 'An A is anything with serious consequences if you don’t do it. The more serious the consequence, the higher the priority.', 'Sort asks one question: “If you don’t do it, what happens?”', 'Eat That Frog!'],
       ['Urgent vs. important', 'Urgent things are seldom important; important things are seldom urgent.', 'Your list is ordered by letter, not by due date, and start dates bring important work into Today before it turns urgent.', 'Tracy’s time-management teaching'],
-      ['The 80/20 rule', 'Two items out of ten are worth more than the other eight together: the vital few versus the trivial many.', '“The vital few” on Radar, plus a nudge when too many things are marked A.', 'S17'],
+      ['The 80/20 rule', 'Two items out of ten are worth more than the other eight together: the vital few versus the trivial many.', 'Your A’s are the peaks on Ahead, plus a nudge when too many things are marked A.', 'S17'],
       ['Most valuable use of time', 'Keep asking: what is the most valuable use of my time right now?', 'That question sits above your A1 every day.', 'S17'],
     ],
   },
@@ -101,7 +101,7 @@ export const PRINCIPLES = [
     group: 'Goals',
     items: [
       ['Success is goals', 'Only about 3% of people have clear written goals with plans, and they outperform everyone else.', 'The Goals tab: written goals, a deadline, your reasons why and a next step.', 'S15'],
-      ['Major definite purpose', 'One goal bigger than the rest that you can name if someone wakes you at 3am. It must be measurable.', 'Pinned at the top of Today.', 'S15'],
+      ['Major definite purpose', 'One goal bigger than the rest that you can name if someone wakes you at 3am. It must be measurable.', 'At the top of Goals.', 'S15'],
       ['The 12 steps', 'Desire, belief, write it down, list your reasons why, know your starting point, set a deadline, identify the obstacles (and the “rock”), the knowledge you need and the people you need, make a plan, visualize, persist.', 'Each goal has fields for the steps that matter most.', 'S16'],
       ['Balance', 'Keep personal, career and self-improvement goals in balance. Personal goals are why you do the rest.', 'Goals are grouped into those three areas.', 'S15, S17'],
       ['Fail forward', 'Failure is part of success. Edison found thousands of ways that didn’t work. Ask what you can learn.', 'Missed sessions are flagged without blame, with a one-tap re-plan.', 'S15'],
@@ -110,9 +110,9 @@ export const PRINCIPLES = [
   {
     group: 'Mindset',
     items: [
-      ['The worry buster', 'Define the worry in writing, determine the worst possible outcome, resolve to accept it, then start improving on it. The antidote to worry is purposeful action.', 'Tools → Worry Buster, which turns your actions into tasks.', 'S8'],
-      ['Mental rehearsal', 'Before an important one-off event: visualize the perfect outcome, affirm it, feel it, release it. Recall your past successes, not your failures.', 'Tools → Pre-game, for exams and presentations.', 'S12'],
-      ['Mind storming', 'Write a goal as a question and force 20 answers. Act on one immediately.', 'Tools → 20 Ideas.', 'S20'],
+      ['The worry buster', 'Define the worry in writing, determine the worst possible outcome, resolve to accept it, then start improving on it. The antidote to worry is purposeful action.', 'More → Worry Buster, which turns your actions into tasks.', 'S8'],
+      ['Mental rehearsal', 'Before an important one-off event: visualize the perfect outcome, affirm it, feel it, release it. Recall your past successes, not your failures.', 'More → Pre-game, for exams and presentations.', 'S12'],
+      ['Mind storming', 'Write a goal as a question and force 20 answers. Act on one immediately.', 'More → 20 Ideas.', 'S20'],
       ['I am responsible', 'No blame, no excuses. Ask “what can I do from here?”, not “who did it?”.', 'Re-plan from today instead of looking back.', 'S5, S6'],
       ['Watch your words', '“I can’t”, “I have to”, “I’ll try” and “I wish” program failure. “Problem” stresses; “situation” or “challenge” invites solutions.', 'Quick-add gently flags these words.', 'S7, S20'],
     ],

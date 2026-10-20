@@ -15,11 +15,11 @@ export function sampleData(today, settings) {
     mk({ title: 'Chemistry lab', type: 'event', course: 'CHEM110', date: today, time: '14:00', durationMin: 180, recur: { freq: 'weekly', days: [wd === 0 || wd === 6 ? 3 : wd] } }),
     mk({ title: 'Research group meeting', type: 'event', date: today, time: '16:30', durationMin: 60, recur: { freq: 'weekly', days: [2] } }),
     mk({ title: 'Office hours with Prof. Lee', type: 'event', course: 'MATH201', date: d(3), time: '15:00', durationMin: 30 }),
-    mk({ title: 'Calculus midterm', type: 'exam', course: 'MATH201', date: d(12), time: '09:00', priority: 'A', effortMin: 360, goalId: goalGpa.id }),
-    mk({ title: 'Chem quiz 4', type: 'exam', course: 'CHEM110', date: d(3), priority: 'A', effortMin: 120 }),
-    mk({ title: 'History presentation: the printing press', type: 'presentation', course: 'HIST150', date: d(9), time: '13:00', priority: 'A', effortMin: 180 }),
+    mk({ title: 'Calculus midterm', type: 'exam', course: 'MATH201', date: d(12), time: '09:00', priority: 'A', effortMin: 360, weightPct: 25, goalId: goalGpa.id }),
+    mk({ title: 'Chem quiz 4', type: 'exam', course: 'CHEM110', date: d(3), priority: 'A', effortMin: 120, weightPct: 5 }),
+    mk({ title: 'History presentation: the printing press', type: 'presentation', course: 'HIST150', date: d(9), time: '13:00', priority: 'A', effortMin: 180, weightPct: 15 }),
     mk({ title: 'Problem set 5', type: 'deadline', course: 'MATH201', date: d(2), time: '23:59', priority: 'A', effortMin: 100, goalId: goalGpa.id }),
-    mk({ title: 'Lab report: titration', type: 'deadline', course: 'CHEM110', date: d(6), priority: 'B', effortMin: 150 }),
+    mk({ title: 'Lab report: titration', type: 'deadline', course: 'CHEM110', date: d(6), priority: 'B', effortMin: 150, weightPct: 8 }),
     mk({ title: 'Read 2 papers for research group', type: 'reading', date: d(7), priority: 'B', effortMin: 120 }),
     mk({ title: 'Email TA about quiz regrade', type: 'task', course: 'CHEM110', priority: 'A' }),
     mk({ title: 'Call home', type: 'task', date: d((7 - wd) % 7), recur: { freq: 'weekly', days: [0] }, priority: 'B', goalId: goalFamily.id }),
@@ -30,5 +30,15 @@ export function sampleData(today, settings) {
     mk({ title: 'Buy printer ink', type: 'task' }),
   ];
   items.find((it) => it.priority === 'D').delegateTo = 'Sam (teammate)';
-  return { items, goals: [goalGpa, goalFamily, goalSleep], mdp: 'I finish this semester with a 3.7 GPA' };
+  // A few study sessions already behind you, so progress has something to show.
+  const studied = (title, ...days) => {
+    const it = items.find((x) => x.title === title);
+    for (const n of days) it.sessions.unshift({ id: uid(), date: d(n), minutes: 50, label: 'Study', done: true, doneAt: d(n) });
+  };
+  studied('Calculus midterm', -5, -3, -1);
+  studied('History presentation: the printing press', -2);
+  // What the first finished thing was on recent days (A, another letter, or nothing).
+  const firstDone = {};
+  'AAABAA-AABA-AA'.split('').forEach((L, k) => { if (L !== '-') firstDone[d(-1 - k)] = L; });
+  return { items, goals: [goalGpa, goalFamily, goalSleep], mdp: 'I finish this semester with a 3.7 GPA', firstDone };
 }

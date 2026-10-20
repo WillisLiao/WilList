@@ -1,7 +1,7 @@
 // Focus mode: one task and one big bubble that fills in as the session runs.
 // Real minutes are logged so WilList can learn how long things actually take.
 
-import { h, icon, rank, fmtMin, ask } from './ui.js';
+import { h, svg, icon, rank, fmtMin, ask } from './ui.js';
 import { TIPS } from './coach.js';
 import { dayRows } from './agenda.js';
 
@@ -22,7 +22,9 @@ export async function openFocus(ctx, row) {
 
   const active = () => elapsedMs + (runningSince ? Date.now() - runningSince : 0);
   const time = h('span', { class: 'time', role: 'timer' }, mmss(total));
-  const ring = h('div', { class: 'ring', 'aria-hidden': 'true' }, time);
+  // The ring fills as the session runs: a 2π·46 ≈ 289 stroke drawn over its track.
+  const arc = svg('circle', { cx: '50', cy: '50', r: '46', class: 'arc', pathLength: '100', 'stroke-dasharray': '100', 'stroke-dashoffset': '100' });
+  const ring = h('div', { class: 'ring' }, svg('svg', { viewBox: '0 0 100 100', 'aria-hidden': 'true' }, svg('circle', { cx: '50', cy: '50', r: '46', class: 'track' }), arc), time);
   const tip = h('p', { class: 'tip' }, TIPS.focus);
   const pauseBtn = h('button', { class: 'btn', type: 'button', onclick: () => {
     if (runningSince) { elapsedMs += Date.now() - runningSince; runningSince = null; pauseBtn.replaceChildren('Resume'); }
@@ -31,9 +33,8 @@ export async function openFocus(ctx, row) {
 
   const dlg = h('dialog', { class: 'focus', 'aria-label': `Focus: ${row.item.title}` },
     h('div', { class: 'focus-inner' },
-      h('div', { class: 'kicker' }, rank(row.label, row.priority)),
       h('h1', { class: 'display' }, row.item.title),
-      row.session ? h('p', { class: 'muted' }, `${row.session.label} · ${fmtMin(minutes)}`) : null,
+      h('p', { class: 'muted' }, rank(row.label, row.priority), ` ${row.session ? `${row.session.label} · ` : ''}${fmtMin(minutes)}`),
       ring,
       tip,
       h('div', { class: 'btn-row' },
@@ -43,7 +44,7 @@ export async function openFocus(ctx, row) {
 
   const tick = () => {
     const left = Math.max(0, total - Math.round(active() / 1000));
-    ring.style.setProperty('--p', String(Math.min(100, (1 - left / total) * 100)));
+    arc.setAttribute('stroke-dashoffset', String(100 - Math.min(100, (1 - left / total) * 100)));
     if (!finished) time.textContent = mmss(left);
     if (left === 0 && !finished) {
       finished = true;

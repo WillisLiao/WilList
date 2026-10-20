@@ -1,7 +1,7 @@
 // Building blocks shared by several screens.
 
-import { h, fill, icon, rank, tag, meta, hand, penMark, openSheet, TYPE_META, fmtMin } from './ui.js';
-import { diffDays, relDay, minToTime, timeToMin } from './dates.js';
+import { h, fill, icon, rank, tag, meta, openSheet, TYPE_META, fmtMin } from './ui.js';
+import { diffDays, relDay } from './dates.js';
 import { LETTERS, unsorted } from './agenda.js';
 import { TIPS } from './coach.js';
 import { suggestedLetter } from './store.js';
@@ -35,17 +35,16 @@ export function completeRow(li, r, ctx) {
 }
 
 // One line per item: tick, letter, title, and only the facts that matter today.
-export function rowEl(r, ctx, { dim = false, movable = true, startable = true, at = null } = {}) {
+export function rowEl(r, ctx, { dim = false, movable = true, startable = true, cls = '', tagName = 'li' } = {}) {
   const it = r.item;
   const minutes = r.session ? r.session.minutes : null;
   const facts = [
-    at ? tag(at, 'at') : null,
     minutes ? tag(fmtMin(minutes)) : null,
     r.overdue && r.session ? tag('missed', 'soon') : dueTag(it, ctx.today),
     it.priority === 'D' ? tag(it.delegateTo ? `with ${it.delegateTo}` : 'who can do it?', it.delegateTo ? '' : 'soon') : null,
     it.course ? tag(it.course, 'code') : null,
   ].filter(Boolean);
-  const li = h('li', { class: `item${dim ? ' dim' : ''}${it.priority === 'E' ? ' e' : ''}`, 'data-key': r.key },
+  const li = h(tagName, { class: `item r-${it.priority}${dim ? ' dim' : ''}${it.priority === 'E' ? ' e' : ''}${cls ? ` ${cls}` : ''}`, 'data-key': r.key },
     h('button', { class: 'check', type: 'button', 'aria-label': `Mark “${it.title}” done`, onclick: () => completeRow(li, r, ctx) }, icon('check')),
     h('div', { class: 'item-main', role: 'button', tabindex: '0', onclick: () => ctx.edit(it.id),
       onkeydown: (e) => { if (e.key === 'Enter') ctx.edit(it.id); } },
@@ -90,35 +89,15 @@ export function openSorter(ctx) {
         'aria-label': `${L}: ${LETTER_NAME[L]}, ${CONSEQUENCE[L]}${sugg === L ? ' (suggested)' : ''}`,
         onclick: () => { ctx.act.letter(it.id, L); i++; draw(); },
       },
-        h('span', { class: `rank big r-${L}` }, L, sugg === L ? penMark() : null),
+        h('span', { class: `rank big r-${L}` }, L),
         h('span', null, h('b', null, LETTER_NAME[L]), h('span', { class: 'd' }, CONSEQUENCE[L])),
-        sugg === L && why ? hand(`← ${why}`) : null))),
+        sugg === L ? h('span', { class: 'why' }, why ? `Suggested · ${why}` : 'Suggested') : null))),
       h('div', { class: 'btn-row' },
         h('button', { class: 'btn quiet', type: 'button', onclick: () => { i++; draw(); } }, 'Skip'),
         rest.length > 1 ? h('button', { class: 'btn sm', type: 'button', onclick: () => { ctx.act.acceptSuggestions(rest); close(); } }, `Use suggestions (${rest.length})`) : null));
   };
   draw();
   close = openSheet('Sort', body, { cls: 'sort-sheet' });
-}
-
-export function timetable(events, ctx, { isToday = true } = {}) {
-  if (!events.length) return null;
-  const nowMin = ctx.now.getHours() * 60 + ctx.now.getMinutes();
-  let marked = false;
-  return h('ul', { class: 'tt' }, events.map((ev) => {
-    const start = timeToMin(ev.time);
-    const end = start != null ? start + (ev.durationMin || 60) : null;
-    let state = '';
-    if (isToday && start != null) {
-      if (nowMin >= end) state = 'past';
-      else if (nowMin >= start) { state = 'now'; marked = true; } else if (!marked) { state = 'next'; marked = true; }
-    }
-    return h('li', { class: state || null, role: 'button', tabindex: '0', onclick: () => ctx.edit(ev.id) },
-      h('span', { class: 't' }, ev.time ? `${ev.time}–${minToTime(end)}` : 'All day'),
-      h('span', { class: 'what' }, ev.type === 'exam' ? 'Exam: ' : ev.type === 'presentation' ? 'Presenting: ' : '', ev.title,
-        state === 'now' ? h('small', null, 'now') : state === 'next' ? h('small', null, 'next') : null),
-      ev.course ? h('span', { class: 'code' }, ev.course) : h('span'));
-  }));
 }
 
 export function emptyNote(text) {

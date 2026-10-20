@@ -19,7 +19,8 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://localhost:${server.address().port}`;
 
-const browser = await chromium.launch();
+// Playwright's own Chromium if installed, else the system Chrome.
+const browser = await chromium.launch().catch(() => chromium.launch({ channel: 'chrome' }));
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, acceptDownloads: true });
 const page = await context.newPage();
 const errors = [];
@@ -55,7 +56,7 @@ assert.ok(exam.sessions.length > 0);
 step('quick add');
 
 // 2. the sorter asks one item at a time; the 25% exam comes with A circled
-await page.click('.banner.sort .btn');
+await page.click('.notice.sort .btn');
 await page.waitForSelector('.sorter');
 assert.match(await page.locator('#sort-title').textContent(), /Calc midterm/);
 await page.click('.option.suggested[data-letter="A"]');
@@ -65,7 +66,7 @@ await page.waitForSelector('.sorter', { state: 'detached' });
 s = await state();
 assert.equal(find(s, 'Calc midterm').priority, 'A');
 assert.equal(find(s, 'Email TA about regrade').priority, 'A');
-assert.equal(await page.locator('.banner.sort').count(), 0);
+assert.equal(await page.locator('.notice.sort').count(), 0);
 step('fill in letters');
 
 // 3. new item through the editor, with grade weight and size
@@ -114,21 +115,21 @@ step('complete + undo');
 
 // 6. number your A's: reorder tomorrow's list
 await page.click('.seg button:has-text("Tomorrow")');
-assert.ok(await page.evaluate(() => document.body.hasAttribute('data-night')));
-const planRows = page.locator('.page .item');
+assert.match(await page.locator('h1').textContent(), /^Wednesday\./);
+const planRows = page.locator('.ribbon .item:not(.ev)');
 assert.ok(await planRows.count() >= 2);
 const firstTitle = await planRows.first().locator('.item-title').textContent();
 await planRows.nth(1).locator('button[aria-label$="up"]').click();
-assert.notEqual(await page.locator('.page .item').first().locator('.item-title').textContent(), firstTitle);
+assert.notEqual(await page.locator('.ribbon .item:not(.ev)').first().locator('.item-title').textContent(), firstTitle);
 step('reorder');
 
-// 7. lock in tomorrow; back on Today the list carries suggested times
+// 7. lock in tomorrow; back on Today the work is fitted to times in the day
 await addQuick(['Buy printer ink', 'Chem quiz thu', 'Call advisor tomorrow 3pm']);
 assert.equal((await state()).items.length, 7);
 await page.click('button:has-text("Lock in tomorrow")');
 assert.equal((await state()).meta.lastPlanned, '2026-10-20');
 await page.click('.seg button:has-text("Today")');
-assert.ok(await page.locator('.page .meta .at').count() >= 1);
+assert.ok(await page.locator('.ribbon .slot:not(.now):not(.fixed) > .t').evaluateAll((els) => els.filter((e) => /\d\d:\d\d/.test(e.textContent)).length) >= 1);
 step('tomorrow + timed list');
 
 // 8. ahead: chart, coming up, last 7 days
@@ -251,7 +252,7 @@ step('downloads + erase/undo');
 
 // 16. radar balance, focus logging
 await page.goto(`${base}/#ahead`);
-if (await page.locator('.banner .btn:has-text("Balance")').count()) await page.click('.banner .btn:has-text("Balance")');
+if (await page.locator('.notice .btn:has-text("Balance")').count()) await page.click('.notice .btn:has-text("Balance")');
 await page.goto(`${base}/#today`);
 await page.waitForSelector('.qa1');
 // starting a B while A's remain asks first, in the page
@@ -270,7 +271,7 @@ step('radar + focus log');
 
 // 17. delete + undo, reload, offline shell
 const n = (await state()).items.length;
-await page.locator('.item-main').first().click();
+await page.locator('.ribbon .item:not(.ev):not(.done) .item-main').first().click();
 await page.click(`${sheet} button:has-text("Delete")`);
 assert.equal((await state()).items.length, n - 1);
 await page.click('.toast-btn:has-text("Undo")');

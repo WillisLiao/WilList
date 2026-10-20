@@ -65,7 +65,10 @@ test('Google class with a timezone, weekly rule and an exception date', () => {
     'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
   const [ev] = importICS(ics, today).items;
   assert.equal(ev.type, 'event');
-  assert.deepEqual(ev.recur, { freq: 'weekly', days: [2, 4], until: '2026-12-11' });
+  // UNTIL is a UTC instant; it lands on whatever local date that is on this device.
+  const untilAt = new Date(Date.UTC(2026, 11, 11, 23, 59, 59));
+  const untilLocal = `${untilAt.getFullYear()}-${String(untilAt.getMonth() + 1).padStart(2, '0')}-${String(untilAt.getDate()).padStart(2, '0')}`;
+  assert.deepEqual(ev.recur, { freq: 'weekly', days: [2, 4], until: untilLocal });
   assert.equal(ev.durationMin, 50);
   const d = icsDateTime({ value: '20260901T100000', params: { TZID: 'America/New_York' } });
   const expected = new Date(Date.UTC(2026, 8, 1, 14, 0)); // 10:00 EDT = 14:00 UTC

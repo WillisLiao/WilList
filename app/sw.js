@@ -1,10 +1,10 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
 // Bump VERSION whenever you ship changes so every file updates together.
-const VERSION = 'willist-v5';
+const VERSION = 'willist-v6';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
-  'fonts/bricolage.woff2', 'fonts/bricolage-ext.woff2', 'fonts/nanum-pen.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2',
+  'fonts/instrument-sans.woff2', 'fonts/instrument-sans-ext.woff2', 'fonts/instrument-serif.woff2', 'fonts/instrument-serif-ext.woff2',
   'src/app.js', 'src/agenda.js', 'src/ai.js', 'src/coach.js', 'src/components.js', 'src/dates.js', 'src/focus.js',
   'src/ics.js', 'src/importer.js', 'src/insights.js', 'src/parse.js', 'src/plan.js', 'src/reminders.js', 'src/sample.js',
   'src/store.js', 'src/timeline.js', 'src/ui.js',

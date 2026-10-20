@@ -1,11 +1,9 @@
 Fonts in this folder are licensed under the SIL Open Font License 1.1 (below).
 
-Bricolage Grotesque (bricolage.woff2, bricolage-ext.woff2):
-  Copyright 2022 The Bricolage Grotesque Project Authors (https://github.com/ateliertriay/bricolage)
-Nanum Pen Script (nanum-pen.woff2):
-  Copyright (c) 2010 NHN Corporation. All rights reserved. Font designed by Sandoll Communications Inc.
-IBM Plex Mono (plex-mono-400.woff2, plex-mono-500.woff2):
-  Copyright 2017 IBM Corp.
+Instrument Sans (instrument-sans.woff2, instrument-sans-ext.woff2):
+  Copyright 2022 The Instrument Sans Project Authors (https://github.com/Instrument/instrument-sans)
+Instrument Serif (instrument-serif.woff2, instrument-serif-ext.woff2):
+  Copyright 2022 The Instrument Serif Project Authors (https://github.com/Instrument/instrument-serif)
 
 -----------------------------------------------------------
 SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007

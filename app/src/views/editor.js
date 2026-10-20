@@ -1,4 +1,4 @@
-import { h, fill, append, lbl, penMark, openSheet, field, choice, TYPE_META, fmtMin, toast } from '../ui.js';
+import { h, fill, append, lbl, openSheet, field, choice, TYPE_META, fmtMin, toast } from '../ui.js';
 import { fmtShort, relDay, weekday } from '../dates.js';
 import { buildPlan, suggestEffort, studyLoad, PLANNED_TYPES, EFFORT_PRESETS } from '../plan.js';
 import { LETTERS } from '../agenda.js';
@@ -52,9 +52,9 @@ export function openEditor(ctx, id, prefill = {}) {
         h('ul', { class: 'sess' }, sessions.map((x) => h('li', { class: x.done ? 'done' : '' },
           h('input', { type: 'checkbox', checked: x.done, disabled: planDirty && !x.done, 'aria-label': `Session on ${x.date} done`,
             onchange: (e) => { x.done = e.target.checked; x.doneAt = x.done ? ctx.today : null; } }),
-          h('span', { class: 'mono' }, fmtShort(x.date)),
+          h('span', { class: 'num' }, fmtShort(x.date)),
           h('span', null, x.label),
-          h('span', { class: 'mono muted' }, fmtMin(x.minutes))))),
+          h('span', { class: 'small muted' }, fmtMin(x.minutes))))),
         existing && !planDirty ? h('button', { type: 'button', class: 'btn sm', onclick: () => { planDirty = true; renderPlan(); } }, 'Re-plan from today') : null) : null,
     ]);
   }
@@ -87,7 +87,7 @@ export function openEditor(ctx, id, prefill = {}) {
         LETTERS.map((L) => h('button', { type: 'button', role: 'radio', class: `option${draft.priority === L ? ' picked' : ''}${!draft.priority && sugg === L ? ' suggested' : ''}`,
           'aria-checked': String(draft.priority === L), 'aria-label': `${L}: ${LETTER_NAME[L]}, ${CONSEQUENCE[L]}`,
           onclick: () => { draft.priority = draft.priority === L ? null : L; planDirty = true; render(); } },
-          h('span', { class: `rank big r-${L}` }, L, !draft.priority && sugg === L ? penMark() : null),
+          h('span', { class: `rank big r-${L}` }, L),
           h('b', null, LETTER_NAME[L].split(' ')[0])))));
     fill(body,
       field('What', h('input', { type: 'text', value: draft.title, required: true, autocomplete: 'off', placeholder: 'Organic chem midterm',

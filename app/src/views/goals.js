@@ -1,6 +1,7 @@
-import { h, icon, tag, meta, band, openSheet, field, choice, toast } from '../ui.js';
-import { fmtInDays, fmtShort } from '../dates.js';
+import { h, icon, openSheet, field, choice, toast, titleRow, panel } from '../ui.js';
+import { fmtInDays, fmtShort, addDays } from '../dates.js';
 import { uid } from '../store.js';
+import { a1Streak } from '../insights.js';
 
 export const AREAS = [
   ['academic', 'School & career'],
@@ -70,15 +71,29 @@ function openQuestions(ctx) {
       h('textarea', { rows: '2', value: ctx.s.exercise?.[i] || '', onchange: (e) => ctx.act.setExercise(i, e.target.value) })))));
 }
 
-function goalCard(g, ctx) {
+function goalRow(g, ctx) {
   const next = ctx.s.items.find((it) => it.goalId === g.id && !it.done);
   return h('li', { class: 'goal' },
-    h('div', { class: 'goal-top' },
-      h('span', { class: 'ai', 'aria-hidden': 'true' }, icon(AREA_ICON[g.area] || 'goals')),
-      h('h4', { role: 'button', tabindex: '0', onclick: () => ctx.editGoal(g.id), onkeydown: (e) => { if (e.key === 'Enter') ctx.editGoal(g.id); } }, g.title)),
-    g.deadline ? meta(tag(`${fmtShort(g.deadline)} · ${fmtInDays(g.deadline, ctx.today)}`)) : null,
-    next ? h('button', { class: 'btn sm', type: 'button', onclick: () => ctx.edit(next.id) }, icon('arrow'), next.title)
-      : h('button', { class: 'btn sm', type: 'button', onclick: () => ctx.edit(null, { goalId: g.id, type: 'task', priority: 'A' }) }, icon('plus'), 'Next step'));
+    icon(AREA_ICON[g.area] || 'goals'),
+    h('div', { class: 'min0' },
+      h('h3', { role: 'button', tabindex: '0', onclick: () => ctx.editGoal(g.id), onkeydown: (e) => { if (e.key === 'Enter') ctx.editGoal(g.id); } }, g.title),
+      next ? h('button', { class: 'linkish strong', type: 'button', onclick: () => ctx.edit(next.id) }, icon('arrow'), next.title)
+        : h('button', { class: 'linkish strong', type: 'button', onclick: () => ctx.edit(null, { goalId: g.id, type: 'task', priority: 'A' }) }, icon('plus'), 'Next step')),
+    g.deadline ? h('span', { class: 'when num' }, fmtShort(g.deadline), h('small', null, fmtInDays(g.deadline, ctx.today))) : h('span', { class: 'when dash' }, '–'));
+}
+
+// Tracy: a habit takes about 21 days. One square per day: filled when the first thing
+// you finished that day was an A.
+function habit(ctx) {
+  const fd = ctx.s.meta.firstDone || {};
+  const days = Array.from({ length: 21 }, (_, i) => addDays(ctx.today, i - 20));
+  const hits = days.filter((d) => fd[d] === 'A').length;
+  return h('div', { class: 'habit' },
+    h('div', { class: 'habit-grid', role: 'img', 'aria-label': `The first thing done was an A on ${hits} of the last 21 days` },
+      days.map((d) => h('i', { class: fd[d] === 'A' ? 'a' : fd[d] ? 'other' : d === ctx.today ? 'today' : null }))),
+    h('div', { class: 'habit-figs' },
+      h('p', null, h('b', { class: 'num' }, String(hits)), h('span', null, 'of 21 days started with an A')),
+      h('p', null, h('b', { class: 'num' }, String(a1Streak(fd, ctx.today))), h('span', null, 'days in a row now'))));
 }
 
 export function renderGoals(ctx) {
@@ -88,13 +103,16 @@ export function renderGoals(ctx) {
     onchange: (e) => { ctx.ui.editMdp = false; ctx.act.setMdp(e.target.value.trim()); },
     onkeydown: (e) => { if (e.key === 'Escape') { ctx.ui.editMdp = false; ctx.refresh(); } } });
   if (ctx.ui.editMdp) setTimeout(() => input.focus(), 30);
+  const dated = s.goals.filter((g) => g.deadline).sort((a, b) => a.deadline.localeCompare(b.deadline));
   return h('div', { class: 'view goals' },
-    band('Goals',
-      h('div', { class: 'mdp' },
-        h('span', { class: 'lbl' }, 'The one goal that matters most'),
-        editing ? input : h('button', { class: 'mdp-text', type: 'button', onclick: () => { ctx.ui.editMdp = true; ctx.refresh(); } }, s.mdp))),
-    h('div', { class: 'col page' },
-      s.goals.length ? h('ul', { class: 'goal-list' }, s.goals.map((g) => goalCard(g, ctx))) : null,
-      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => ctx.editGoal(null) }, icon('plus'), 'Add goal')),
-      h('div', null, h('button', { class: 'link', type: 'button', onclick: () => openQuestions(ctx) }, 'Not sure? 7 questions'))));
+    titleRow(h('h1', null, 'Goals'),
+      dated.length ? `Next: ${dated[0].title}, ${fmtInDays(dated[0].deadline, ctx.today)}.` : 'Written down, with a date and a next step.',
+      h('button', { class: 'btn primary', type: 'button', onclick: () => ctx.editGoal(null) }, icon('plus'), 'Add goal')),
+    h('div', { class: 'grid' },
+      panel('The one that matters most', { cls: 'span-12 mdp', id: 'mdp-h' },
+        editing ? input : h('button', { class: 'mdp-text', type: 'button', onclick: () => { ctx.ui.editMdp = true; ctx.refresh(); } }, s.mdp)),
+      panel('Your goals', { cls: 'span-8', id: 'goals-h', aside: h('button', { class: 'card-link', type: 'button', onclick: () => openQuestions(ctx) }, 'Not sure? 7 questions') },
+        s.goals.length ? h('ul', { class: 'goal-list' }, s.goals.map((g) => goalRow(g, ctx)))
+          : h('p', { class: 'empty' }, 'No goals yet. Add one with a date.')),
+      panel('A1 first', { cls: 'span-4 stretch', id: 'habit-h' }, habit(ctx))));
 }

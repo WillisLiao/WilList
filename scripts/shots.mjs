@@ -19,7 +19,8 @@ const server = http.createServer((req, res) => {
 });
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
-const browser = await chromium.launch();
+// Playwright's own Chromium if installed, else the system Chrome.
+const browser = await chromium.launch().catch(() => chromium.launch({ channel: 'chrome' }));
 const viewport = size === 'desktop' ? { width: 1280, height: 860 } : { width: 390, height: 844 };
 const page = await (await browser.newContext({ viewport, deviceScaleFactor: 2, colorScheme: scheme, serviceWorkers: 'block' })).newPage();
 const errors = [];
@@ -29,6 +30,7 @@ await page.clock.install({ time: new Date('2026-10-20T09:40:00') });
 const shot = async (name, fullPage = false) => {
   await page.evaluate(() => document.getElementById('toast')?.classList.remove('show'));
   await page.mouse.move(0, 0);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(900);
   await page.screenshot({ path: path.join(out, `${scheme}-${size}-${name}.png`), fullPage });
 };
@@ -37,6 +39,9 @@ await page.waitForSelector('.view');
 await shot('0-welcome');
 await page.click('text=Try a sample');
 await page.waitForSelector('.qa1');
+// Finish one thing so the day shows what is behind you.
+await page.click('.slot:not(.hero-slot) .item.r-A .check');
+await page.waitForTimeout(700);
 await shot('1-today');
 await shot('1-today-full', true);
 await page.click('.seg button:has-text("Tomorrow")');
@@ -53,7 +58,7 @@ await page.click('#fab');
 await page.fill('#qa-input', 'Organic chem final dec 10 9am 30% #CHEM210');
 await shot('6-add');
 await page.keyboard.press('Escape');
-await page.click('.banner.sort .btn');
+await page.click('.notice.sort .btn');
 await shot('7-sort');
 await page.keyboard.press('Escape');
 await page.click('.qa1 .btn.primary');

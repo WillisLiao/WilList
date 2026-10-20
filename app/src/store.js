@@ -67,7 +67,7 @@ export function defaultOrder(item) {
   return item.date ? diffDays('2000-01-01', item.date) * 1000 + Math.floor(Math.random() * 900) : 9e9 + Date.now() % 1e6;
 }
 
-// The pencil mark in the sort tray. A share of the grade is the clearest
+// The suggested letter in the sorter. A share of the grade is the clearest
 // "consequence" a student has; without one, fall back on what kind of thing it is.
 export function suggestedLetter(type, weightPct = null) {
   if (weightPct != null && weightPct > 0) return weightPct >= 10 ? 'A' : weightPct >= 3 ? 'B' : 'C';

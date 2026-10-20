@@ -73,7 +73,7 @@ export function openImport(ctx, { tab = 'file' } = {}) {
     for (const r of st.rows) counts[r.kind]++;
     return h('section', { class: 'part' },
       sec('Found', { count: st.rows.length, note: `${counts.new} new · ${counts.update} changed · ${counts.same} already in` }),
-      st.cost ? h('p', { class: 'mono muted' }, `Coach read it: ${st.cost.tokens.toLocaleString()} tokens ≈ $${st.cost.usd.toFixed(3)}`) : null,
+      st.cost ? h('p', { class: 'small muted' }, `Coach read it: ${st.cost.tokens.toLocaleString()} tokens ≈ $${st.cost.usd.toFixed(3)}`) : null,
       h('ul', { class: 'pick' }, st.rows.map((r) => {
         const f = r.fields;
         return h('li', { class: r.keep ? 'on' : 'off' },

@@ -15,9 +15,9 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 | | |
 |---|---|
-| **Today** | Your A1, then the rest of the day in time order. Flip to **Tomorrow** in the evening to number your A's and lock in the plan. |
-| **Ahead** | 14 days at a glance: study load against your budget, exams and due dates, countdowns. |
-| **Goals** | The one goal that matters most, and the rest with their next step. |
+| **Today** | Your day in time order: classes as fixed blocks, your A1 card in the first free gap, a line for now, what you finished above it and what won't fit below the end of the day. The greeting says whether it all fits. Flip to **Tomorrow** in the evening to number your A's and lock in the plan. |
+| **Ahead** | Each A in the next two weeks as a peak, as high as its share of the grade and filled in as far as you've studied; then countdowns, study load against your budget, and the last 7 days. |
+| **Goals** | The one goal that matters most, your goals with their next step, and 21 days of starting with an A. |
 | **More** | Import semester, coach, Worry Buster, 20 Ideas, Pre-game, principles, calendar export, backup, settings. |
 
 ## Typing
@@ -51,7 +51,7 @@ No build step, no dependencies:
 ```sh
 npm start          # http://localhost:8080
 npm test           # unit tests (Node 18+)
-npm run test:e2e   # browser test: npm i --no-save playwright && npx playwright install chromium
+npm run test:e2e   # browser test: npm i --no-save playwright (uses Playwright's Chromium, else your Chrome)
 ```
 
 On a phone, open the site and **Add to Home Screen**: it installs like an app and works offline.
@@ -68,4 +68,5 @@ tests/        unit tests and a Playwright smoke test
 docs/         PRINCIPLES.md (Tracy → app), AI.md (coach)
 ```
 
-Fonts: Bricolage Grotesque, Nanum Pen Script, IBM Plex Mono (SIL OFL, `app/fonts/OFL.txt`).
+Fonts: Instrument Sans and Instrument Serif (SIL OFL, `app/fonts/OFL.txt`).
+The visual style was dealt and checked with [taste-skill](https://github.com/Leonxlnx/taste-skill)'s app-screen rules.

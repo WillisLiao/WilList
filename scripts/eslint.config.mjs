@@ -4,7 +4,7 @@ export default [{
   files: ['**/*.js', '**/*.mjs'],
   languageOptions: {
     ecmaVersion: 2023, sourceType: 'module',
-    globals: g(['window', 'document', 'navigator', 'localStorage', 'location', 'Notification', 'URL', 'Blob', 'Node', 'TextEncoder',
+    globals: g(['window', 'document', 'navigator', 'localStorage', 'location', 'Notification', 'ResizeObserver', 'URL', 'Blob', 'Node', 'TextEncoder',
       'Intl', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'structuredClone', 'console', 'self', 'caches', 'fetch',
       'globalThis', 'process', 'Response', 'Headers', 'getComputedStyle']),
   },

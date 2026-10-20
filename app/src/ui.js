@@ -1,4 +1,4 @@
-// Tiny DOM helpers and the shared pieces of the binder: icons, letter chips, pen marks, sheets.
+// Tiny DOM helpers and the shared pieces: icons, letter pills, panels, sheets.
 // User text is always added as text nodes, never as HTML.
 
 export function h(tag, props, ...children) {
@@ -104,27 +104,29 @@ export function fmtMin(min) {
   return hh ? (mm ? `${hh}h ${mm}m` : `${hh}h`) : `${mm} min`;
 }
 
-// ---- the student's marks ----
-
-// The letter you filled in: "A1", "B", … A's wear the highlighter.
+// The letter you gave it: "A1", "B", ... as a small pill. A's take the accent tint.
 export function rank(text, letter = text?.[0], cls = '') {
   return h('span', { class: `rank r-${letter} ${cls}`.trim() }, text);
 }
 
-export function hand(text, cls = '') {
-  return h('span', { class: `hand ${cls}`.trim() }, text);
+// WilList's mark: two ticks that make a W.
+export function mark(cls = 'mark') {
+  return svg('svg', { class: cls, viewBox: '0 0 24 24', 'aria-hidden': 'true' },
+    svg('path', { d: 'M2.5 9.5l4 8 4.5-9' }), svg('path', { d: 'M11 9.5l2.5 8L21.5 3.5' }));
 }
 
-// A loose pen circle drawn around whatever it sits in (the parent needs position: relative).
-export function penMark() {
-  return svg('svg', { class: 'pen-mark', viewBox: '0 0 60 40', preserveAspectRatio: 'none', 'aria-hidden': 'true' },
-    svg('path', { d: 'M33 4.5C19 2.5 5.5 9 4.5 19.5 3.5 30 17 36.5 32 35.5 46 34.5 56 27 55 17.5 54 9 42 3.5 27 5.5', 'vector-effect': 'non-scaling-stroke' }));
+// The top of every screen: one h1, an optional grey line under it, actions on the right.
+export function titleRow(title, sub, ...actions) {
+  return h('header', { class: 'title-row' },
+    h('div', { class: 'min0' }, title, sub ? h('p', { class: 'sub' }, sub) : null),
+    actions.some(Boolean) ? h('div', { class: 'title-act' }, actions) : null);
 }
 
-// A small hand-drawn arrow for margin notes.
-export function penArrow(dir = 'down') {
-  const d = dir === 'right' ? 'M3 13c6-6 15-8 26-4M24 4l5 5-6 3' : 'M4 4c8 1 16 5 20 14M18 15l6 4 2-7';
-  return svg('svg', { viewBox: '0 0 34 22', 'aria-hidden': 'true' }, svg('path', { d }));
+// A tonal panel: a 14px title (and whatever sits at its right), then its content.
+export function panel(title, { aside = null, cls = '', id = null } = {}, ...children) {
+  return h('section', { class: `panel ${cls}`.trim(), 'aria-labelledby': id },
+    title ? h('header', null, h('h2', { id }, title), aside) : null,
+    children);
 }
 
 export function meta(...parts) {
@@ -140,24 +142,11 @@ export function lbl(text, tagName = 'span', extra = {}) {
   return h(tagName, { class: 'lbl', ...extra }, text);
 }
 
-export function progress(done, total, { warn = false, label } = {}) {
-  const p = total ? Math.round((done / total) * 100) : 0;
-  return h('div', { class: 'progress' },
-    h('div', { class: `bar${warn ? ' warn' : ''}`, role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(total), 'aria-valuenow': String(done), 'aria-label': label || null, style: { '--p': String(p) } }, h('i')),
-    h('span', null, label || `${done} of ${total}`));
-}
-
 export function sec(title, { count = null, note = null, level = 'h2', id = null } = {}) {
   return h('div', { class: 'sec' },
     h(level, { id }, title),
     note ? h('span', { class: 'note' }, note) : null,
     count != null ? h('span', { class: 'count' }, String(count)) : null);
-}
-
-// The coloured divider at the top of every page: a tab at this section's position, then its band.
-export function band(tabLabel, ...children) {
-  return h('header', { class: 'band' },
-    h('div', { class: 'col' }, h('span', { class: 'tab', 'aria-hidden': 'true' }, tabLabel), children));
 }
 
 let toastTimer = null;

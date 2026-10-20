@@ -7,7 +7,7 @@ import { planImport } from './importer.js';
 import { dayRows, missedSessions } from './agenda.js';
 import { logFocus } from './insights.js';
 import { todayISO, fmtRelDay, relDay } from './dates.js';
-import { h, fill, bubble, tag, toast, TYPE_META, fmtMin, formLabel } from './ui.js';
+import { h, fill, icon, rank, tag, meta, toast, openSheet, TYPE_META, fmtMin } from './ui.js';
 import { hintFor, doneLine } from './coach.js';
 import { renderToday } from './views/today.js';
 import { renderRadar } from './views/radar.js';
@@ -31,7 +31,7 @@ const go = (r) => { location.hash = r; };
 
 function ctx() {
   const now = new Date();
-  return { store, s: store.state, today: todayISO(now), now, ui, go, edit, editGoal, focus, openImport: () => openImport(ctx()), refresh: render, act };
+  return { store, s: store.state, today: todayISO(now), now, ui, go, edit, editGoal, focus, quickAdd: openQuickAdd, openImport: () => openImport(ctx()), refresh: render, act };
 }
 
 function edit(id, prefill) { openEditor(ctx(), id, prefill); }
@@ -44,6 +44,7 @@ function render() {
   const keepScroll = r === lastRendered;
   const y = window.scrollY;
   main.replaceChildren(ROUTES[r][1](ctx()));
+  document.body.dataset.section = r;
   drawNav(r);
   document.body.classList.toggle('no-tips', !store.state.settings.tips);
   document.title = r === 'today' ? 'WilList' : `${ROUTES[r][0]} · WilList`;
@@ -224,65 +225,82 @@ const act = {
   },
 };
 
-// ---- quick add ----
-const form = document.getElementById('qa');
-const input = document.getElementById('qa-input');
-const preview = document.getElementById('qa-preview');
+// ---- quick add: a sheet that stays open so you can empty your head in one go ----
 const REPEAT = { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly' };
+const EXAMPLES = ['Chem quiz thu 2pm', 'Essay due nov 3 25% #HIST', 'Lab every wed 2-5pm', 'Email TA about regrade'];
 
-function parseInput() {
-  return quickAdd(input.value, { now: new Date(), dateOrder: dateOrder(store.state) });
+function openQuickAdd(initial = '') {
+  if (document.getElementById('qa')) { document.getElementById('qa-input').focus(); return; }
+  const input = h('input', { id: 'qa-input', class: 'qa-input', type: 'text', enterkeyhint: 'done', spellcheck: 'false', autocomplete: 'off',
+    placeholder: 'Chem quiz thu 2pm', value: initial, 'aria-label': 'Write it down' });
+  const preview = h('div', { id: 'qa-preview', class: 'qa-preview', 'aria-live': 'polite' });
+  const added = h('ul', { class: 'qa-added', 'aria-live': 'polite' });
+  const parseInput = () => quickAdd(input.value, { now: new Date(), dateOrder: dateOrder(store.state) });
+  const renderPreview = () => {
+    if (!input.value.trim()) { fill(preview); preview.classList.remove('show'); return; }
+    const p = parseInput();
+    const t = today();
+    const hint = store.state.settings.tips ? hintFor(p.hints) : null;
+    fill(preview,
+      h('span', { class: 'lbl' }, 'Reads as'),
+      p.priority ? rank(p.rank ? `${p.priority}${p.rank}` : p.priority, p.priority) : null,
+      h('span', { class: 'qa-title' }, p.title),
+      meta(
+        tag(TYPE_META[p.type].word),
+        p.date ? tag(`${p.recur ? 'from ' : ''}${fmtRelDay(p.date, t)}${p.time ? ` ${p.time}` : ''}`) : null,
+        p.recur ? tag(REPEAT[p.recur.freq]) : null,
+        p.durationMin ? tag(fmtMin(p.durationMin)) : null,
+        p.weightPct ? tag(`${p.weightPct}% of grade`, 'stake') : null,
+        p.course ? tag(p.course, 'code') : null),
+      hint ? h('span', { class: 'qa-hint hand' }, hint) : null);
+    preview.classList.add('show');
+  };
+  input.addEventListener('input', renderPreview);
+  let close = null;
+  const form = h('form', { id: 'qa', class: 'qa', autocomplete: 'off', onsubmit: (e) => {
+    e.preventDefault();
+    if (!input.value.trim()) { input.focus(); return; }
+    const it = act.createItem(parseInput());
+    added.prepend(h('li', null, icon('check'), h('span', null, addedMessage(it))));
+    input.value = '';
+    renderPreview();
+    input.focus();
+  } },
+    input,
+    preview,
+    h('div', { class: 'btn-row' },
+      h('button', { type: 'submit', class: 'btn primary' }, icon('plus'), 'Add'),
+      h('button', { type: 'button', id: 'qa-more', class: 'btn', onclick: () => {
+        const prefill = input.value.trim() ? parseInput() : {};
+        close();
+        edit(null, prefill);
+      } }, 'Add with details'),
+      h('button', { type: 'button', class: 'btn quiet', onclick: () => { close(); openImport(ctx()); } }, icon('import'), 'A whole semester')),
+    h('div', { class: 'examples', 'aria-label': 'Examples' }, EXAMPLES.map((ex) => h('button', { type: 'button', onclick: () => { input.value = ex; renderPreview(); input.focus(); } }, ex))),
+    added);
+  close = openSheet('Write it down', form, { cls: 'qa-sheet' });
+  renderPreview();
+  setTimeout(() => input.focus(), 30);
 }
 
-function renderPreview() {
-  if (!input.value.trim()) { fill(preview); preview.classList.remove('show'); return; }
-  const p = parseInput();
-  const t = today();
-  const hint = store.state.settings.tips ? hintFor(p.hints) : null;
-  fill(preview,
-    formLabel('Reads as'),
-    h('span', { class: 'qa-title' }, p.title),
-    tag(TYPE_META[p.type].code),
-    p.date ? tag(`${p.recur ? 'from ' : ''}${fmtRelDay(p.date, t)}${p.time ? ` ${p.time}` : ''}`) : null,
-    p.recur ? tag(REPEAT[p.recur.freq]) : null,
-    p.durationMin ? tag(fmtMin(p.durationMin)) : null,
-    p.weightPct ? tag(`${p.weightPct}% of grade`, 'stake') : null,
-    p.course ? tag(p.course, 'code') : null,
-    p.priority ? bubble(p.priority, { filled: false }) : null,
-    hint ? h('span', { class: 'qa-hint' }, hint) : null);
-  preview.classList.add('show');
-}
-
-input.addEventListener('input', renderPreview);
-form.addEventListener('submit', (e) => {
-  e.preventDefault();
-  if (!input.value.trim()) { input.focus(); return; }
-  act.createItem(parseInput());
-  input.value = '';
-  renderPreview();
-});
-document.getElementById('qa-more').addEventListener('click', () => {
-  const prefill = input.value.trim() ? parseInput() : {};
-  input.value = '';
-  renderPreview();
-  edit(null, prefill);
-});
+const fab = document.getElementById('fab');
+fab.prepend(icon('plus'));
+fab.addEventListener('click', () => openQuickAdd());
 document.addEventListener('keydown', (e) => {
   const tagName = document.activeElement?.tagName;
-  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) && !document.querySelector('dialog[open]')) {
+  if ((e.key === '/' || e.key === 'n') && !e.metaKey && !e.ctrlKey && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) && !document.querySelector('dialog[open]')) {
     e.preventDefault();
-    input.focus();
+    openQuickAdd();
   }
-  if (e.key === 'Escape' && document.activeElement === input) { input.value = ''; renderPreview(); input.blur(); }
 });
 
-// ---- header date + nav ----
-const stamp = document.getElementById('formdate');
-if (stamp) stamp.textContent = `Form A–E · ${today().slice(5).replace('-', '/')}/${today().slice(2, 4)}`;
+// ---- nav: one divider tab per section ----
 const nav = document.getElementById('nav');
+const links = h('div', { class: 'nav-links', style: { display: 'contents' } });
+nav.append(h('span', { class: 'brand', 'aria-hidden': 'true' }, 'Wil', h('span', { class: 'hl' }, 'List')), links);
 function drawNav(current) {
-  fill(nav, Object.entries(ROUTES).map(([key, [label]]) => h('a', { href: `#${key}`, 'aria-current': key === current ? 'page' : null },
-    bubble('', { filled: key === current }), formLabel(label))));
+  fill(links, Object.entries(ROUTES).map(([key, [label]]) => h('a', { href: `#${key}`, 'data-s': key, 'aria-current': key === current ? 'page' : null },
+    h('span', { class: 'pill' }, icon(key)), h('span', null, label))));
 }
 
 store.subscribe(render);

@@ -1,4 +1,4 @@
-import { h, fill, icon, bubble, tag, sec, openSheet, field, toast, download, formLabel, ask } from '../ui.js';
+import { h, fill, icon, tag, sec, band, lbl, openSheet, field, toast, download, ask } from '../ui.js';
 import { fmtShort, diffDays } from '../dates.js';
 import { TIPS, PRINCIPLES } from '../coach.js';
 import { buildICS } from '../ics.js';
@@ -19,7 +19,7 @@ function worryBuster(ctx, existing) {
     field('1. What exactly are you worried about?', ta('worry', 3, 'I might fail the Organic Chem midterm'), 'Write it down. Accurate diagnosis is half the cure. If it is several worries, number them.'),
     field('Get the facts: what could you check or ask?', ta('facts', 2, 'Ask the TA what is on it; check my grade so far'), 'Most worries shrink once you have the real facts.'),
     field('2. What is the worst possible outcome?', ta('worst', 2, 'I fail it and retake the course in summer')),
-    h('label', { class: 'check' },
+    h('label', { class: 'check-row' },
       h('input', { type: 'checkbox', checked: w.accepted, onchange: (e) => { w.accepted = e.target.checked; } }),
       h('span', null, h('b', null, '3. If it happens, I will accept it. '), 'It would hurt, but it would not break me.')),
     field('4. Start improving on the worst, right now', ta('actions', 4, 'One action per line\nGo to office hours Thursday\nDo 20 practice problems'), 'The antidote to worry is purposeful action. Each line becomes a task.'),
@@ -33,7 +33,7 @@ function worryBuster(ctx, existing) {
       } }, 'Save and add the actions'),
       h('button', { class: 'btn quiet', type: 'button', onclick: () => close() }, 'Close')),
     ctx.s.worries.length ? h('details', null,
-      h('summary', { class: 'form' }, `Past worries (${ctx.s.worries.length})`),
+      h('summary', { class: 'lbl' }, `Past worries (${ctx.s.worries.length})`),
       h('ul', { class: 'lines' }, [...ctx.s.worries].reverse().map((x) => h('li', null,
         tag(fmtShort(x.date)),
         h('span', { class: 'grow', role: 'button', tabindex: '0', onclick: () => { close(); worryBuster(ctx, x); } }, x.worry.split('\n')[0] || '(empty)'))))) : null);
@@ -44,23 +44,23 @@ function mindStorm(ctx) {
   const st = { id: uid(), date: ctx.today, question: '', ideas: Array(20).fill(''), picked: null };
   let close = null;
   const counter = h('span', { class: 'count' }, '0/20');
-  const list = h('ol', { class: 'rows' });
+  const list = h('ol', { class: 'ideas' });
   const draw = () => {
     counter.textContent = `${st.ideas.filter((x) => x.trim()).length}/20`;
-    list.querySelectorAll('.pickme').forEach((b, i) => b.classList.toggle('filled', st.picked === i));
+    list.querySelectorAll('.pickme').forEach((b, i) => b.setAttribute('aria-pressed', String(st.picked === i)));
   };
-  fill(list, st.ideas.map((_, i) => h('li', { class: 'ans donerow' },
-    bubble(String(i + 1), { button: true, cls: 'pickme', 'aria-label': `Act on idea ${i + 1}`, onclick: () => { st.picked = i; draw(); } }),
+  fill(list, st.ideas.map((_, i) => h('li', null,
+    h('button', { class: 'pickme', type: 'button', 'aria-pressed': 'false', 'aria-label': `Act on idea ${i + 1}`, onclick: () => { st.picked = i; draw(); } }, String(i + 1)),
     h('input', { type: 'text', 'aria-label': `Idea ${i + 1}`, oninput: (e) => { st.ideas[i] = e.target.value; draw(); } }))));
   const body = h('div', { class: 'fields' },
     h('p', { class: 'lede' }, TIPS.mindstorm),
     field('Your goal or situation, as a question', h('input', { type: 'text', placeholder: 'What can I do to raise my GPA to 3.7 this semester?', oninput: (e) => { st.question = e.target.value; } })),
-    h('div', { class: 'sec' }, h('h3', { class: 'form' }, 'Twenty answers'), counter),
+    h('div', { class: 'sec' }, h('h3', null, 'Twenty answers'), counter, h('span', { class: 'note' }, 'Tap a number to pick the one you’ll act on.')),
     list,
     actions(
       h('button', { class: 'btn primary', type: 'button', onclick: () => {
         const pick = st.picked != null ? st.ideas[st.picked].trim() : '';
-        if (!pick) { toast('Fill in the bubble of one idea to act on now.'); return; }
+        if (!pick) { toast('Tap the number of one idea to act on now.'); return; }
         ctx.act.saveStorm(st);
         ctx.act.createItem({ title: pick, type: 'task', priority: 'A', notes: st.question });
         close();
@@ -96,7 +96,7 @@ function principles() {
         h('summary', null, h('b', null, title)),
         h('div', { class: 'fields' },
           h('p', null, idea),
-          h('p', null, formLabel('In WilList'), ' ', how),
+          h('p', null, lbl('In WilList: '), how),
           h('p', { class: 'mono muted' }, src)))))));
   openSheet('Principles', body);
 }
@@ -105,11 +105,11 @@ function exportCalendar(ctx) {
   let includeSessions = true;
   const body = h('div', { class: 'fields' },
     h('p', null, 'A browser can only remind you while WilList is open. For reminders you can count on, put everything in your phone’s calendar: repeating classes, exams, presentations and deadlines with alarms, plus your study sessions and start days.'),
-    h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: true, onchange: (e) => { includeSessions = e.target.checked; } }), h('span', null, 'Include study sessions and start days')),
-    h('ul', { class: 'lines' },
-      h('li', null, formLabel('iPhone'), h('span', { class: 'grow' }, 'Download, then tap Add All.')),
-      h('li', null, formLabel('Google'), h('span', { class: 'grow' }, 'On a computer: Settings → Import & export → Import.')),
-      h('li', null, formLabel('Outlook'), h('span', { class: 'grow' }, 'Open the file, or Add calendar → Upload from file.'))),
+    h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: true, onchange: (e) => { includeSessions = e.target.checked; } }), h('span', null, 'Include study sessions and start days')),
+    h('ul', { class: 'how' },
+      h('li', null, h('b', null, 'iPhone'), h('span', null, 'Download, then tap Add All.')),
+      h('li', null, h('b', null, 'Google'), h('span', null, 'On a computer: Settings → Import & export → Import.')),
+      h('li', null, h('b', null, 'Outlook'), h('span', null, 'Open the file, or Add calendar → Upload from file.'))),
     h('p', { class: 'small muted' }, 'It is a snapshot. Export again after big changes.'),
     actions(h('button', { class: 'btn primary', type: 'button', onclick: () => {
       download(`willist-${ctx.today}.ics`, buildICS(ctx.s.items, { today: ctx.today, includeSessions }), 'text/calendar');
@@ -141,7 +141,7 @@ function backup(ctx) {
     sec('Other'),
     h('div', { class: 'btn-row' },
       h('button', { class: 'btn', type: 'button', onclick: () => { close(); ctx.act.loadSample(); } }, 'Load a sample week'),
-      h('button', { class: 'btn ink', type: 'button', onclick: async () => {
+      h('button', { class: 'btn danger', type: 'button', onclick: async () => {
         if (!(await ask('Erase everything?', 'Every item, goal and setting in WilList on this device. Download a backup first if you might want it back.', 'Yes, erase everything', { danger: true }))) return;
         ctx.act.resetAll();
         close();
@@ -164,7 +164,7 @@ function settings(ctx) {
     h('div', { class: 'two' },
       num('bufferDays', 'Finish deadlines early by (days)', null, { min: '0', step: '1' }),
       num('taskMin', 'A quick task takes (minutes)', 'Used to place tasks in My day.', { min: '5', step: '5' })),
-    pace.length ? h('div', { class: 'f' }, formLabel('Your pace'),
+    pace.length ? h('div', { class: 'f' }, lbl('Your pace'),
       h('p', null, pace.map(([t, v]) => `${t} ${v}×`).join(' · '), ' ',
         h('button', { class: 'link', type: 'button', onclick: () => { st.calib = {}; toast('Pace reset. Save to apply.'); } }, 'Reset'))) : null,
     sec('My day'),
@@ -176,8 +176,8 @@ function settings(ctx) {
       h('option', { value: '', selected: !st.dateOrder }, 'Follow my device'),
       h('option', { value: 'mdy', selected: st.dateOrder === 'mdy' }, 'Month/day (March 4)'),
       h('option', { value: 'dmy', selected: st.dateOrder === 'dmy' }, 'Day/month (3 April)'))),
-    h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: st.tips, onchange: (e) => { st.tips = e.target.checked; } }), h('span', null, 'Show coaching tips while typing')),
-    h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: st.notify, onchange: async (e) => {
+    h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: st.tips, onchange: (e) => { st.tips = e.target.checked; } }), h('span', null, 'Show coaching tips while typing')),
+    h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: st.notify, onchange: async (e) => {
       st.notify = e.target.checked;
       if (st.notify && 'Notification' in window && Notification.permission !== 'granted') {
         const p = await Notification.requestPermission();
@@ -188,28 +188,37 @@ function settings(ctx) {
   close = openSheet('Settings', body);
 }
 
+// [title, description, icon, colour (a divider), open]
 const TOOLS = [
-  ['Bring in your semester', 'Calendar files from Canvas, Moodle, Blackboard or Google, or a pasted syllabus.', (ctx) => openImport(ctx)],
-  ['Coach', 'Ask for help planning, or let the coach read a syllabus for you. Optional, uses your own Anthropic key.', (ctx) => openCoach(ctx)],
-  ['Worry Buster', 'Stressed about an exam or a deadline? Four steps from worry to action.', worryBuster],
-  ['20 Ideas', 'Stuck? Ask a question, write 20 answers, act on one.', mindStorm],
-  ['Pre-game', 'Two minutes of mental rehearsal before an exam or presentation.', preGame],
-  ['Principles', 'The Brian Tracy ideas behind WilList, and where each one lives.', () => principles()],
-  ['Add to calendar', 'Export everything as .ics for reminders on your phone.', exportCalendar],
-  ['Backup & data', 'Download, restore, sample data, erase.', backup],
-  ['Settings', 'Study budget, session length, your day’s hours, reminders.', settings],
+  ['Coach', 'Ask for help planning, or let the coach read a syllabus. Uses your own Anthropic key.', 'coach', 'plan', (ctx) => openCoach(ctx)],
+  ['Worry Buster', 'Stressed about an exam or a deadline? Four steps from worry to action.', 'worry', 'radar', worryBuster],
+  ['20 Ideas', 'Stuck? Ask a question, write 20 answers, act on one.', 'ideas', 'today', mindStorm],
+  ['Pre-game', 'Two minutes of mental rehearsal before an exam or presentation.', 'pregame', 'goals', preGame],
+  ['Principles', 'The Brian Tracy ideas behind WilList, and where each one lives.', 'principles', 'tools', () => principles()],
+  ['Add to calendar', 'Export everything as .ics for reminders on your phone.', 'calendar', 'radar', exportCalendar],
+  ['Backup & data', 'Download, restore, sample data, erase.', 'backup', 'goals', backup],
+  ['Settings', 'Study budget, session length, your day’s hours, reminders.', 'settings', null, settings],
 ];
 
 export function renderTools(ctx) {
   const open = ctx.s.items.filter((it) => !it.done).length;
   return h('div', { class: 'view tools' },
-    h('header', { class: 'dayhead' },
-      h('h1', { class: 'display page-title' }, 'Tools'),
-      h('span', { class: 'mono muted' }, `${open} open · ${ctx.s.goals.length} goals · coach ${getKey() ? 'on' : 'off'}`)),
-    h('ul', { class: 'index' }, TOOLS.map(([title, desc, fn]) => h('li', null,
-      h('button', { type: 'button', onclick: () => fn(ctx) },
-        h('b', null, title),
-        icon('next'),
-        h('span', { class: 'd' }, desc))))),
-    h('p', { class: 'foot' }, 'Your planner stays on this device. ', h('button', { class: 'link', type: 'button', onclick: () => backup(ctx) }, 'Back it up.')));
+    band('Tools',
+      h('div', { class: 'band-top' },
+        h('div', { class: 'min0' },
+          h('h1', { class: 'display' }, 'Tools'),
+          h('p', { class: 'sub' }, `${open} open · ${ctx.s.goals.length} goal${ctx.s.goals.length === 1 ? '' : 's'} · coach ${getKey() ? 'on' : 'off'}`))),
+      h('div', { class: 'hero feature' },
+        h('span', { class: 'fi' }, icon('import')),
+        h('div', { class: 'part' },
+          h('h2', null, 'Bring in your semester'),
+          h('p', null, 'Calendar files from Canvas, Moodle, Blackboard, Google or Outlook, or a pasted syllabus. Everything dated, in one go.'),
+          h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => openImport(ctx) }, icon('import'), 'Bring it in'))))),
+    h('div', { class: 'col page' },
+      h('ul', { class: 'tiles' }, TOOLS.map(([title, desc, ic, s, fn]) => h('li', null,
+        h('button', { class: 'tile', type: 'button', 'data-s': s, onclick: () => fn(ctx) },
+          h('span', { class: 'ti' }, icon(ic)),
+          h('b', null, title),
+          h('span', null, desc))))),
+      h('p', { class: 'foot' }, 'Your planner stays on this device. ', h('button', { class: 'link', type: 'button', onclick: () => backup(ctx) }, 'Back it up.'))));
 }

@@ -1,7 +1,7 @@
 // Focus mode: one task and one big bubble that fills in as the session runs.
 // Real minutes are logged so WilList can learn how long things actually take.
 
-import { h, bubble, fmtMin, formLabel, ask } from './ui.js';
+import { h, icon, rank, fmtMin, ask } from './ui.js';
 import { TIPS } from './coach.js';
 import { dayRows } from './agenda.js';
 
@@ -32,14 +32,14 @@ export async function openFocus(ctx, row) {
 
   const dlg = h('dialog', { class: 'focus', 'aria-label': `Focus: ${row.item.title}` },
     h('div', { class: 'focus-inner' },
-      formLabel(`${row.label} · Focus`),
+      h('div', { class: 'kicker' }, rank(row.label, row.priority), 'Focus. One thing, until it’s done.'),
       h('h1', { class: 'display' }, row.item.title),
       row.session ? h('p', { class: 'muted' }, `${row.session.label} · ${fmtMin(minutes)}`) : null,
       ring,
       tip,
       h('div', { class: 'btn-row' },
         pauseBtn,
-        h('button', { class: 'btn primary', type: 'button', onclick: () => { completed = true; close(); ctx.act.complete(row); } }, bubble('', { size: 'sm' }), 'Done'),
+        h('button', { class: 'btn primary', type: 'button', onclick: () => { completed = true; close(); ctx.act.complete(row); } }, icon('check'), 'Done'),
         h('button', { class: 'btn quiet', type: 'button', onclick: () => close() }, 'Stop'))));
 
   const tick = () => {

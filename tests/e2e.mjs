@@ -33,15 +33,20 @@ const find = (s, title) => s.items.find((x) => x.title === title);
 const step = (n) => console.log('ok', n);
 const sheet = 'dialog.slip[open]';
 const readFile = async (dl) => fs.promises.readFile(await dl.path(), 'utf8');
+const until = (fn, arg) => page.waitForFunction(fn, arg);
+const addQuick = async (lines, how = 'fab') => {
+  if (how === 'key') await page.keyboard.press('/'); else await page.click('#fab');
+  await page.waitForSelector('#qa-input');
+  for (const t of lines) { await page.fill('#qa-input', t); await page.press('#qa-input', 'Enter'); }
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#qa', { state: 'detached' });
+};
 
 await page.goto(`${base}/`);
 await page.waitForSelector('.view');
 
-// 1. quick add: a class, a weighted exam, a plain task
-for (const t of ['Calculus lecture mwf 10-10:50am #MATH201', 'Calc midterm oct 30 9am 25% #MATH201', 'Email TA about regrade']) {
-  await page.fill('#qa-input', t);
-  await page.press('#qa-input', 'Enter');
-}
+// 1. quick add (opened with the / key): a class, a weighted exam, a plain task
+await addQuick(['Calculus lecture mwf 10-10:50am #MATH201', 'Calc midterm oct 30 9am 25% #MATH201', 'Email TA about regrade'], 'key');
 let s = await state();
 assert.equal(s.items.length, 3);
 const exam = find(s, 'Calc midterm');
@@ -49,24 +54,29 @@ assert.equal(exam.weightPct, 25);
 assert.ok(exam.sessions.length > 0);
 step('quick add');
 
-// 2. the tray suggests A for a 25% exam; inking the pencil marks letters everything suggested
-assert.equal(await page.locator('.tray-row').count(), 2);
-await page.locator('.tray-row', { hasText: 'Email TA' }).locator('button.bubble').first().click();
-s = await state();
-assert.equal(find(s, 'Email TA about regrade').priority, 'A');
-await page.locator('.tray-row', { hasText: 'Calc midterm' }).locator('button.bubble.ghost').click();
+// 2. the sorter asks one item at a time; the 25% exam comes with A circled
+await page.click('.banner.sort');
+await page.waitForSelector('.sorter');
+assert.match(await page.locator('#sort-title').textContent(), /Calc midterm/);
+await page.click('.option.suggested[data-letter="A"]');
+await until(() => document.querySelector('#sort-title')?.textContent.includes('Email TA'));
+await page.click('.option[data-letter="A"]');
+await page.waitForSelector('.sorter', { state: 'detached' });
 s = await state();
 assert.equal(find(s, 'Calc midterm').priority, 'A');
+assert.equal(find(s, 'Email TA about regrade').priority, 'A');
+assert.equal(await page.locator('.banner.sort').count(), 0);
 step('fill in letters');
 
 // 3. new item through the editor, with grade weight and size
+await page.click('#fab');
 await page.fill('#qa-input', 'History essay due nov 3');
 await page.click('#qa-more');
 await page.waitForSelector(sheet);
 await page.fill(`${sheet} input[type=number] >> nth=0`, '30');
 await page.locator(`${sheet} input[type=number] >> nth=0`).blur();
 await page.click(`${sheet} .choice button:has-text("Project")`);
-await page.click(`${sheet} .letters-pick button:has-text("Mild")`);
+await page.click(`${sheet} .letters-pick button:has-text("Should do")`);
 assert.ok(await page.locator(`${sheet} .sess li`).count() > 3);
 await page.click(`${sheet} button[type=submit]`);
 s = await state();
@@ -94,6 +104,7 @@ await page.goto(`${base}/#today`);
 await page.waitForSelector('.qa1');
 const before = (await state()).meta.doneCount || 0;
 await page.click('.qa1 button:has-text("Done")');
+await until((n) => (JSON.parse(localStorage.getItem('willist.v1')).meta.doneCount || 0) === n + 1, before);
 s = await state();
 assert.equal(s.meta.doneCount, before + 1);
 assert.ok(s.meta.firstDone['2026-10-20']);
@@ -101,14 +112,16 @@ await page.click('.toast-btn:has-text("Undo")');
 assert.equal((await state()).meta.doneCount || 0, before);
 step('complete + undo');
 
-// 6. reorder: move the first A row above the A1
-const a1 = await page.locator('.qa1 h2').textContent();
-const aRows = page.locator('.part', { hasText: 'A · Must do' }).locator('.ans');
-if (await aRows.count()) {
-  await aRows.first().locator('button[aria-label$="up"]').click();
-  assert.notEqual(await page.locator('.qa1 h2').textContent(), a1);
-  step('reorder');
-}
+// 6. number your A's: reorder tomorrow's list in Plan
+await page.goto(`${base}/#plan`);
+const planRows = page.locator('.steps .item');
+assert.ok(await planRows.count() >= 2);
+const firstTitle = await planRows.first().locator('.item-title').textContent();
+await planRows.nth(1).locator('button[aria-label$="up"]').click();
+assert.notEqual(await page.locator('.steps .item').first().locator('.item-title').textContent(), firstTitle);
+await page.goto(`${base}/#today`);
+await page.waitForSelector('.qa1');
+step('reorder');
 
 // 7. My day places work around classes
 await page.click('button[role=radio]:has-text("My day")');
@@ -125,7 +138,7 @@ s = await state();
 assert.equal(s.items.length, 7);
 await page.click('text=Lock in tomorrow');
 assert.equal((await state()).meta.lastPlanned, '2026-10-20');
-await page.click('[role=tab]:has-text("Weekly review")');
+await page.click('[role=tab]:has-text("This week")');
 assert.ok(await page.locator('.stat').count() === 4);
 step('plan');
 
@@ -152,7 +165,7 @@ step('goals');
 await page.goto(`${base}/#tools`);
 const syllabus = 'HIST 150\nWeek 9 Thu: Map quiz (5%)\nNov 13: Midterm exam (25%)\nDec 8: Final presentation (20%)';
 for (let round = 0; round < 2; round++) {
-  await page.click('.index button:has-text("Bring in your semester")');
+  await page.click('.feature button:has-text("Bring it in")');
   await page.waitForSelector(sheet);
   await page.click(`${sheet} [role=tab]:has-text("Paste text")`);
   await page.fill(`${sheet} textarea`, syllabus);
@@ -176,7 +189,7 @@ step('import syllabus');
 // 11. import a calendar file
 const ics = ['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'UID:event-assignment-1', 'SUMMARY:Lab report 4 [CHEM 110]',
   'DTSTART:20261106T235900', 'DTEND:20261106T235900', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
-await page.click('.index button:has-text("Bring in your semester")');
+await page.click('.feature button:has-text("Bring it in")');
 await page.waitForSelector(sheet);
 await page.setInputFiles(`${sheet} input[type=file]`, { name: 'canvas.ics', mimeType: 'text/calendar', buffer: Buffer.from(ics) });
 await page.waitForSelector(`${sheet} .pick li`);
@@ -187,23 +200,23 @@ step('import calendar file');
 
 // 12. tools
 await page.goto(`${base}/#tools`);
-await page.click('.index button:has-text("Worry Buster")');
+await page.click('.tile:has-text("Worry Buster")');
 await page.fill(`${sheet} textarea >> nth=0`, 'Failing the midterm');
 await page.fill(`${sheet} textarea >> nth=3`, 'Do 20 practice problems\nForm a study group');
 await page.click(`${sheet} button:has-text("Save and add")`);
 s = await state();
 assert.equal(s.worries.length, 1);
 assert.ok(find(s, 'Form a study group'));
-await page.click('.index button:has-text("20 Ideas")');
+await page.click('.tile:has-text("20 Ideas")');
 await page.fill(`${sheet} input[type=text] >> nth=0`, 'What can I do to raise my GPA?');
-await page.fill(`${sheet} .rows li:nth-child(3) input`, 'Start problem sets the day they are assigned');
-await page.click(`${sheet} .rows li:nth-child(3) .pickme`);
+await page.fill(`${sheet} .ideas li:nth-child(3) input`, 'Start problem sets the day they are assigned');
+await page.click(`${sheet} .ideas li:nth-child(3) .pickme`);
 await page.click(`${sheet} button:has-text("Act on")`);
 assert.equal(find(await state(), 'Start problem sets the day they are assigned').priority, 'A');
 step('tools');
 
 // 13. coach: setup refuses a bad key, accepts a plausible one, and can forget it
-await page.click('.index button:has-text("Coach")');
+await page.click('.tile:has-text("Coach")');
 await page.fill('#coach-key', 'not-a-key');
 await page.click(`${sheet} button:has-text("Turn on the coach")`);
 assert.equal(await page.evaluate(() => localStorage.getItem('willist.ai-key')), null);
@@ -218,18 +231,18 @@ assert.ok(!backupHasKey, 'the API key never enters the planner data');
 step('coach setup');
 
 // 14. settings re-plan
-await page.click('.index button:has-text("Settings")');
+await page.click('.tile:has-text("Settings")');
 await page.fill(`${sheet} input[type=number] >> nth=0`, '3');
 await page.click(`${sheet} button[type=submit]`);
 assert.equal((await state()).settings.perDayMin, 180);
 step('settings');
 
 // 15. downloads, erase + undo
-await page.click('.index button:has-text("Add to calendar")');
+await page.click('.tile:has-text("Add to calendar")');
 const [icsDl] = await Promise.all([page.waitForEvent('download'), page.click(`${sheet} button:has-text("Download .ics")`)]);
 assert.match(await readFile(icsDl), /RRULE:FREQ=WEEKLY;BYDAY=MO,WE/);
 await page.keyboard.press('Escape');
-await page.click('.index button:has-text("Backup")');
+await page.click('.tile:has-text("Backup")');
 const [bk] = await Promise.all([page.waitForEvent('download'), page.click(`${sheet} button:has-text("Download backup")`)]);
 const backup = JSON.parse(await readFile(bk));
 assert.equal(backup.items.length, (await state()).items.length);
@@ -246,12 +259,11 @@ if (await page.locator('.btn.primary:has-text("Balance my plan")').count()) awai
 await page.goto(`${base}/#today`);
 await page.waitForSelector('.qa1');
 // starting a B while A's remain asks first, in the page
-await page.fill('#qa-input', 'Tidy desk !b');
-await page.press('#qa-input', 'Enter');
-await page.locator('.ans.dim:has-text("Tidy desk") .go').click();
+await addQuick(['Tidy desk !b']);
+await page.locator('.item.dim:has-text("Tidy desk") .go').click();
 await page.click('dialog.confirm[open] button:has-text("Back to my A")');
 assert.equal(await page.locator('dialog.focus').count(), 0);
-await page.click('.qa1 button:has-text("Start now")');
+await page.click('.qa1 .btn.primary');
 await page.waitForSelector('dialog.focus[open]');
 await page.clock.runFor(12 * 60000);
 await page.click('dialog.focus button:has-text("Stop")');
@@ -262,7 +274,7 @@ step('radar + focus log');
 
 // 17. delete + undo, reload, offline shell
 const n = (await state()).items.length;
-await page.locator('.ans-main').first().click();
+await page.locator('.item-main').first().click();
 await page.click(`${sheet} button:has-text("Delete")`);
 assert.equal((await state()).items.length, n - 1);
 await page.click('.toast-btn:has-text("Undo")');

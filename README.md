@@ -10,8 +10,8 @@ grad students:
    Outlook, paste a syllabus, or type things the way you'd say them: `Chem quiz thu`,
    `Essay due nov 3 25% #HIST`, `Lab every wed 2-5pm`.
 2. **Give each one a letter.** A = serious consequences if you skip it, B = should do, C = nice to do,
-   D = delegate, E = eliminate. Number your A's: A1, A2, A3. WilList pencils in a suggestion from
-   the type and the share of your grade; you ink it.
+   D = delegate, E = eliminate. Number your A's: A1, A2, A3. WilList circles a suggestion based on
+   the type and the share of your grade; you pick.
 3. **Do your A1 first.** WilList works backwards from every exam, presentation, assignment and
    reading to spaced study sessions and a start date, fits today's work into the gaps between your
    classes, and learns how long things really take you.
@@ -25,7 +25,7 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*; see
   ("Week 5: Midterm (25%)", "Oct 14 – Essay due") becomes dated, typed items in one step. Re-import
   any time: WilList adds what's new, updates what changed and skips what's already there.
 - **The grade decides the letter.** Type `25%` or `worth 10%` and WilList knows a 25% final is not
-  a 2% quiz. Anything worth 10% or more is pencilled in as an A.
+  a 2% quiz. Anything worth 10% or more is suggested as an A.
 - **It starts your studying for you.** Exams get spaced sessions on expanding gaps; essays and
   readings get steady sessions. Planning is load-aware: it fills days with free time before it
   overbooks one, and **Balance my plan** re-spreads everything so A's get first claim.
@@ -45,11 +45,13 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*; see
 
 | | |
 |---|---|
-| **Today** | Your A1 with a Start button, the pencilled-in tray for anything without a letter, then either the list (classes, A / B / C / D / E, done today) or **My day** (a time-blocked timetable). B's stay dimmed while any A is open. |
-| **Radar** | The next 14 (or 30) days: classes, exams, deadlines, study load per day against your budget, and "the vital few" with progress pips. **Balance my plan** re-spreads all work so A's get first claim on each day. |
-| **Plan** | *Plan tomorrow* (2 minutes, each evening) and a *Weekly review*: what you finished and focused, your real pace, the next 7 days, important-not-urgent work, goals, clean-up, balance. |
-| **Goals** | A major definite purpose pinned to Today, goals in three balanced areas, and Tracy's seven questions. |
-| **Tools** | Bring in your semester, Coach, Worry Buster, 20 Ideas, Pre-game (mental rehearsal before an exam or talk), the Principles library, calendar export, backup, settings. |
+| **Today** (yellow) | Your one thing: the A1, highlighted, with Start and Done. Below it, anything without a letter waits behind a **Sort** button (one item at a time, one question each), then either the list (classes, the rest of your A's and B's, later, delegated, done today) or **My day** (a time-blocked timetable). B's stay dimmed while any A is open. |
+| **Radar** (blue) | A chart of the next 14 (or 30) days: study load per day against your budget, with exams and due dates marked on top. Then "the vital few" with countdowns and progress, and every day in detail. **Balance my plan** re-spreads all work so A's get first claim on each day. |
+| **Plan** (night) | *Tonight*: a five-step evening ritual (empty your head, letter everything, look at tomorrow, number your A's, lock it in). *This week*: what you finished and focused, your real pace, the next 7 days, important-not-urgent work, goals, clean-up, balance. |
+| **Goals** (green) | Your major definite purpose as the headline, goals in three balanced areas, and Tracy's seven questions. |
+| **Tools** (coral) | Bring in your semester, Coach, Worry Buster, 20 Ideas, Pre-game (mental rehearsal before an exam or talk), the Principles library, calendar export, backup, settings. |
+
+The black **+** button (or the `/` key) opens *Write it down* from anywhere.
 
 ## Quick-add cheat sheet
 
@@ -76,7 +78,7 @@ Grade weight: `25%`, `worth 25%`, `(20%)`.
   cancelled occurrences are handled. "Quiz opens" notices and past events are skipped.
 - **Paste text.** Paste a syllabus schedule, a professor's email or a list of due dates. Set a
   course code and, for "Week 5: Quiz" style schedules, the date Week 1 starts. Every line is
-  previewed with a keep/skip bubble before anything is added.
+  previewed with a keep/skip tick before anything is added.
 
 Both run entirely in your browser. "Read it with the coach" sends the pasted text to Claude and
 only appears once you've added a key.
@@ -99,11 +101,19 @@ is stored separately and is never included in backups.
 
 ## Design
 
-WilList looks like what students already trust to record what counts: a bubble answer sheet.
-Letters are filled bubbles, progress is a row of pips, sections are double ink rules, and the A1
-gets scanner registration marks and a single highlighter stroke. Red drop-out ink, graphite,
-Archivo (a variable-width grotesque) and IBM Plex Mono. Fonts are self-hosted (SIL OFL, see
-`app/fonts/OFL.txt`). Light and dark follow your system.
+WilList is a ring binder. Each section is a coloured divider: its tab sticks up at its own
+position (Today on the left, Tools on the right, like real staggered dividers), its band holds
+that page's one big thing, and the work sits on plain paper below. So you always know where you
+are, and each page leads with one thing: your A1, the load chart, tonight's ritual, your
+purpose, the semester import.
+
+The only marks on the paper are the ones a student makes: a yellow highlighter on the A's, blue
+pen notes in the margin (the suggested letter is circled in pen), and a tick that draws itself
+when something's done. Focus mode turns the lights down to one task and one ring.
+
+Type is Bricolage Grotesque, with Nanum Pen Script for the pen notes and IBM Plex Mono for
+times. Fonts are self-hosted (SIL OFL, see `app/fonts/OFL.txt`). Light and dark follow your
+system.
 
 ## Run it
 

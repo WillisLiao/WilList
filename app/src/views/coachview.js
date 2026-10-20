@@ -1,6 +1,6 @@
 // The coach slip: key setup when there is no key, otherwise a chat about your actual planner.
 
-import { h, fill, sec, openSheet, field, formLabel, toast } from '../ui.js';
+import { h, fill, sec, openSheet, field, toast } from '../ui.js';
 import { getKey, setKey, newConversation, ask, visibleText, MODEL } from '../ai.js';
 import { openImport } from './importview.js';
 
@@ -20,11 +20,11 @@ export function openCoach(ctx) {
     const input = h('input', { id: 'coach-key', type: 'password', autocomplete: 'off', placeholder: 'sk-ant-…', spellcheck: 'false' });
     fill(body,
       h('p', null, 'The coach reads your planner and answers in the spirit of Brian Tracy’s methods: what to do first, how to break a big task down, what to do when you are behind. It can also read a messy syllabus for you.'),
-      h('ul', { class: 'lines' },
-        h('li', null, formLabel('Needs'), h('span', { class: 'grow' }, 'An Anthropic API key. Create one at console.anthropic.com → API keys.')),
-        h('li', null, formLabel('Costs'), h('span', { class: 'grow' }, 'Billed to your Anthropic account. WilList shows the token count and cost after every answer.')),
-        h('li', null, formLabel('Privacy'), h('span', { class: 'grow' }, 'The key stays in this browser and is never in backups. Your question and a summary of your planner go straight from this device to Anthropic.')),
-        h('li', null, formLabel('Model'), h('span', { class: 'grow' }, 'Claude Opus 5.5. If it declines a request, Anthropic’s recommended fallback model answers instead.'))),
+      h('ul', { class: 'how' },
+        h('li', null, h('b', null, 'Needs'), h('span', null, 'An Anthropic API key. Create one at console.anthropic.com → API keys.')),
+        h('li', null, h('b', null, 'Costs'), h('span', null, 'Billed to your Anthropic account. WilList shows the token count and cost after every answer.')),
+        h('li', null, h('b', null, 'Privacy'), h('span', null, 'The key stays in this browser and is never in backups. Your question and a summary of your planner go straight from this device to Anthropic.')),
+        h('li', null, h('b', null, 'Model'), h('span', null, 'Claude Opus 5.5. If it declines a request, Anthropic’s recommended fallback model answers instead.'))),
       field('Your API key', input),
       h('div', { class: 'btn-row sticky-actions' },
         h('button', { class: 'btn primary', type: 'button', onclick: () => {
@@ -48,7 +48,7 @@ export function openCoach(ctx) {
       convo.messages.forEach((m, i) => {
         if (m.role === 'user') log.append(h('li', { class: 'me' }, m.content));
         else if (m.role === 'assistant') {
-          log.append(h('li', { class: 'coach' }, formLabel('Coach'), h('div', { class: 'says' }, visibleText(m.content)),
+          log.append(h('li', { class: 'coach' }, h('span', { class: 'who' }, 'coach'), h('div', { class: 'says' }, visibleText(m.content)),
             costs[i] ? h('span', { class: 'cost' }, `${costs[i].tokens.toLocaleString()} tokens ≈ $${costs[i].usd.toFixed(3)}`) : null));
         }
       });
@@ -63,7 +63,7 @@ export function openCoach(ctx) {
       log.append(h('li', { class: 'me' }, q));
       const says = h('div', { class: 'says' }, '…');
       const costEl = h('span', { class: 'cost' });
-      log.append(h('li', { class: 'coach' }, formLabel('Coach'), says, costEl));
+      log.append(h('li', { class: 'coach' }, h('span', { class: 'who' }, 'coach'), says, costEl));
       says.scrollIntoView({ block: 'nearest' });
       let streamed = '';
       try {
@@ -81,12 +81,12 @@ export function openCoach(ctx) {
     }
     fill(body,
       h('div', { class: 'meta' },
-        formLabel(`${MODEL} · your key`),
+        h('span', null, `${MODEL} · your key`),
         h('button', { class: 'link', type: 'button', onclick: () => { ctx.act.setCoach(null); chat(); } }, 'New conversation'),
         h('button', { class: 'link', type: 'button', onclick: () => { setKey(''); toast('Coach key removed from this browser.'); setup(); } }, 'Remove key')),
       convo?.messages?.length ? null : h('section', { class: 'part' },
         sec('Try asking'),
-        h('div', { class: 'btn-row' }, STARTERS.map((q) => h('button', { class: 'btn sm', type: 'button', onclick: () => send(q) }, q))),
+        h('div', { class: 'starters' }, STARTERS.map((q) => h('button', { type: 'button', onclick: () => send(q) }, q))),
         h('p', { class: 'small' }, 'Or ', h('button', { class: 'link', type: 'button', onclick: () => { close(); openImport(ctx, { tab: 'paste' }); } }, 'let the coach read a syllabus'), '.')),
       log,
       h('div', { class: 'composer sticky-actions' }, box,

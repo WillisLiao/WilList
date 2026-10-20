@@ -1,11 +1,10 @@
 // Bring in a semester: a calendar file (.ics) or pasted text, previewed before anything is added.
 
-import { h, fill, bubble, tag, sec, openSheet, field, formLabel, toast, fmtMin } from '../ui.js';
+import { h, fill, icon, tag, meta, sec, segmented, openSheet, field, toast, fmtMin, TYPE_META } from '../ui.js';
 import { fmtShort } from '../dates.js';
 import { importICS, parseSyllabus, planImport } from '../importer.js';
 import { getKey, structureText } from '../ai.js';
 import { dateOrder } from '../store.js';
-import { typeTag } from '../components.js';
 
 const HOW = [
   ['Canvas', 'Calendar → Calendar Feed (bottom right). Open the link and save the file.'],
@@ -75,15 +74,15 @@ export function openImport(ctx, { tab = 'file' } = {}) {
     return h('section', { class: 'part' },
       sec('Found', { count: st.rows.length, note: `${counts.new} new · ${counts.update} changed · ${counts.same} already there${st.past ? ` · ${st.past} past, skipped` : ''}` }),
       st.cost ? h('p', { class: 'mono muted' }, `Coach read it: ${st.cost.tokens.toLocaleString()} tokens ≈ $${st.cost.usd.toFixed(3)}`) : null,
-      h('p', { class: 'small muted' }, 'Filled bubbles get added. Tap a bubble to skip or keep an item. You can fix anything later.'),
+      h('p', { class: 'small muted' }, 'Ticked items get added. Tap a tick to skip or keep an item. You can fix anything later.'),
       h('ul', { class: 'pick' }, st.rows.map((r) => {
         const f = r.fields;
-        return h('li', { class: r.keep ? '' : 'off' },
-          bubble('', { button: true, filled: r.keep, 'aria-pressed': String(r.keep), 'aria-label': `${r.keep ? 'Skip' : 'Keep'} ${f.title}`, onclick: () => { r.keep = !r.keep; render(); } }),
+        return h('li', { class: r.keep ? 'on' : 'off' },
+          h('button', { class: 'check', type: 'button', 'aria-pressed': String(r.keep), 'aria-label': `${r.keep ? 'Skip' : 'Keep'} ${f.title}`, onclick: () => { r.keep = !r.keep; render(); } }, icon('check')),
           h('div', { class: 'min0' },
             h('div', { class: 't' }, f.title),
-            h('div', { class: 'meta' },
-              typeTag(f.type),
+            meta(
+              tag(TYPE_META[f.type]?.word || f.type),
               f.date ? tag(`${fmtShort(f.date)}${f.time ? ` ${f.time}` : ''}`) : null,
               f.recur ? tag('repeats') : null,
               f.weightPct ? tag(`${f.weightPct}%`, 'stake') : null,
@@ -101,14 +100,11 @@ export function openImport(ctx, { tab = 'file' } = {}) {
   }
 
   function render() {
-    const tabs = h('div', { class: 'tabs', role: 'tablist' },
-      [['file', 'Calendar file'], ['paste', 'Paste text']].map(([k, label]) => h('button', {
-        type: 'button', role: 'tab', 'aria-selected': String(st.tab === k), onclick: () => { st.tab = k; st.rows = []; render(); },
-      }, bubble('', { filled: st.tab === k }), formLabel(label))));
+    const tabs = segmented([['file', 'Calendar file'], ['paste', 'Paste text']], st.tab, (k) => { st.tab = k; st.rows = []; render(); }, { ariaLabel: 'Source', tabs: true });
     const fileTab = [
       h('p', null, 'Most course sites and calendars can give you an .ics file with every assignment, quiz and class. Bring it in once; bring it in again later and changed dates update instead of duplicating.'),
-      h('ul', { class: 'lines' }, HOW.map(([name, how]) => h('li', null, formLabel(name), h('span', { class: 'grow' }, how)))),
-      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => fileInput.click() }, 'Choose .ics file'), fileInput),
+      h('ul', { class: 'how' }, HOW.map(([name, how]) => h('li', null, h('b', null, name), h('span', null, how)))),
+      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: () => fileInput.click() }, icon('import'), 'Choose .ics file'), fileInput),
       st.ignored ? h('p', { class: 'small muted' }, `${st.ignored} entries were skipped (no date, or “quiz opens” notices).`) : null,
     ];
     const ta = h('textarea', { class: 'ruled', rows: '8', placeholder: 'Paste a syllabus schedule, a professor’s email, or a list of due dates…',

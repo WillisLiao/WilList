@@ -1,8 +1,8 @@
-import { h, fill, append, bubble, openSheet, field, choice, formLabel, TYPE_META, fmtMin, toast } from '../ui.js';
+import { h, fill, append, lbl, hand, penMark, openSheet, field, choice, TYPE_META, fmtMin, toast } from '../ui.js';
 import { fmtShort, relDay, weekday } from '../dates.js';
 import { buildPlan, suggestEffort, studyLoad, PLANNED_TYPES, EFFORT_PRESETS } from '../plan.js';
 import { LETTERS } from '../agenda.js';
-import { TIPS } from '../coach.js';
+import { TIPS, LETTER_HELP } from '../coach.js';
 import { suggestedLetter } from '../store.js';
 import { CONSEQUENCE } from '../components.js';
 
@@ -49,7 +49,7 @@ export function openEditor(ctx, id, prefill = {}) {
     }
     const first = sessions.find((x) => !x.done);
     append(planBox, [
-      h('p', null, formLabel('Plan'), ' ',
+      h('p', null, lbl('Plan: '),
         h('b', null, first ? `Start ${relDay(first.date, ctx.today)}` : sessions.length ? 'All sessions done' : idle ? 'No study time for D or E items' : 'No sessions'),
         sessions.length ? ` · ${sessions.length} session${sessions.length > 1 ? 's' : ''}, ${fmtMin(sessions.reduce((a, x) => a + x.minutes, 0))}` : ''),
       shortfall > 0 ? h('p', { class: 'small' }, h('b', null, `About ${fmtMin(shortfall)} short. `), TIPS.short) : null,
@@ -77,7 +77,7 @@ export function openEditor(ctx, id, prefill = {}) {
           draft.title = e.target.value;
           if (!effortTouched && planned) { draft.effortMin = suggestEffort(t, draft.title); planDirty = true; }
         } })),
-      h('div', { class: 'f' }, formLabel('Kind'), choice(Object.entries(TYPE_META).map(([k, m]) => [k, m.label]), t, (k) => {
+      h('div', { class: 'f' }, lbl('Kind'), choice(Object.entries(TYPE_META).map(([k, m]) => [k, m.label]), t, (k) => {
         draft.type = k;
         if (!effortTouched) draft.effortMin = suggestEffort(k, draft.title);
         if (k !== 'event' && k !== 'task') draft.recur = null;
@@ -87,19 +87,19 @@ export function openEditor(ctx, id, prefill = {}) {
       h('div', { class: 'two' },
         field(t === 'event' ? 'Date' : t === 'exam' ? 'Exam date' : t === 'presentation' ? 'Presenting on' : 'Due', h('input', { type: 'date', value: draft.date || '', onchange: (e) => set('date', e.target.value || null) })),
         field('Time', h('input', { type: 'time', value: draft.time || '', onchange: (e) => set('time', e.target.value || null) }), t === 'event' ? null : 'Optional')),
-      canRepeat ? h('div', { class: 'f' }, formLabel('Repeats'), choice(RECUR, freq, (f) => {
+      canRepeat ? h('div', { class: 'f' }, lbl('Repeats'), choice(RECUR, freq, (f) => {
         draft.recur = f ? { freq: f, days: f === 'weekly' || f === 'biweekly' ? (draft.recur?.days?.length ? draft.recur.days : [weekday(draft.date || ctx.today)]) : undefined } : null;
         if (draft.recur && !draft.date) draft.date = ctx.today;
         render();
       }, { ariaLabel: 'Repeats' })) : null,
-      freq === 'weekly' || freq === 'biweekly' ? h('div', { class: 'bubbles', role: 'group', 'aria-label': 'Days' }, DAY_LETTERS.map(([d, L]) => {
+      freq === 'weekly' || freq === 'biweekly' ? h('div', { class: 'daypick', role: 'group', 'aria-label': 'Days' }, DAY_LETTERS.map(([d, L]) => {
         const on = draft.recur.days.includes(d);
-        return bubble(L, { button: true, filled: on, 'aria-pressed': String(on), 'aria-label': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d], onclick: () => {
+        return h('button', { type: 'button', 'aria-pressed': String(on), 'aria-label': ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d], onclick: () => {
           const days = new Set(draft.recur.days);
           if (on && days.size > 1) days.delete(d); else days.add(d);
           draft.recur.days = [...days].sort();
           render();
-        } });
+        } }, L);
       })) : null,
       t === 'event' ? field('Length in minutes', h('input', { type: 'number', min: '5', step: '5', value: String(draft.durationMin || 60), oninput: (e) => { draft.durationMin = Number(e.target.value) || 60; } })) : null,
       t === 'task' && !draft.recur ? field('Do on (optional)', h('input', { type: 'date', value: draft.plan || '', onchange: (e) => { draft.plan = e.target.value || null; } }), 'Stays off Today until that day.') : null,
@@ -108,15 +108,17 @@ export function openEditor(ctx, id, prefill = {}) {
         planned ? field('% of final grade', h('input', { type: 'number', min: '0', max: '100', step: '1', value: draft.weightPct ?? '', placeholder: 'e.g. 25',
           onchange: (e) => { const v = Number(e.target.value); draft.weightPct = v > 0 ? v : null; render(); } }), 'Sets the suggested letter.') : null),
       h('div', { class: 'f' },
-        formLabel('Letter: if you skip it, what happens?'),
-        h('div', { class: 'letters-pick', role: 'radiogroup', 'aria-label': 'Letter' },
-          LETTERS.map((L) => h('button', { type: 'button', role: 'radio', 'aria-checked': String(draft.priority === L),
+        lbl(TIPS.consequences),
+        h('div', { class: 'letters-pick options', role: 'radiogroup', 'aria-label': 'Letter' },
+          LETTERS.map((L) => h('button', { type: 'button', role: 'radio', class: `option${draft.priority === L ? ' picked' : ''}${!draft.priority && sugg === L ? ' suggested' : ''}`,
+            'aria-checked': String(draft.priority === L), 'aria-label': `${L}: ${CONSEQUENCE[L]}, ${LETTER_HELP[L].name}`,
             onclick: () => { draft.priority = draft.priority === L ? null : L; planDirty = true; render(); } },
-            bubble(L, { filled: draft.priority === L, ghost: !draft.priority && sugg === L }),
-            h('small', null, CONSEQUENCE[L]))))),
+            h('span', { class: `rank big r-${L}` }, L, !draft.priority && sugg === L ? penMark() : null),
+            h('b', null, LETTER_HELP[L].name),
+            !draft.priority && sugg === L ? hand('suggested') : null)))),
       draft.priority === 'D' ? field('Delegated to', h('input', { type: 'text', value: draft.delegateTo || '', placeholder: 'Teammate, TA, a tool…', oninput: (e) => { draft.delegateTo = e.target.value; } }), TIPS.delegate) : null,
       planned && !draft.recur ? h('div', { class: 'f' },
-        formLabel('How much work, roughly?'),
+        lbl('How much work, roughly?'),
         choice((EFFORT_PRESETS[t] || []).map(([label, min]) => [min, `${label} (${fmtMin(min)})`]), draft.effortMin, (min) => { effortTouched = true; set('effortMin', min, true); }, { ariaLabel: 'Size' }),
         h('div', { class: 'two' },
           h('label', { class: 'f' }, h('span', { class: 'small muted' }, 'or hours'),
@@ -129,7 +131,7 @@ export function openEditor(ctx, id, prefill = {}) {
       field('Notes', h('textarea', { rows: '2', value: draft.notes || '', oninput: (e) => { draft.notes = e.target.value; } })),
       h('div', { class: 'btn-row sticky-actions' },
         h('button', { type: 'submit', class: 'btn primary' }, existing ? 'Save' : 'Add'),
-        existing ? h('button', { type: 'button', class: 'btn ink', onclick: () => { close(); ctx.act.remove(existing.id); } }, 'Delete') : null,
+        existing ? h('button', { type: 'button', class: 'btn danger', onclick: () => { close(); ctx.act.remove(existing.id); } }, 'Delete') : null,
         h('button', { type: 'button', class: 'btn quiet', onclick: () => close() }, 'Cancel')),
     );
     renderPlan();

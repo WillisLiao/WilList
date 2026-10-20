@@ -14,12 +14,12 @@ this transcript. They are marked **(outside the transcript)**.
 | Principle | Where it comes from | In WilList |
 |---|---|---|
 | **The law of control**: you feel good about yourself to the degree you feel in control of your life. Time management *is* "control of the sequence of events". | S2, S17 | The whole app. One place for classes, deadlines, exams, readings and errands, plus a 14-day Radar. |
-| **Think on paper**: get it all out of your head onto a list. | S17, S20 | Quick-add at the top of every screen, in plain language: `Chem quiz thu 2pm #CHEM110`. Plan → "Empty your head" takes many lines at once. Tools → Bring in your semester reads a whole LMS calendar or a pasted syllabus in one step. |
-| **ABCDE**: A = must do, B = should do, C = nice to do, D = delegate, E = eliminate. Number your A's (A1, A2…). Never work on an A2 or a B while A1 is undone. | S17 | Every item gets a letter. Today numbers them A1, A2, B1… and you reorder with the arrows. B's are dimmed while any A is open, and starting a B while A's remain asks "are you sure?". |
-| **Consider consequences**: an A is anything with serious consequences if you don't do it. | *Eat That Frog!* **(outside the transcript)** | The sort tray asks one question: *"If you don't do it, what happens?"* For coursework the consequence is measurable: the share of the grade (`25%`) pencils in the letter. 10% or more suggests an A, 3% or more a B. |
+| **Think on paper**: get it all out of your head onto a list. | S17, S20 | The + button (or `/`) on every screen opens *Write it down*, in plain language: `Chem quiz thu 2pm #CHEM110`. Plan → "Empty your head" takes many lines at once. Tools → Bring in your semester reads a whole LMS calendar or a pasted syllabus in one step. |
+| **ABCDE**: A = must do, B = should do, C = nice to do, D = delegate, E = eliminate. Number your A's (A1, A2…). Never work on an A2 or a B while A1 is undone. | S17 | Every item gets a letter. Today numbers them A1, A2, B1…, and Plan → "Number your A's" reorders them. B's are dimmed while any A is open, and starting a B while A's remain asks "are you sure?". |
+| **Consider consequences**: an A is anything with serious consequences if you don't do it. | *Eat That Frog!* **(outside the transcript)** | The sorter shows one item at a time and asks one question: *"If you don't do it, what happens?"* For coursework the consequence is measurable: the share of the grade (`25%`) pencils in the letter. 10% or more suggests an A, 3% or more a B. |
 | **Urgent vs. important**: "urgent things are seldom important; important things are seldom urgent." | **(outside the transcript)** | The list is ordered by letter, not by due date. A C due today sits below an A due next week. Start dates bring important work onto Today before it turns urgent, and the Weekly review has an "Important, not urgent" section. |
-| **What is the most valuable use of my time right now?** | S17 | Printed above your A1 every day. |
-| **80/20, the vital few vs. the trivial many** | S17 | Radar → "The vital few" (your A/B exams, presentations, deadlines and readings with progress pips). A nudge appears when more than five things are marked A. Grade weights make the vital few visible: a handful of items carry most of the grade. |
+| **What is the most valuable use of my time right now?** | S17 | Written in pen above your A1 every day. |
+| **80/20, the vital few vs. the trivial many** | S17 | Radar → "The vital few" (your A/B exams, presentations, deadlines and readings with countdowns and progress bars). A nudge appears when more than five things are marked A. Grade weights make the vital few visible: a handful of items carry most of the grade. |
 | **Make tomorrow's list the night before**; the subconscious works on it while you sleep. | S17 | Plan → Plan tomorrow: empty your head, letter everything, look at tomorrow, number your A's, lock it in. An evening prompt appears after your plan time. |
 | **Every minute spent planning saves 5–15 minutes in execution.** | S17 | The morning prompt shown when you skipped last night's plan. |
 | **Failing to plan is planning to fail** (the law of accident). | S2 | Plan tab header and the weekly review. |
@@ -36,7 +36,7 @@ this transcript. They are marked **(outside the transcript)**.
 | **Inspect what you expect**: delegation is not abdication. | S20 | D items stay visible with who you delegated to, labelled "follow up". |
 | **Act your way into feeling.** | S10 | Focus mode tip; starting is one tap. |
 | **Discipline**: do what you should, when you should, whether you feel like it or not. | S9 | Done messages. |
-| **A new habit takes about 21 days of repetition.** | S9 | The A1-first streak on Today: 21 pips, one for each day in a row where the first thing you finished was an A. |
+| **A new habit takes about 21 days of repetition.** | S9 | The A1-first streak on Today counts the days in a row where the first thing you finished was an A, and shows the last seven. |
 | **Feeling listless? Make a list.** | S19 | The whole capture-first design. |
 | **Everything counts**: nothing is neutral; it moves you toward your goals or away. | S9, S11 | E = Eliminate; the weekly review asks whether C/D/E items older than two weeks are still worth it. |
 

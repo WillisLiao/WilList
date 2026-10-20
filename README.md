@@ -6,31 +6,56 @@ A to-do app lists everything but doesn't tell you what matters. A calendar shows
 priorities, or when to *start* the exam prep. WilList does both, for high school, college and
 grad students:
 
-1. **Dump everything in.** Type it the way you'd say it: `Chem quiz thu`, `Essay due nov 3 #HIST`,
-   `Lab every wed 2-5pm`.
+1. **Get it all in.** Bring in your whole semester from Canvas, Moodle, Blackboard, Google or
+   Outlook, paste a syllabus, or type things the way you'd say them: `Chem quiz thu`,
+   `Essay due nov 3 25% #HIST`, `Lab every wed 2-5pm`.
 2. **Give each one a letter.** A = serious consequences if you skip it, B = should do, C = nice to do,
-   D = delegate, E = eliminate. Number your A's: A1, A2, A3.
+   D = delegate, E = eliminate. Number your A's: A1, A2, A3. WilList pencils in a suggestion from
+   the type and the share of your grade; you ink it.
 3. **Do your A1 first.** WilList works backwards from every exam, presentation, assignment and
-   reading to spaced study sessions and a start date, then puts today's session on today's list.
+   reading to spaced study sessions and a start date, fits today's work into the gaps between your
+   classes, and learns how long things really take you.
 
 Every feature maps to an idea from Tracy's *Phoenix Seminar*; see
 [docs/PRINCIPLES.md](docs/PRINCIPLES.md).
+
+## What makes it different
+
+- **It reads your semester for you.** A calendar file from your school's LMS or a pasted syllabus
+  ("Week 5: Midterm (25%)", "Oct 14 – Essay due") becomes dated, typed items in one step. Re-import
+  any time: WilList adds what's new, updates what changed and skips what's already there.
+- **The grade decides the letter.** Type `25%` or `worth 10%` and WilList knows a 25% final is not
+  a 2% quiz. Anything worth 10% or more is pencilled in as an A.
+- **It starts your studying for you.** Exams get spaced sessions on expanding gaps; essays and
+  readings get steady sessions. Planning is load-aware: it fills days with free time before it
+  overbooks one, and **Balance my plan** re-spreads everything so A's get first claim.
+- **My day.** Switch Today from a list to a timetable: your A1 goes into the first free gap
+  between classes, then A2, then the B's, with breaks. Whatever doesn't fit is listed, so you
+  decide what to drop instead of finding out at midnight.
+- **It learns your pace.** Focus mode logs real minutes. After a few finished sessions the weekly
+  review says things like "Reading takes you about 1.4× the plan" and offers to plan that way
+  from now on.
+- **A1-first streak.** Tracy says a new habit takes about 21 days. Today counts the days in a row
+  where the first thing you finished was an A.
+- **An optional coach.** Bring your own Anthropic API key and ask "I have three exams next week,
+  where do I start?". It answers from your actual items and Tracy's methods, and can read messy
+  syllabi the built-in reader can't. See [docs/AI.md](docs/AI.md).
 
 ## Screens
 
 | | |
 |---|---|
-| **Today** | Your A1 with a Start button, a tray for anything without a letter, today's classes and meetings, then A / B / C / D / E. B's stay dimmed while any A is open. |
-| **Radar** | The next 14 (or 30) days: classes, exams, deadlines, study load per day against your budget, and "the vital few" with progress bars. **Balance my plan** re-spreads all work so A's get first claim on each day. |
-| **Plan** | *Plan tomorrow* (2 minutes, each evening) and a *Weekly review* (important-not-urgent work, goals, clean-up, balance). |
+| **Today** | Your A1 with a Start button, the pencilled-in tray for anything without a letter, then either the list (classes, A / B / C / D / E, done today) or **My day** (a time-blocked timetable). B's stay dimmed while any A is open. |
+| **Radar** | The next 14 (or 30) days: classes, exams, deadlines, study load per day against your budget, and "the vital few" with progress pips. **Balance my plan** re-spreads all work so A's get first claim on each day. |
+| **Plan** | *Plan tomorrow* (2 minutes, each evening) and a *Weekly review*: what you finished and focused, your real pace, the next 7 days, important-not-urgent work, goals, clean-up, balance. |
 | **Goals** | A major definite purpose pinned to Today, goals in three balanced areas, and Tracy's seven questions. |
-| **Tools** | Worry Buster, 20 Ideas, Pre-game (mental rehearsal before an exam or talk), the Principles library, calendar export, backup, settings. |
+| **Tools** | Bring in your semester, Coach, Worry Buster, 20 Ideas, Pre-game (mental rehearsal before an exam or talk), the Principles library, calendar export, backup, settings. |
 
 ## Quick-add cheat sheet
 
 | You type | WilList understands |
 |---|---|
-| `Calc midterm fri 2pm #MATH201` | Exam on Friday at 2pm, course MATH201, ~8h of prep spread over spaced sessions |
+| `Calc midterm fri 2pm 25% #MATH201` | Exam on Friday at 2pm, 25% of the grade (suggested A), ~8h of prep over spaced sessions |
 | `HW3 due 10/24 11:59pm` | Homework due on that date and time |
 | `Calculus lecture mwf 10-10:50am` | Class every Mon/Wed/Fri, 10:00–10:50 |
 | `Advisor sync every other thu 3pm` | Every two weeks |
@@ -40,6 +65,21 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*; see
 
 Dates: `today`, `tonight`, `tomorrow`, `fri`, `next fri`, `in 3 days`, `10/24`, `oct 24`, `24 oct`, `2026-10-24`.
 Repeats: `daily`, `weekdays`, `weekly`, `every tue`, `every mon and wed`, `tuesdays`, `mwf`, `tth`, `every other thu`, `monthly`.
+Grade weight: `25%`, `worth 25%`, `(20%)`.
+
+## Bring in your semester
+
+**Tools → Bring in your semester** has two tabs:
+
+- **Calendar file.** Download your calendar as an `.ics` file (the screen shows where to find it in
+  Canvas, Moodle, Blackboard, Google and Outlook) and choose it. Repeating events, time zones and
+  cancelled occurrences are handled. "Quiz opens" notices and past events are skipped.
+- **Paste text.** Paste a syllabus schedule, a professor's email or a list of due dates. Set a
+  course code and, for "Week 5: Quiz" style schedules, the date Week 1 starts. Every line is
+  previewed with a keep/skip bubble before anything is added.
+
+Both run entirely in your browser. "Read it with the coach" sends the pasted text to Claude and
+only appears once you've added a key.
 
 ## Reminders
 
@@ -54,7 +94,16 @@ Browsers only allow notifications while the page is open, so WilList offers two 
 ## Your data
 
 Everything lives in your browser's local storage on your device. There is no account and no server.
-Use **Tools → Backup & data** to download a backup or move to another device.
+Use **Tools → Backup & data** to download a backup or move to another device. The coach's API key
+is stored separately and is never included in backups.
+
+## Design
+
+WilList looks like what students already trust to record what counts: a bubble answer sheet.
+Letters are filled bubbles, progress is a row of pips, sections are double ink rules, and the A1
+gets scanner registration marks and a single highlighter stroke. Red drop-out ink, graphite,
+Archivo (a variable-width grotesque) and IBM Plex Mono. Fonts are self-hosted (SIL OFL, see
+`app/fonts/OFL.txt`). Light and dark follow your system.
 
 ## Run it
 
@@ -62,7 +111,7 @@ No build step and no dependencies. Any static file server works:
 
 ```sh
 npm start          # serves app/ on http://localhost:8080
-npm test           # 48 unit tests (Node 18+), no install needed
+npm test           # 72 unit tests (Node 18+), no install needed
 npm run test:e2e   # optional browser test: npm i --no-save playwright && npx playwright install chromium
 ```
 
@@ -78,16 +127,22 @@ The site will be at `https://<user>.github.io/WilList/`.
 
 ```
 app/                  the website (deployed as-is)
-  index.html, styles.css, sw.js, manifest.webmanifest, icons/
+  index.html, styles.css, sw.js, manifest.webmanifest, icons/, fonts/
+  vendor/             the Anthropic SDK bundle, loaded only when the coach is used
   src/
     parse.js          quick-add language → item
+    importer.js       .ics calendar files and pasted syllabi → items, with de-duplication
     plan.js           backward planning, spaced sessions, study-load balancing
+    timeline.js       My day: fits work into the free gaps between fixed events
     agenda.js         Today's lettered list, schedule, radar, vital few
+    insights.js       focus log, pace calibration, A1-first streak, week stats
     store.js          state, persistence, undo, actions
+    ai.js             the optional coach (Claude) and AI syllabus reading
     ics.js            calendar export
     coach.js          Tracy's principles and tips
-    views/            Today, Radar, Plan, Goals, Tools, item editor
-tests/                node:test unit tests for the logic
+    views/            Today, Radar, Plan, Goals, Tools, import, coach, item editor
+tests/                node:test unit tests for the logic, plus a Playwright smoke test
 docs/PRINCIPLES.md    every Tracy idea → where it lives in the app
+docs/AI.md            the coach: setup, privacy, cost
 briantracy.md         the seminar transcript
 ```

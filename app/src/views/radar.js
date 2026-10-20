@@ -1,74 +1,78 @@
-import { h, icon, fmtMin, courseChip } from '../ui.js';
-import { fmtShort, fmtRelDay, relDay, fmtTime, fmtInDays, weekday } from '../dates.js';
+import { h, bubble, pips, codeTag, sec, fmtMin, formLabel } from '../ui.js';
+import { fmtShort, relDay, fmtInDays, weekday, minToTime, timeToMin } from '../dates.js';
 import { radar, vitalFew, missedSessions } from '../agenda.js';
 import { TIPS } from '../coach.js';
-import { typeIcon } from '../components.js';
+import { typeTag, stakeTag } from '../components.js';
 
-const STATUS = {
-  'on-track': ['On track', 'ok'],
-  'not-started': ['Starts', 'muted'],
-  behind: ['Behind: re-plan', 'bad'],
-  short: ['Not enough time', 'bad'],
-  'no-plan': ['No plan yet', 'muted'],
-};
+const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function vitalCard(v, ctx) {
+function vitalRow(v, ctx) {
   const it = v.item;
-  const pct = v.total ? Math.round((v.done / v.total) * 100) : 0;
-  let [label, tone] = STATUS[v.status];
-  if (v.status === 'not-started' && v.startBy) label = `Starts ${relDay(v.startBy, ctx.today)}`;
-  if (v.status === 'on-track' && !v.done && v.startBy === ctx.today) [label, tone] = ['Start today', 'warn'];
-  return h('li', { class: `vital l-${it.priority}`, role: 'button', tabindex: '0', onclick: () => ctx.edit(it.id) },
-    h('div', { class: 'vital-top' },
-      h('span', { class: `badge l-${it.priority}` }, it.priority),
-      typeIcon(it.type),
-      h('span', { class: 'vital-title' }, it.title),
-      courseChip(it.course)),
-    h('div', { class: 'vital-when' },
-      `${fmtShort(it.date)}${it.time ? `, ${fmtTime(it.time)}` : ''} · ${fmtInDays(it.date, ctx.today)}`),
-    v.total ? h('div', { class: 'bar', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-label': `${v.done} of ${v.total} sessions done` },
-      h('span', { style: { width: `${pct}%` } })) : null,
-    h('div', { class: 'vital-foot' },
-      v.total ? h('span', null, `${v.done}/${v.total} sessions`) : null,
-      h('span', { class: `status ${tone}` }, label)));
+  const behind = (it.sessions || []).filter((x) => !x.done && x.date < ctx.today).length;
+  let status;
+  if (v.status === 'short') status = h('span', { class: 'status bad' }, 'Not enough time');
+  else if (v.status === 'behind') status = h('span', { class: 'status bad' }, 'Behind');
+  else if (v.status === 'not-started') status = h('span', { class: 'status' }, `Starts ${relDay(v.startBy, ctx.today)}`);
+  else if (v.status === 'no-plan') status = h('span', { class: 'status' }, 'No plan yet');
+  else if (!v.done && v.startBy === ctx.today) status = h('span', { class: 'status warn' }, 'Start today');
+  else status = h('span', { class: 'status ok' }, 'On track');
+  return h('li', { class: 'vital', role: 'button', tabindex: '0', onclick: () => ctx.edit(it.id) },
+    bubble(it.priority, { filled: false }),
+    h('div', { class: 'min0' },
+      h('h3', null, it.title),
+      h('div', { class: 'meta' }, typeTag(it.type), stakeTag(it), codeTag(it.course))),
+    h('div', { class: 'when' },
+      h('div', { class: 'mono' }, `${fmtShort(it.date).toUpperCase()}${it.time ? ` ${it.time}` : ''}`),
+      h('div', { class: 'mono muted' }, fmtInDays(it.date, ctx.today))),
+    h('div', { class: 'prog' },
+      v.total ? pips(v.total, v.done, { bad: behind, label: `${v.done} of ${v.total} sessions done` }) : null,
+      v.total ? h('span', { class: 'mono muted' }, `${v.done}/${v.total}`) : null,
+      status));
+}
+
+// Study load as half-hour bubbles against the daily budget; anything over the budget is inked red.
+function loadPips(load, budget) {
+  const slots = Math.max(1, Math.round(budget / 30));
+  const used = Math.round(load / 30);
+  const out = [];
+  for (let i = 0; i < Math.max(slots, used); i++) out.push(bubble('', { size: 'sm', filled: i < used, cls: i >= slots ? 'over' : '' }));
+  return h('span', { class: 'pips', role: 'img', 'aria-label': `${fmtMin(load)} of study planned, budget ${fmtMin(budget)}` }, out);
 }
 
 function dayBlock(d, ctx) {
-  const items = [];
+  const lines = [];
   for (const ev of d.schedule) {
-    items.push(h('li', { class: `ag t-${ev.type}`, role: 'button', tabindex: '0', onclick: () => ctx.edit(ev.id) },
-      h('span', { class: 'ag-time' }, ev.time ? fmtTime(ev.time) : 'All day'),
-      ev.type !== 'event' ? h('span', { class: `pill t-${ev.type}` }, ev.type === 'exam' ? 'Exam' : 'Presenting') : null,
-      h('span', { class: 'ag-title' }, ev.title), courseChip(ev.course)));
+    const end = ev.time ? minToTime(timeToMin(ev.time) + (ev.durationMin || 60)) : null;
+    lines.push(h('li', { role: 'button', tabindex: '0', onclick: () => ctx.edit(ev.id) },
+      h('span', { class: 't' }, ev.time ? `${ev.time}` : 'all day'),
+      h('span', { class: 'what' }, ev.type === 'exam' ? h('b', null, 'EXAM ') : ev.type === 'presentation' ? h('b', null, 'TALK ') : null, ev.title, end ? h('span', { class: 'muted' }, ` –${end}`) : null),
+      codeTag(ev.course)));
   }
   for (const it of d.due) {
-    items.push(h('li', { class: `ag due l-${it.priority}`, role: 'button', tabindex: '0', onclick: () => ctx.edit(it.id) },
-      h('span', { class: 'ag-time' }, it.time ? fmtTime(it.time) : 'Due'),
-      it.priority ? h('span', { class: `badge l-${it.priority}` }, it.priority) : null,
-      h('span', { class: 'ag-title' }, it.type === 'reading' ? `Read by: ${it.title}` : `Due: ${it.title}`), courseChip(it.course)));
+    lines.push(h('li', { role: 'button', tabindex: '0', onclick: () => ctx.edit(it.id) },
+      h('span', { class: 't' }, it.time || 'due'),
+      h('span', { class: 'what' }, h('b', null, it.type === 'reading' ? 'READ BY ' : 'DUE '), it.title, it.priority ? h('span', { class: 'mono muted' }, ` [${it.priority}]`) : null),
+      codeTag(it.course)));
   }
   for (const st of d.starts) {
-    items.push(h('li', { class: 'ag start', role: 'button', tabindex: '0', onclick: () => ctx.edit(st.id) },
-      h('span', { class: 'ag-time' }, icon('play')),
-      h('span', { class: 'ag-title' }, h('b', null, 'Start: '), st.title)));
+    lines.push(h('li', { class: 'start', role: 'button', tabindex: '0', onclick: () => ctx.edit(st.id) },
+      h('span', { class: 't' }, 'start'), h('span', { class: 'what' }, st.title), h('span')));
   }
   for (const sd of d.study) {
-    items.push(h('li', { class: `ag study l-${sd.item.priority}`, role: 'button', tabindex: '0', onclick: () => ctx.edit(sd.item.id) },
-      h('span', { class: 'ag-time' }, fmtMin(sd.minutes)),
-      h('span', { class: 'ag-title' }, `Work on ${sd.item.title}${sd.count > 1 ? ` ×${sd.count}` : ''}`)));
+    lines.push(h('li', { class: 'study', role: 'button', tabindex: '0', onclick: () => ctx.edit(sd.item.id) },
+      h('span', { class: 't' }, fmtMin(sd.minutes)),
+      h('span', { class: 'what' }, `Study: ${sd.item.title}${sd.count > 1 ? ` ×${sd.count}` : ''}`),
+      h('span')));
   }
-  const budget = ctx.s.settings.perDayMin;
-  const pct = Math.min(100, Math.round((d.load / budget) * 100));
-  const isToday = d.date === ctx.today;
-  const wknd = [0, 6].includes(weekday(d.date));
-  return h('section', { class: `day${d.over ? ' over' : ''}${isToday ? ' is-today' : ''}${wknd ? ' wknd' : ''}` },
-    h('div', { class: 'day-head' },
-      h('h3', null, isToday ? 'Today' : fmtRelDay(d.date, ctx.today) === 'Tomorrow' ? 'Tomorrow' : fmtShort(d.date)),
-      d.load ? h('span', { class: 'load', title: `${fmtMin(d.load)} planned study, budget ${fmtMin(budget)}` },
-        h('span', { class: 'load-bar' }, h('span', { style: { width: `${pct}%` } })),
-        `${fmtMin(d.load)}`) : null),
-    items.length ? h('ul', { class: 'ag-list' }, items) : h('p', { class: 'free' }, 'Free'),
-    d.over ? h('p', { class: 'over-note' }, icon('alert'), `Over your ${fmtMin(budget)} study budget.`) : null);
+  const wd = weekday(d.date);
+  return h('section', { class: `lday${d.date === ctx.today ? ' today' : ''}${wd === 0 || wd === 6 ? ' wknd' : ''}` },
+    h('div', { class: 'date' },
+      formLabel(d.date === ctx.today ? 'Today' : WD[wd]),
+      h('span', { class: 'display num' }, String(Number(d.date.slice(8))))),
+    h('div', { class: 'min0' },
+      lines.length ? h('ul', null, lines) : h('p', { class: 'free' }, 'Free'),
+      d.load ? h('div', { class: 'load' }, loadPips(d.load, ctx.s.settings.perDayMin),
+        h('span', { class: 'mono muted' }, `${fmtMin(d.load)} / ${fmtMin(ctx.s.settings.perDayMin)}`)) : null));
 }
 
 export function renderRadar(ctx) {
@@ -77,26 +81,31 @@ export function renderRadar(ctx) {
   const days = radar(s.items, today, horizon, s.settings.perDayMin);
   const vital = vitalFew(s.items, today);
   const missed = missedSessions(s.items, today);
-  const busiest = days.filter((d) => d.over).length;
+  const over = days.filter((d) => d.over).length;
+  const dueCount = days.reduce((a, d) => a + d.due.length, 0);
+  const exams = days.reduce((a, d) => a + d.schedule.filter((e) => e.type === 'exam').length, 0);
   return h('div', { class: 'view radar' },
-    h('header', { class: 'view-head' },
-      h('h1', null, 'Radar'),
-      h('p', { class: 'lede' }, 'Everything that matters, before it becomes urgent.')),
-    missed.length ? h('section', { class: 'card warn' },
-      h('p', null, icon('alert'), h('b', null, 'Behind on: '), missed.map((m) => m.item.title).join(', '), '. ', TIPS.missed),
-      h('button', { class: 'btn', onclick: ctx.act.replanMissed }, 'Re-plan from today')) : null,
-    h('section', { class: 'card' },
-      h('div', { class: 'card-head' }, h('h3', null, 'The vital few'), h('span', { class: 'count' }, String(vital.length))),
-      vital.length
-        ? h('ul', { class: 'vital-list' }, vital.map((v) => vitalCard(v, ctx)))
-        : h('p', { class: 'empty-note' }, 'Your A and B exams, presentations, deadlines and readings for the next 6 weeks appear here, each with its progress.')),
-    busiest ? h('section', { class: 'card warn' },
-      h('p', null, icon('alert'), h('b', null, `${busiest} day${busiest > 1 ? 's' : ''} over your ${fmtMin(s.settings.perDayMin)} study budget. `),
-        'Balance re-spreads all upcoming work so A’s get first claim on each day. If days are still over after that, the work doesn’t fit: start earlier, raise your budget in Settings, or delegate or drop something.'),
-      h('button', { class: 'btn primary', onclick: ctx.act.balance }, 'Balance my plan')) : null,
-    h('div', { class: 'days' }, days.map((d) => dayBlock(d, ctx))),
-    h('div', { class: 'btn-row center' },
-      h('button', { class: 'btn', onclick: () => { ctx.ui.radarDays = horizon === 14 ? 30 : 14; ctx.refresh(); } },
-        horizon === 14 ? 'Show 30 days' : 'Show 14 days')));
+    h('header', { class: 'dayhead' },
+      h('h1', { class: 'display page-title' }, 'Radar'),
+      h('span', { class: 'mono muted' }, `Next ${horizon} days · ${dueCount} due · ${exams} exam${exams === 1 ? '' : 's'}`)),
+    missed.length ? h('div', { class: 'box callout alert' },
+      h('span', { class: 'form box-label' }, 'Behind'),
+      h('p', null, `${missed.map((m) => m.item.title).join(', ')}. ${TIPS.missed}`),
+      h('div', { class: 'btn-row' }, h('button', { class: 'btn sm', type: 'button', onclick: ctx.act.replanMissed }, 'Re-plan from today'))) : null,
+    h('section', { class: 'part' },
+      sec('The vital few', { count: vital.length, note: 'A and B work, next 6 weeks' }),
+      vital.length ? h('ul', { class: 'rows' }, vital.map((v) => vitalRow(v, ctx)))
+        : h('p', { class: 'empty' }, 'Lettered exams, presentations, deadlines and readings appear here with a bubble per study session.')),
+    over ? h('div', { class: 'box callout alert' },
+      h('span', { class: 'form box-label' }, `${over} day${over > 1 ? 's' : ''} over budget`),
+      h('p', null, `More study is planned than your ${fmtMin(s.settings.perDayMin)} a day. Balance re-spreads everything so A’s get first claim on each day. If it still doesn’t fit, start earlier, raise the budget in Settings, or delegate or drop something.`),
+      h('div', { class: 'btn-row' }, h('button', { class: 'btn primary', type: 'button', onclick: ctx.act.balance }, 'Balance my plan'))) : null,
+    h('section', { class: 'part' },
+      sec('Day by day', { note: 'Bubbles: half-hours of study vs. your budget' }),
+      h('div', { class: 'ledger' }, days.map((d) => dayBlock(d, ctx)))),
+    h('div', { class: 'btn-row' },
+      h('button', { class: 'btn', type: 'button', onclick: () => { ctx.ui.radarDays = horizon === 14 ? 30 : 14; ctx.refresh(); } },
+        horizon === 14 ? 'Show 30 days' : 'Show 14 days'),
+      h('button', { class: 'btn quiet', type: 'button', onclick: ctx.act.balance }, 'Balance my plan')));
 }
 

@@ -16,6 +16,7 @@ const MONTHS = dict({
 });
 // Student timetable shorthand. "tr" is only trusted after "every".
 const SHORT_DAYS = dict({ mwf: [1, 3, 5], mw: [1, 3], wf: [3, 5], tth: [2, 4], tuth: [2, 4], mtwtf: [1, 2, 3, 4, 5] });
+const COUNTERS = new Set(['week', 'wk', 'unit', 'chapter', 'chapters', 'ch', 'lecture', 'module', 'part', 'session', 'day', 'lab', 'quiz', 'set', 'hw', 'test', 'exam', 'assignment', 'problem', 'no', '#']);
 const CONNECTORS = new Set(['due', 'by', 'on', 'at', '@', 'before', 'from', 'for', 'this', 'starting', 'every', 'each']);
 
 export const TYPES = ['task', 'deadline', 'exam', 'presentation', 'reading', 'event'];
@@ -33,7 +34,7 @@ export function detectType(text) {
 }
 
 function clean(tok) {
-  return tok.toLowerCase().replace(/^[("'[]+|[)"'\].,;!?]+$/g, '');
+  return tok.toLowerCase().replace(/^[("'[]+|[)"'\].,;:!?]+$/g, '');
 }
 
 function upcomingWeekday(today, wd) {
@@ -46,11 +47,17 @@ function makeISO(y, m, d) {
   return isValidISO(iso) ? iso : null;
 }
 
-// A year-less date that already passed most likely means next year.
-function resolveYearless(m, d, today) {
+// A year-less date: in quick add, one that already passed means next year.
+// In a pasted syllabus ("nearest"), pick whichever year is closest to today,
+// so September dates pasted in October stay in the past and get skipped.
+function resolveYearless(m, d, today, yearMode = 'future') {
   const y = Number(today.slice(0, 4));
   const iso = makeISO(y, m, d);
   if (!iso) return null;
+  if (yearMode === 'nearest') {
+    const cands = [makeISO(y - 1, m, d), iso, makeISO(y + 1, m, d)].filter(Boolean);
+    return cands.sort((a, b) => Math.abs(diffDays(today, a)) - Math.abs(diffDays(today, b)))[0];
+  }
   return diffDays(today, iso) < -7 ? makeISO(y + 1, m, d) : iso;
 }
 
@@ -135,13 +142,13 @@ function weekdayOf(t) {
   return null;
 }
 
-export function quickAdd(text, { now = new Date(), dateOrder = 'mdy' } = {}) {
+export function quickAdd(text, { now = new Date(), dateOrder = 'mdy', yearMode = 'future' } = {}) {
   const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
   const raw = text.trim();
   const orig = raw.split(/\s+/).filter(Boolean);
   const norm = orig.map(clean);
   const used = new Array(orig.length).fill(false);
-  const out = { title: '', type: 'task', date: null, time: null, durationMin: null, recur: null, course: null, priority: null, rank: null, hints: [] };
+  const out = { title: '', type: 'task', date: null, time: null, durationMin: null, recur: null, course: null, priority: null, rank: null, weightPct: null, hints: [] };
 
   const take = (i, k) => {
     for (let j = i; j < i + k; j++) used[j] = true;
@@ -234,7 +241,7 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy' } = {}) {
         const y = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
         iso = makeISO(y, mo, d);
       } else {
-        iso = resolveYearless(mo, d, today);
+        iso = resolveYearless(mo, d, today, yearMode);
       }
       if (iso) { setDate(iso); take(i, 1); continue; }
     }
@@ -242,13 +249,16 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy' } = {}) {
       const dm = n1.match(/^(\d{1,2})(st|nd|rd|th)?$/);
       if (dm) {
         const yr = n2 && /^\d{4}$/.test(n2) ? Number(n2) : null;
-        const iso = yr ? makeISO(yr, MONTHS[t], Number(dm[1])) : resolveYearless(MONTHS[t], Number(dm[1]), today);
+        const iso = yr ? makeISO(yr, MONTHS[t], Number(dm[1])) : resolveYearless(MONTHS[t], Number(dm[1]), today, yearMode);
         if (iso) { setDate(iso); take(i, yr ? 3 : 2); i += yr ? 2 : 1; continue; }
       }
     }
     m = t.match(/^(\d{1,2})(st|nd|rd|th)?$/);
-    if (m && n1 in MONTHS) {
-      const iso = resolveYearless(MONTHS[n1], Number(m[1]), today);
+    // "3 sep" is a date, but not in "week 3 sep 15" (counter, then month-day) or "chapter 3 sep…".
+    const counter = i > 0 && COUNTERS.has(norm[i - 1]);
+    const monthDayNext = n2 !== undefined && /^\d{1,2}(st|nd|rd|th)?$/.test(n2);
+    if (m && n1 in MONTHS && !counter && !monthDayNext) {
+      const iso = resolveYearless(MONTHS[n1], Number(m[1]), today, yearMode);
       if (iso) { setDate(iso); take(i, 2); i++; continue; }
     }
 
@@ -266,6 +276,15 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy' } = {}) {
       if (h >= 1 && h <= 12) { out.time = `${pad(guessHour(h))}:00`; take(i, 1); continue; }
     }
 
+    // --- share of the final grade: "25%", "(worth 20%)" ---
+    m = t.match(/^(\d{1,3}(?:\.\d+)?)%$/);
+    if (m && Number(m[1]) > 0 && Number(m[1]) <= 100) {
+      out.weightPct = Number(m[1]);
+      take(i, 1);
+      if (i > 0 && !used[i - 1] && norm[i - 1] === 'worth') used[i - 1] = true;
+      continue;
+    }
+
     // --- duration / effort ---
     const dur = parseDuration(t, n1);
     if (dur && dur.min > 0) { out.durationMin = dur.min; take(i, dur.used); i += dur.used - 1; continue; }
@@ -275,6 +294,8 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy' } = {}) {
   for (let i = orig.length - 1; i >= 0 && !used[i] && CONNECTORS.has(norm[i]) && norm[i] !== 'for'; i--) used[i] = true;
 
   let title = orig.filter((_, i) => !used[i]).join(' ').replace(/^[\s,;:–-]+|[\s,;:–-]+$/g, '');
+  // bare: the text was nothing but dates, times and tags.
+  out.bare = !title;
   if (!title) title = raw;
   out.title = title;
   out.type = detectType(raw);

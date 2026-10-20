@@ -1,14 +1,17 @@
 // Offline support: serve the app shell from cache, refresh it in the background.
 // Bump VERSION whenever you ship changes so every file updates together.
-const VERSION = 'willist-v1';
+const VERSION = 'willist-v2';
 const SHELL = [
   './', 'index.html', 'styles.css', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
-  'src/app.js', 'src/agenda.js', 'src/coach.js', 'src/components.js', 'src/dates.js', 'src/focus.js',
-  'src/ics.js', 'src/parse.js', 'src/plan.js', 'src/reminders.js', 'src/sample.js', 'src/store.js', 'src/ui.js',
-  'src/views/editor.js', 'src/views/goals.js', 'src/views/planview.js', 'src/views/radar.js',
-  'src/views/today.js', 'src/views/tools.js',
+  'fonts/archivo.woff2', 'fonts/archivo-italic.woff2', 'fonts/plex-mono-400.woff2', 'fonts/plex-mono-500.woff2', 'fonts/plex-mono-600.woff2',
+  'src/app.js', 'src/agenda.js', 'src/ai.js', 'src/coach.js', 'src/components.js', 'src/dates.js', 'src/focus.js',
+  'src/ics.js', 'src/importer.js', 'src/insights.js', 'src/parse.js', 'src/plan.js', 'src/reminders.js', 'src/sample.js',
+  'src/store.js', 'src/timeline.js', 'src/ui.js',
+  'src/views/coachview.js', 'src/views/editor.js', 'src/views/goals.js', 'src/views/importview.js', 'src/views/planview.js',
+  'src/views/radar.js', 'src/views/today.js', 'src/views/tools.js',
 ];
+// The coach's SDK (vendor/) is cached on first use only; it is not needed offline.
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

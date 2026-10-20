@@ -1,11 +1,13 @@
 import {
-  createStore, makeItem, setLetter, completeRow, moveInList, replan, replanAll, applyPlan,
-  defaultOrder, dateOrder, emptyState, findItem,
+  createStore, makeItem, setLetter, completeRow, moveInList, replan, replanAll, applyPlan, applyImport,
+  defaultOrder, dateOrder, emptyState, findItem, suggestedLetter,
 } from './store.js';
 import { quickAdd } from './parse.js';
+import { planImport } from './importer.js';
 import { dayRows, missedSessions } from './agenda.js';
-import { todayISO, fmtRelDay, relDay, fmtTime } from './dates.js';
-import { h, fill, icon, toast, TYPE_META, fmtMin, courseChip } from './ui.js';
+import { logFocus } from './insights.js';
+import { todayISO, fmtRelDay, relDay } from './dates.js';
+import { h, fill, bubble, tag, toast, TYPE_META, fmtMin, formLabel } from './ui.js';
 import { hintFor, doneLine } from './coach.js';
 import { renderToday } from './views/today.js';
 import { renderRadar } from './views/radar.js';
@@ -13,19 +15,14 @@ import { renderPlan } from './views/planview.js';
 import { renderGoals, openGoalSheet } from './views/goals.js';
 import { renderTools } from './views/tools.js';
 import { openEditor } from './views/editor.js';
+import { openImport } from './views/importview.js';
 import { openFocus } from './focus.js';
 import { startReminders } from './reminders.js';
 import { sampleData } from './sample.js';
 
 const store = createStore();
 const ui = { radarDays: 14, planTab: 'tonight', dump: '' };
-const ROUTES = {
-  today: ['Today', 'sun', renderToday],
-  radar: ['Radar', 'radar', renderRadar],
-  plan: ['Plan', 'plan', renderPlan],
-  goals: ['Goals', 'target', renderGoals],
-  tools: ['Tools', 'tools', renderTools],
-};
+const ROUTES = { today: ['Today', renderToday], radar: ['Radar', renderRadar], plan: ['Plan', renderPlan], goals: ['Goals', renderGoals], tools: ['Tools', renderTools] };
 const main = document.getElementById('main');
 const today = () => todayISO();
 
@@ -34,7 +31,7 @@ const go = (r) => { location.hash = r; };
 
 function ctx() {
   const now = new Date();
-  return { store, s: store.state, today: todayISO(now), now, ui, go, edit, editGoal, focus, refresh: render, act };
+  return { store, s: store.state, today: todayISO(now), now, ui, go, edit, editGoal, focus, openImport: () => openImport(ctx()), refresh: render, act };
 }
 
 function edit(id, prefill) { openEditor(ctx(), id, prefill); }
@@ -46,10 +43,8 @@ function render() {
   const r = route();
   const keepScroll = r === lastRendered;
   const y = window.scrollY;
-  main.replaceChildren(ROUTES[r][2](ctx()));
-  document.querySelectorAll('.nav a').forEach((a) => {
-    if (a.dataset.route === r) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-  });
+  main.replaceChildren(ROUTES[r][1](ctx()));
+  drawNav(r);
   document.body.classList.toggle('no-tips', !store.state.settings.tips);
   document.title = r === 'today' ? 'WilList' : `${ROUTES[r][0]} · WilList`;
   window.scrollTo(0, keepScroll ? y : 0);
@@ -57,12 +52,12 @@ function render() {
 }
 
 function addedMessage(it) {
-  if (it.type === 'event') return `Added to your schedule${it.recur ? ', repeating' : ''}: ${it.title}`;
+  if (it.type === 'event') return `Added to your timetable${it.recur ? ', repeating' : ''}: ${it.title}.`;
   const parts = [`Added “${it.title}”.`];
   const open = (it.sessions || []).filter((s) => !s.done);
-  if (open.length) parts.push(`Start ${relDay(open[0].date, today())} · ${open.length} session${open.length > 1 ? 's' : ''}.`);
+  if (open.length) parts.push(`Start ${relDay(open[0].date, today())}, ${open.length} session${open.length > 1 ? 's' : ''}.`);
   if (it.shortfallMin > 0) parts.push('Not enough time left at your study budget.');
-  if (!it.priority) parts.push('Give it a letter.');
+  if (!it.priority) parts.push('Fill in its letter.');
   return parts.join(' ');
 }
 
@@ -70,6 +65,8 @@ function topOrder(s, letter) {
   const orders = s.items.filter((x) => x.priority === letter && !x.done).map((x) => x.order ?? 0);
   return orders.length ? Math.min(...orders) - 1 : 0;
 }
+
+const undo = { label: 'Undo', fn: () => store.undo() };
 
 const act = {
   letter(id, L) {
@@ -79,12 +76,21 @@ const act = {
       toast(`Who can do “${it?.title}” instead? Add their name.`, { action: { label: 'Add', fn: () => edit(id) } });
     }
   },
+  acceptSuggestions(ids) {
+    store.commit((s) => {
+      for (const id of ids) {
+        const it = findItem(s, id);
+        if (it && !it.priority) setLetter(s, id, suggestedLetter(it.type, it.weightPct), today());
+      }
+    }, { undoable: true });
+    toast(`${ids.length} letters filled in. Change any of them by opening the item.`, { action: undo });
+  },
   complete(row) {
     const t = today();
     let res = null;
     store.commit((s) => { res = completeRow(s, { itemId: row.item.id, sessionId: row.session?.id, recurring: row.recurring }, t); }, { undoable: true });
-    const extra = res?.finishedItem && row.session ? ' All sessions done, so it’s complete.' : '';
-    toast(`${doneLine(store.state.meta.doneCount)}${extra}`, { action: { label: 'Undo', fn: () => store.undo() } });
+    const extra = res?.finishedItem && row.session ? ' That was the last session, so it is complete.' : '';
+    toast(`${doneLine(store.state.meta.doneCount)}${extra}`, { action: undo });
   },
   move(key, dir, rows) {
     const list = rows || dayRows(store.state.items, today());
@@ -93,7 +99,7 @@ const act = {
   remove(id) {
     const it = findItem(store.state, id);
     store.commit((s) => { s.items = s.items.filter((x) => x.id !== id); }, { undoable: true });
-    toast(`Deleted “${it?.title || 'item'}”.`, { action: { label: 'Undo', fn: () => store.undo() } });
+    toast(`Deleted “${it?.title || 'item'}”.`, { action: undo });
   },
   createItem(fields) {
     const s = store.state;
@@ -124,19 +130,25 @@ const act = {
       const p = quickAdd(line, { now, dateOrder: dateOrder(s) });
       items.push(makeItem(p, s.settings, today(), [...s.items, ...items]));
     }
-    store.commit((d) => { d.items.push(...items); d.meta.onboarded = true; });
+    store.commit((d) => { d.items.push(...items); d.meta.onboarded = true; }, { undoable: true });
     const unl = items.filter((x) => !x.priority && x.type !== 'event').length;
-    toast(`${items.length} added.${unl ? ' Give them a letter.' : ''}`, { action: { label: 'Undo', fn: () => store.undo() } });
+    toast(`${items.length} added.${unl ? ' Fill in their letters.' : ''}`, { action: undo });
   },
-  balance() {
-    let n = 0;
-    store.commit((s) => { n = replanAll(s, today()); }, { undoable: true });
-    toast(`Re-spread ${n} item${n === 1 ? '' : 's'} around your daily study budget, A’s first.`, { action: { label: 'Undo', fn: () => store.undo() } });
+  importItems(incoming) {
+    const plan = planImport(store.state.items, incoming);
+    store.commit((s) => { applyImport(s, plan, today()); s.meta.onboarded = true; }, { undoable: true });
+    go('today');
+    toast(`${plan.adds.length} added, ${plan.updates.length} updated${plan.same ? `, ${plan.same} already there` : ''}. Fill in their letters on Today.`, { action: undo, ms: 7000 });
   },
   replanMissed() {
     const t = today();
     store.commit((s) => { for (const m of missedSessions(s.items, t)) replan(s, m.item.id, t); });
     toast('Re-planned from today. No blame, just the next step.');
+  },
+  balance() {
+    let n = 0;
+    store.commit((s) => { n = replanAll(s, today()); }, { undoable: true });
+    toast(`Re-spread ${n} item${n === 1 ? '' : 's'} around your daily budget, A’s first.`, { action: undo });
   },
   pullForward(id) {
     const t = today();
@@ -145,15 +157,26 @@ const act = {
       const first = it?.sessions?.find((x) => !x.done);
       if (first) { first.date = t; it.sessions.sort((a, b) => a.date.localeCompare(b.date)); }
     });
-    toast('One session moved to today. It’s on your list.');
+    toast('One session moved to today. It is on your list.');
   },
   lockPlan() {
     store.commit((s) => { s.meta.lastPlanned = today(); });
     toast('Locked in. Your subconscious works on it while you sleep.');
   },
+  setTodayMode(m) { store.commit((s) => { s.settings.todayMode = m; }); },
   keep(id) { store.commit((s) => { const it = findItem(s, id); if (it) it.createdAt = today(); }); },
   setMdp(v) { store.commit((s) => { s.mdp = v; }); toast(v ? 'Major definite purpose saved.' : 'Cleared.'); },
   setExercise(i, v) { store.commit((s) => { s.exercise = { ...(s.exercise || {}), [i]: v }; }); },
+  setCoach(convo) { store.commit((s) => { s.coach = convo; }); },
+  setCalib(type, ratio) {
+    store.commit((s) => { s.settings.calib = { ...(s.settings.calib || {}), [type]: ratio }; });
+    toast(`New ${type === 'deadline' ? 'homework' : type} plans will use ${ratio}× the usual estimate.`);
+  },
+  logFocus(row, minutes, completed) {
+    if (minutes < 1) return;
+    store.commit((s) => logFocus(s, { itemId: row.item.id, type: row.item.type, title: row.item.title, minutes,
+      planned: row.session?.minutes || null, completed, today: today() }));
+  },
   saveGoal(g) {
     store.commit((s) => {
       const i = s.goals.findIndex((x) => x.id === g.id);
@@ -166,7 +189,7 @@ const act = {
       s.goals = s.goals.filter((g) => g.id !== id);
       for (const it of s.items) if (it.goalId === id) it.goalId = null;
     }, { undoable: true });
-    toast('Goal deleted.', { action: { label: 'Undo', fn: () => store.undo() } });
+    toast('Goal deleted.', { action: undo });
   },
   saveWorry(w) {
     store.commit((s) => { const i = s.worries.findIndex((x) => x.id === w.id); if (i >= 0) s.worries[i] = w; else s.worries.push(w); });
@@ -181,7 +204,7 @@ const act = {
       s.settings = { ...s.settings, ...next };
       if (planChanged) replanAll(s, today());
     });
-    toast(planChanged ? 'Saved. Upcoming work re-planned with the new settings.' : 'Settings saved.');
+    toast(planChanged ? 'Saved. Upcoming work is re-planned with the new settings.' : 'Settings saved.');
   },
   loadSample() {
     store.commit((s) => {
@@ -193,11 +216,11 @@ const act = {
       replanAll(s, today());
     }, { undoable: true });
     go('today');
-    toast('Sample week loaded. Poke around; delete anything.', { action: { label: 'Undo', fn: () => store.undo() } });
+    toast('Sample week loaded. Change or delete anything.', { action: undo });
   },
   resetAll() {
     store.replace(emptyState());
-    toast('Everything erased.', { action: { label: 'Undo', fn: () => store.undo() } });
+    toast('Everything erased.', { action: undo });
   },
 };
 
@@ -205,24 +228,28 @@ const act = {
 const form = document.getElementById('qa');
 const input = document.getElementById('qa-input');
 const preview = document.getElementById('qa-preview');
+const REPEAT = { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly' };
 
 function parseInput() {
   return quickAdd(input.value, { now: new Date(), dateOrder: dateOrder(store.state) });
 }
 
 function renderPreview() {
-  if (!input.value.trim()) { preview.replaceChildren(); preview.classList.remove('show'); return; }
+  if (!input.value.trim()) { fill(preview); preview.classList.remove('show'); return; }
   const p = parseInput();
   const t = today();
-  const bits = [h('span', { class: `chip type t-${p.type}` }, icon(TYPE_META[p.type].icon), TYPE_META[p.type].label)];
-  if (p.date) bits.push(h('span', { class: 'chip' }, `${p.recur ? 'From ' : ''}${fmtRelDay(p.date, t)}${p.time ? ` ${fmtTime(p.time)}` : ''}`));
-  if (p.recur) bits.push(h('span', { class: 'chip' }, { daily: 'Daily', weekdays: 'Weekdays', weekly: 'Weekly', biweekly: 'Every 2 weeks', monthly: 'Monthly' }[p.recur.freq]));
-  if (p.durationMin) bits.push(h('span', { class: 'chip' }, fmtMin(p.durationMin)));
-  if (p.course) bits.push(courseChip(p.course));
-  if (p.priority) bits.push(h('span', { class: `badge l-${p.priority}` }, `${p.priority}${p.rank || ''}`));
   const hint = store.state.settings.tips ? hintFor(p.hints) : null;
-  fill(preview, h('div', { class: 'qa-chips' }, h('span', { class: 'qa-title' }, p.title), bits),
-    hint ? h('p', { class: 'qa-hint' }, hint) : null);
+  fill(preview,
+    formLabel('Reads as'),
+    h('span', { class: 'qa-title' }, p.title),
+    tag(TYPE_META[p.type].code),
+    p.date ? tag(`${p.recur ? 'from ' : ''}${fmtRelDay(p.date, t)}${p.time ? ` ${p.time}` : ''}`) : null,
+    p.recur ? tag(REPEAT[p.recur.freq]) : null,
+    p.durationMin ? tag(fmtMin(p.durationMin)) : null,
+    p.weightPct ? tag(`${p.weightPct}% of grade`, 'stake') : null,
+    p.course ? tag(p.course, 'code') : null,
+    p.priority ? bubble(p.priority, { filled: false }) : null,
+    hint ? h('span', { class: 'qa-hint' }, hint) : null);
   preview.classList.add('show');
 }
 
@@ -241,33 +268,37 @@ document.getElementById('qa-more').addEventListener('click', () => {
   edit(null, prefill);
 });
 document.addEventListener('keydown', (e) => {
-  const tag = document.activeElement?.tagName;
-  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) && !document.querySelector('dialog[open]')) {
+  const tagName = document.activeElement?.tagName;
+  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) && !document.querySelector('dialog[open]')) {
     e.preventDefault();
     input.focus();
   }
   if (e.key === 'Escape' && document.activeElement === input) { input.value = ''; renderPreview(); input.blur(); }
 });
 
-// ---- nav ----
+// ---- header date + nav ----
+const stamp = document.getElementById('formdate');
+if (stamp) stamp.textContent = `Form A–E · ${today().slice(5).replace('-', '/')}/${today().slice(2, 4)}`;
 const nav = document.getElementById('nav');
-nav.replaceChildren(...Object.entries(ROUTES).map(([key, [label, ic]]) =>
-  h('a', { href: `#${key}`, 'data-route': key }, icon(ic), h('span', null, label))));
+function drawNav(current) {
+  fill(nav, Object.entries(ROUTES).map(([key, [label]]) => h('a', { href: `#${key}`, 'aria-current': key === current ? 'page' : null },
+    bubble('', { filled: key === current }), formLabel(label))));
+}
 
 store.subscribe(render);
 window.addEventListener('hashchange', render);
 render();
 startReminders(store);
 
-// Keep "today" and the schedule's Now/Next fresh without fighting the user's typing.
+// Keep "today" and the Now marker fresh without fighting the user's typing.
 let lastDay = today();
 setInterval(() => {
   const busy = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.querySelector('dialog[open]');
-  if (today() !== lastDay || (!busy && (route() === 'today' || route() === 'radar'))) { lastDay = today(); if (!busy) render(); }
+  if (busy) return;
+  if (today() !== lastDay || route() === 'today' || route() === 'radar') { lastDay = today(); render(); }
 }, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !document.querySelector('dialog[open]')) render(); });
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
-

@@ -1,4 +1,5 @@
-// Tiny DOM helpers. User text is always added as text nodes, never as HTML.
+// Tiny DOM helpers and the answer-sheet primitives (bubbles, tags, slips).
+// User text is always added as text nodes, never as HTML.
 
 export function h(tag, props, ...children) {
   const el = document.createElement(tag);
@@ -36,62 +37,78 @@ const PATHS = {
   plus: 'M12 5v14M5 12h14',
   up: 'M6 15l6-6 6 6',
   down: 'M6 9l6 6 6-6',
-  play: 'M8 5.5v13l11-6.5z',
+  next: 'M9 5l7 7-7 7',
   x: 'M6 6l12 12M18 6L6 18',
-  sun: 'M12 4V2m0 20v-2m8-8h2M2 12h2m13.66-5.66l1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m14.14 14.14l-1.41-1.41M12 17a5 5 0 100-10 5 5 0 000 10z',
-  radar: 'M12 21a9 9 0 110-18 9 9 0 010 18zm0-4a5 5 0 110-10 5 5 0 010 10zm0-5l6-6',
-  plan: 'M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01',
-  target: 'M12 21a9 9 0 110-18 9 9 0 010 18zm0-4a5 5 0 110-10 5 5 0 010 10zm0-4a1 1 0 110-2 1 1 0 010 2z',
-  tools: 'M14.7 6.3a4 4 0 00-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 005.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z',
-  clock: 'M12 21a9 9 0 110-18 9 9 0 010 18zm0-14v5l3 2',
-  book: 'M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2zm0 0v16M9 7h6',
-  exam: 'M9 4h6v3H9zM7 5H5v16h14V5h-2M8.5 12l2 2 4-4M8.5 17h7',
-  mic: 'M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3zm6-3a6 6 0 01-12 0m6 6v3',
-  pencil: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
-  users: 'M16 19v-1a4 4 0 00-4-4H6a4 4 0 00-4 4v1M9 10a3 3 0 100-6 3 3 0 000 6zm13 9v-1a4 4 0 00-3-3.9M16 4.1a3 3 0 010 5.8',
-  dot: 'M12 15a3 3 0 100-6 3 3 0 000 6z',
-  undo: 'M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3',
-  trash: 'M4 7h16M10 11v6m4-6v6M6 7l1 13h10l1-13M9 7V4h6v3',
-  more: 'M5 12h.01M12 12h.01M19 12h.01',
-  calendar: 'M4 6h16v15H4zM4 10h16M9 3v4m6-4v4',
-  spark: 'M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z',
-  alert: 'M12 9v4m0 4h.01M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z',
-  pause: 'M8 5v14M16 5v14',
+  edit: 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
 };
 
-export function icon(name, cls = '') {
+export function icon(name) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', '0 0 24 24');
   svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('class', `ic ${cls}`.trim());
+  if (name === 'play') {
+    svg.setAttribute('class', 'ic solid');
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', 'M6 4l15 8-15 8z');
+    svg.append(p);
+    return svg;
+  }
+  svg.setAttribute('class', 'ic');
   const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  p.setAttribute('d', PATHS[name] || PATHS.dot);
+  p.setAttribute('d', PATHS[name] || PATHS.next);
   svg.append(p);
   return svg;
 }
 
 export const TYPE_META = {
-  task: { label: 'Task', icon: 'check' },
-  deadline: { label: 'Homework / due', icon: 'pencil' },
-  exam: { label: 'Exam / test', icon: 'exam' },
-  presentation: { label: 'Presentation', icon: 'mic' },
-  reading: { label: 'Reading', icon: 'book' },
-  event: { label: 'Class / meeting', icon: 'users' },
+  task: { label: 'Task', code: 'Task' },
+  deadline: { label: 'Homework / due', code: 'HW' },
+  exam: { label: 'Exam / test', code: 'Exam' },
+  presentation: { label: 'Presentation', code: 'Talk' },
+  reading: { label: 'Reading', code: 'Read' },
+  event: { label: 'Class / meeting', code: 'Class' },
 };
 
 export function fmtMin(min) {
-  if (!min) return '0m';
+  if (!min) return '0 min';
   const hh = Math.floor(min / 60);
   const mm = min % 60;
-  return hh ? (mm ? `${hh}h ${mm}m` : `${hh}h`) : `${mm}m`;
+  return hh ? (mm ? `${hh}h ${mm}m` : `${hh}h`) : `${mm} min`;
 }
 
-// Stable pastel per course tag.
-export function courseChip(course) {
-  if (!course) return null;
-  let hash = 0;
-  for (const ch of course) hash = (hash * 31 + ch.codePointAt(0)) >>> 0;
-  return h('span', { class: 'chip course', style: { '--hue': String(hash % 360) } }, course);
+// ---- answer-sheet primitives ----
+
+export function bubble(letter = '', { filled = false, ghost = false, size = '', button = false, cls = '', ...rest } = {}) {
+  const classes = ['bubble', size, filled && 'filled', ghost && 'ghost', cls].filter(Boolean).join(' ');
+  return h(button ? 'button' : 'span', { class: classes, type: button ? 'button' : null, 'aria-hidden': button ? null : 'true', ...rest }, letter);
+}
+
+// A row of small bubbles: n total, the first `done` filled, the next `bad` drawn as late.
+export function pips(total, done, { bad = 0, size = 'sm', label } = {}) {
+  const out = [];
+  for (let i = 0; i < total; i++) {
+    out.push(bubble('', { size, filled: i < done, cls: i >= done && i < done + bad ? 'late' : '' }));
+  }
+  return h('span', { class: 'pips', role: label ? 'img' : null, 'aria-label': label || null }, out);
+}
+
+export function tag(text, cls = '') {
+  return text ? h('span', { class: `tag ${cls}`.trim() }, text) : null;
+}
+
+export function codeTag(course) {
+  return course ? tag(course, 'code') : null;
+}
+
+export function formLabel(text, tagName = 'span', extra = {}) {
+  return h(tagName, { class: 'form', ...extra }, text);
+}
+
+export function sec(title, { count = null, note = null, level = 'h2', id = null } = {}) {
+  return h('div', { class: 'sec' },
+    h(level, { class: 'form', id }, title),
+    note ? h('span', { class: 'note' }, note) : null,
+    count != null ? h('span', { class: 'count' }, String(count)) : null);
 }
 
 let toastTimer = null;
@@ -100,21 +117,20 @@ export function toast(message, { action, ms = 4500 } = {}) {
   clearTimeout(toastTimer);
   fill(host,
     h('span', null, message),
-    action ? h('button', { class: 'toast-btn', onclick: () => { host.classList.remove('show'); action.fn(); } }, action.label) : null,
-  );
+    action ? h('button', { class: 'toast-btn', onclick: () => { host.classList.remove('show'); action.fn(); } }, action.label) : null);
   host.classList.add('show');
   toastTimer = setTimeout(() => host.classList.remove('show'), ms);
 }
 
-// Bottom sheet built on <dialog> for free focus trapping and Esc-to-close.
-export function openSheet(title, body, { onClose, wide = false } = {}) {
-  const dlg = h('dialog', { class: `sheet${wide ? ' wide' : ''}`, 'aria-label': title });
+// A tear-off slip built on <dialog> for focus trapping and Esc-to-close.
+export function openSheet(title, body, { onClose } = {}) {
+  const dlg = h('dialog', { class: 'slip', 'aria-label': title });
   const close = () => { if (dlg.open) dlg.close(); };
   dlg.append(
-    h('div', { class: 'sheet-head' },
-      h('h2', null, title),
-      h('button', { class: 'icon-btn', 'aria-label': 'Close', onclick: close }, icon('x'))),
-    h('div', { class: 'sheet-body' }, body),
+    h('div', { class: 'slip-head' },
+      h('h2', { class: 'display' }, title),
+      h('button', { class: 'x', type: 'button', 'aria-label': 'Close', onclick: close }, icon('x'))),
+    h('div', { class: 'slip-body' }, body),
   );
   dlg.addEventListener('close', () => { dlg.remove(); onClose?.(); });
   dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
@@ -124,10 +140,18 @@ export function openSheet(title, body, { onClose, wide = false } = {}) {
 }
 
 export function field(label, control, hint) {
-  return h('label', { class: 'field' },
-    h('span', { class: 'field-label' }, label),
+  return h('label', { class: 'f' },
+    h('span', { class: 'form' }, label),
     control,
-    hint ? h('span', { class: 'field-hint' }, hint) : null);
+    hint ? h('span', { class: 'hint' }, hint) : null);
+}
+
+// A set of bubble radios: options [[value, label]], current value, onPick(value).
+export function choice(options, current, onPick, { ariaLabel } = {}) {
+  return h('div', { class: 'choice', role: 'radiogroup', 'aria-label': ariaLabel || null },
+    options.map(([v, label]) => h('button', {
+      type: 'button', role: 'radio', 'aria-checked': String(v === current), onclick: () => onPick(v),
+    }, bubble('', { filled: v === current }), label)));
 }
 
 export function download(filename, text, type) {

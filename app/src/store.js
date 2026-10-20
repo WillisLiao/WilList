@@ -3,6 +3,7 @@
 
 import { todayISO, diffDays, localeDateOrder } from './dates.js';
 import { buildPlan, suggestEffort, studyLoad, PLANNED_TYPES } from './plan.js';
+import { noteFirstDone } from './insights.js';
 
 const KEY = 'willist.v1';
 export const SCHEMA = 1;
@@ -16,6 +17,11 @@ export const DEFAULT_SETTINGS = {
   tips: true,
   notify: false,
   reward: '',
+  dayStart: '08:00',
+  dayEnd: '22:00',
+  taskMin: 25,
+  calib: {}, // per type: how long things really take vs. the plan, if you accepted it
+  todayMode: 'list',
 };
 
 export function emptyState() {
@@ -27,8 +33,10 @@ export function emptyState() {
     exercise: {},
     worries: [],
     storms: [],
+    log: [],
+    coach: null, // the current coach conversation, kept exactly as sent
     settings: { ...DEFAULT_SETTINGS },
-    meta: { lastPlanned: null, onboarded: false, doneCount: 0, fired: {} },
+    meta: { lastPlanned: null, onboarded: false, doneCount: 0, fired: {}, firstDone: {} },
   };
 }
 
@@ -39,8 +47,9 @@ export function normalize(raw) {
   const s = { ...base, ...raw };
   s.settings = { ...DEFAULT_SETTINGS, ...(raw.settings || {}) };
   s.meta = { ...base.meta, ...(raw.meta || {}) };
-  for (const k of ['items', 'goals', 'worries', 'storms']) s[k] = Array.isArray(raw[k]) ? raw[k] : [];
+  for (const k of ['items', 'goals', 'worries', 'storms', 'log']) s[k] = Array.isArray(raw[k]) ? raw[k] : [];
   s.items = s.items.filter((it) => it && typeof it.id === 'string' && typeof it.title === 'string');
+  s.coach = raw.coach && Array.isArray(raw.coach.messages) ? raw.coach : null;
   s.v = SCHEMA;
   return s;
 }
@@ -58,8 +67,16 @@ export function defaultOrder(item) {
   return item.date ? diffDays('2000-01-01', item.date) * 1000 + Math.floor(Math.random() * 900) : 9e9 + Date.now() % 1e6;
 }
 
-export function suggestedLetter(type) {
+// The pencil mark in the sort tray. A share of the grade is the clearest
+// "consequence" a student has; without one, fall back on what kind of thing it is.
+export function suggestedLetter(type, weightPct = null) {
+  if (weightPct != null && weightPct > 0) return weightPct >= 10 ? 'A' : weightPct >= 3 ? 'B' : 'C';
   return type === 'exam' || type === 'presentation' || type === 'deadline' ? 'A' : type === 'reading' ? 'B' : null;
+}
+
+function calibrated(type, title, settings) {
+  const base = suggestEffort(type, title);
+  return Math.round((base * (settings?.calib?.[type] || 1)) / 5) * 5;
 }
 
 export function makeItem(fields, settings, today, items = []) {
@@ -73,14 +90,16 @@ export function makeItem(fields, settings, today, items = []) {
     time: fields.time || null,
     durationMin: type === 'event' ? (fields.durationMin || 60) : null,
     recur: fields.recur || null,
-    skips: [],
+    skips: fields.skips || [],
+    externalId: fields.externalId || null,
+    weightPct: fields.weightPct ?? null,
     priority: fields.priority || null,
     order: 0,
     delegateTo: fields.delegateTo || '',
     notes: fields.notes || '',
     // For planned work a parsed duration ("essay due fri 4h") means effort.
     effortMin: PLANNED_TYPES.includes(type)
-      ? (fields.effortMin || fields.durationMin || suggestEffort(type, fields.title))
+      ? (fields.effortMin || fields.durationMin || calibrated(type, fields.title, settings))
       : 0,
     sessions: [],
     startBy: null,
@@ -178,6 +197,7 @@ export function completeRow(s, { itemId, sessionId, recurring }, today) {
   const it = findItem(s, itemId);
   if (!it) return { finishedItem: false };
   s.meta.doneCount = (s.meta.doneCount || 0) + 1;
+  noteFirstDone(s, today, it.priority);
   if (recurring) {
     it.doneDates = [...new Set([...(it.doneDates || []), today])];
     return { finishedItem: false };
@@ -213,6 +233,17 @@ export function moveInList(s, rows, key, dir) {
   if (!a || !b) return;
   if (a.order === b.order) b.order += dir;
   [a.order, b.order] = [b.order, a.order];
+}
+
+export function applyImport(s, plan, today) {
+  for (const u of plan.updates) {
+    const it = findItem(s, u.id);
+    if (!it) continue;
+    Object.assign(it, u.patch);
+    if ('date' in u.patch && !it.done) replan(s, it.id, today);
+  }
+  for (const f of plan.adds) s.items.push(makeItem(f, s.settings, today, s.items));
+  return plan.adds.length + plan.updates.length;
 }
 
 export function replan(s, id, today) {

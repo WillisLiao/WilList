@@ -24,6 +24,7 @@ struct GoalsView: View {
 
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             List {
                 Section {
                     Picker("Day", selection: $tomorrow) {
@@ -63,9 +64,11 @@ struct GoalsView: View {
                     } footer: {
                         Text(Letter.allCases.map { "\($0.rawValue): \($0.meaning)" }.joined(separator: "\n"))
                     }
+                    .id("letters")
                 }
 
                 Section("21 days of A1 first") { StreakDots(firstDone: store.state.meta.firstDone, today: today) }
+                    .id("streak")
 
                 goalsSection
 
@@ -76,6 +79,11 @@ struct GoalsView: View {
                 } footer: {
                     Text("A syllabus, a timetable, a project plan or a roster, from a file, a photo or a calendar link.")
                 }
+            }
+            #if DEBUG
+            // `-scroll streak` on launch, for screenshots of the lower sections.
+            .onAppear { UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) } }
+            #endif
             }
             .navigationTitle("Goals")
             .toolbar {
@@ -107,6 +115,10 @@ struct GoalsView: View {
                 .fixedSize(horizontal: false, vertical: true)
             if let detail = detail(row) {
                 Text(detail).foregroundStyle(.secondary)
+            }
+            // A session is part of something bigger: say what it is for and when that is due.
+            if row.session != nil, let due = Fmt.when(row.item, day) {
+                Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(.secondary)
             }
             Button {
                 complete(row)

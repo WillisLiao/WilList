@@ -12,12 +12,13 @@ struct WilListApp: App {
     }
 }
 
-enum AppTab: Hashable { case today, goals, study, more }
+enum AppTab: String, Hashable { case today, goals, study, more }
 
 struct RootView: View {
     @Environment(Store.self) private var store
     @Environment(\.scenePhase) private var phase
-    @State private var tab = AppTab.today
+    // `-tab goals` on launch opens a tab directly (screenshots, Shortcuts debugging).
+    @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
 
     var body: some View {
         TabView(selection: $tab) {

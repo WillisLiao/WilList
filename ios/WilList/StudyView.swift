@@ -129,6 +129,7 @@ struct StudyView: View {
                 }
             }
         }
+        .tint(.primary)
     }
 
     private func status(_ v: Vital) -> String {
@@ -166,18 +167,13 @@ struct WeekChart: View {
                 BarMark(x: .value("Day", d.date), y: .value("Minutes", d.load), width: .ratio(0.55))
                     .foregroundStyle(d.over ? AnyShapeStyle(.red) : AnyShapeStyle(.tint))
                     .cornerRadius(3)
-                    .annotation(position: .top, spacing: 2) {
-                        if d.load > 0 {
-                            Text(hours(d.load)).font(.caption2).monospacedDigit().foregroundStyle(.secondary)
-                        }
-                    }
             }
             RuleMark(y: .value("Budget", budget))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                 .foregroundStyle(.secondary)
         }
         .chartYAxis(.hidden)
-        .chartYScale(domain: 0...Double(max(budget, days.map(\.load).max() ?? 0)) * 1.25)
+        .chartYScale(domain: 0...Double(max(budget, days.map(\.load).max() ?? 0)) * 1.1)
         .chartXAxis {
             AxisMarks(values: days.map(\.date)) { value in
                 AxisValueLabel(centered: true) {
@@ -191,11 +187,17 @@ struct WeekChart: View {
     }
 
     private func dayLabel(_ d: Day) -> some View {
-        let due = days.first { $0.date == d }.map { !$0.due.isEmpty || $0.schedule.contains { $0.type != .event } } ?? false
+        let day = days.first { $0.date == d }
+        let due = day.map { !$0.due.isEmpty || $0.schedule.contains { $0.type != .event } } ?? false
+        // Each day's total sits under its name, so no figure lands on a bar or the budget line.
         return VStack(spacing: 3) {
             Text(d == today ? "Today" : Fmt.date(d).formatted(.dateTime.weekday(.abbreviated)))
                 .font(.caption2)
                 .fontWeight(d == today ? .semibold : .regular)
+            Text(day.map { $0.load > 0 ? hours($0.load) : "–" } ?? "–")
+                .font(.caption2)
+                .monospacedDigit()
+                .foregroundStyle(day?.over == true ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
             Circle().fill(due ? AnyShapeStyle(.primary) : AnyShapeStyle(.clear)).frame(width: 5, height: 5)
         }
     }

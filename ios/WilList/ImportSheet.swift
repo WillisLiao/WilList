@@ -131,6 +131,7 @@ struct ImportSheet: View {
                             }
                         }
                     }
+                    .tint(.primary)
                 }
             } header: {
                 Text("Found \(found.count)")

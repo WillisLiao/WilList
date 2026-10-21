@@ -20,7 +20,7 @@ struct LetterMark: View {
             .foregroundStyle(ink)
             .padding(.horizontal, text.count > 1 ? 6 : 0)
             .frame(minWidth: large ? 40 : 30, minHeight: large ? 32 : 26)
-            .background(letter == .A ? AnyShapeStyle(.tint) : AnyShapeStyle(.clear), in: Capsule())
+            .background(letter == .A ? Color.accentColor : Color.clear, in: Capsule())
             .overlay {
                 if letter != .A {
                     Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: suggested ? 2 : 1.25, dash: letter == .D ? [3, 2] : []))
@@ -29,17 +29,19 @@ struct LetterMark: View {
             .accessibilityLabel(letter.map { "Priority \(label ?? $0.rawValue)" } ?? "No letter")
     }
 
-    private var ink: AnyShapeStyle {
+    // Fixed colours, not hierarchical styles: inside a button those pick up the tint, and the
+    // letters must read the same everywhere.
+    private var ink: Color {
         switch letter {
-        case .A: AnyShapeStyle(.white)
-        case .B: AnyShapeStyle(.primary)
-        default: AnyShapeStyle(.secondary)
+        case .A: .white
+        case .B: .primary
+        default: .secondary
         }
     }
 
-    private var stroke: AnyShapeStyle {
-        if suggested { return AnyShapeStyle(.tint) }
-        return letter == .B ? AnyShapeStyle(.primary) : AnyShapeStyle(.tertiary)
+    private var stroke: Color {
+        if suggested { return .accentColor }
+        return letter == .B ? .primary : Color(.tertiaryLabel)
     }
 }
 
@@ -65,7 +67,7 @@ struct CheckButton: View {
         Button(action: action) {
             Image(systemName: done ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
-                .foregroundStyle(done ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+                .foregroundStyle(done ? Color.accentColor : Color(.tertiaryLabel))
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, value: done)
                 .frame(width: 44, height: 44)

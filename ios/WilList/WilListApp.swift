@@ -67,6 +67,9 @@ struct RootView: View {
     @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
     @AppStorage("badge") private var badge = Badge.off
     @State private var welcoming = Store.shared.needsWelcome
+    #if DEBUG
+    @State private var gallery = UserDefaults.standard.object(forKey: "gallery") != nil
+    #endif
 
     var body: some View {
         TabView(selection: $tab) {
@@ -81,12 +84,27 @@ struct RootView: View {
         .fullScreenCover(isPresented: $welcoming) {
             WelcomeView { tab = .goals }.lookTint()
         }
+        #if DEBUG
+        // `-gallery YES` on launch shows every widget at its real size (screenshots).
+        .fullScreenCover(isPresented: $gallery) { WidgetGallery() }
+        #endif
         .onOpenURL { url in
-            store.incomingFile = url
-            tab = .goals
+            // willist://goals, willist://today and willist://add come from the widgets; anything
+            // else is a file shared to WilList.
+            guard url.scheme == "willist" else {
+                store.incomingFile = url
+                tab = .goals
+                return
+            }
+            switch url.host() {
+            case "goals": tab = .goals
+            case "add": store.quickAction = .add
+            default: tab = .today
+            }
         }
         .onChange(of: phase, initial: true) {
             guard phase == .active else { return }
+            store.reload()
             store.refreshDay()
             Task { await store.syncFeeds() }
         }

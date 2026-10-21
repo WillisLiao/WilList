@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import WidgetKit
 import WilListCore
 
 /// The planner on this device. Every change goes through `change`, which saves it and can
@@ -21,6 +22,7 @@ final class Store {
     private var undoState: AppState?
     private let file: URL
     private let writer = DispatchQueue(label: "willist.save")
+    @ObservationIgnored private var widgetReload: Task<Void, Never>?
 
     struct Toast: Identifiable, Equatable {
         let id = UUID()
@@ -31,11 +33,9 @@ final class Store {
     /// One planner per app, shared by the screens and by Siri and Shortcuts.
     static let shared = Store()
 
-    /// The same file the first, web-based version of the app kept, so nobody loses a plan.
-    static let defaultFile: URL = {
-        try? FileManager.default.createDirectory(at: .applicationSupportDirectory, withIntermediateDirectories: true)
-        return URL.applicationSupportDirectory.appending(path: "willist.v1.json")
-    }()
+    /// The same file the first, web-based version of the app kept (now in the app group, so the
+    /// widgets share it), so nobody loses a plan.
+    static let defaultFile = PlanFile.url
 
     init(file: URL = Store.defaultFile) {
         self.file = file
@@ -59,6 +59,27 @@ final class Store {
         }
         let data = try? JSONEncoder().encode(state), url = file
         writer.async { try? data?.write(to: url, options: .atomic) }
+        reloadWidgets()
+    }
+
+    /// Takes in changes made outside the app, such as a tick on a widget. Called when the app comes
+    /// back to the front and before acting on a notification in the background.
+    func reload() {
+        writer.sync {} // our own last save lands first
+        guard let data = try? Data(contentsOf: file), let saved = try? JSONDecoder().decode(AppState.self, from: data),
+              saved != state else { return }
+        state = saved
+        undoState = nil
+    }
+
+    /// The widgets show the new plan a moment after the last change.
+    private func reloadWidgets() {
+        widgetReload?.cancel()
+        widgetReload = Task {
+            try? await Task.sleep(for: .seconds(1))
+            guard !Task.isCancelled else { return }
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     func undo() {
@@ -119,6 +140,7 @@ final class Store {
     // MARK: reminders
 
     func answerReminder(_ id: String, action: String) {
+        reload()
         refreshDay()
         switch action {
         case Reminders.doneAction:

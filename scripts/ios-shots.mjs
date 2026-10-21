@@ -15,6 +15,9 @@
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)
 //   -show "Email TA"                 open the to-do or item whose title starts with this
 //   -todoSort due                    Today's sort: manual, importance, due, alphabetical, created
+//   -welcome 2                       the first-run welcome at step 2 or 3, with sample lines (use FIRST=1)
+//   -gallery YES                     every widget at its real size
+//   -look frog                       a look from ios/Shared/Look.swift (or LOOK=frog)
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never
 // answered; `xcrun simctl erase <device>` clears it.
@@ -78,8 +81,11 @@ function sample() {
   return JSON.stringify(normalize(s));
 }
 
+// The plan lives in the app group's folder, where the widgets read it too. A copy left in the
+// app's own folder would be taken for an old plan on a first launch, so it goes.
 const container = run('xcrun', ['simctl', 'get_app_container', device.udid, BUNDLE, 'data']).trim();
-const support = path.join(container, 'Library', 'Application Support');
+fs.rmSync(path.join(container, 'Library', 'Application Support', 'willist.v1.json'), { force: true });
+const support = run('xcrun', ['simctl', 'get_app_container', device.udid, BUNDLE, 'group.com.lull.willist']).trim();
 fs.mkdirSync(support, { recursive: true });
 fs.mkdirSync(OUT, { recursive: true });
 const { EMPTY, FIRST, LOOK } = process.env;

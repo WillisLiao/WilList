@@ -14,6 +14,7 @@ struct AddToDoIntent: AppIntent {
         let line = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !line.isEmpty else { return .result(dialog: "Nothing to add.") }
         let store = Store.shared
+        store.reload() // a widget may have changed the plan since the app last ran
         store.change { _ = $0.addTodo(line, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder) }
         return .result(dialog: "Added \u{201C}\(line)\u{201D} to Today.")
     }
@@ -28,6 +29,7 @@ struct AddToPlanIntent: AppIntent {
 
     @MainActor func perform() async throws -> some IntentResult & ProvidesDialog {
         let store = Store.shared
+        store.reload() // a widget may have changed the plan since the app last ran
         let p = quickAdd(text, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder)
         guard !p.title.isEmpty else { return .result(dialog: "Nothing to add.") }
         var draft = Item(p)

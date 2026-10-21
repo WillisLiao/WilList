@@ -2,73 +2,8 @@ import AudioToolbox
 import SwiftUI
 import WilListCore
 
-// Shared pieces: how letters, check-offs, dates and kinds of item look and read everywhere.
-
-/// A letter mark. Letters differ by intensity, not by hue: A is the one filled in the accent,
-/// B is outlined in ink, C is grey, D is dashed (someone else does it) and E is struck out.
-struct LetterMark: View {
-    let letter: Letter?
-    var label: String?
-    var large = false
-    /// On a card filled with the brand colour, the A turns white with a green letter.
-    var onBrand = false
-
-    var body: some View {
-        let text = label ?? letter?.rawValue ?? "–"
-        Text(text)
-            .font(large ? .headline : .footnote.weight(.semibold))
-            .monospacedDigit()
-            .strikethrough(letter == .E)
-            .foregroundStyle(ink)
-            .padding(.horizontal, text.count > 1 ? 6 : 0)
-            .frame(minWidth: large ? 40 : 30, minHeight: large ? 32 : 26)
-            .background(letter == .A ? (onBrand ? Color.white : Color.brand) : Color.clear, in: Capsule())
-            .overlay {
-                if letter != .A {
-                    Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: 1.25, dash: letter == .D || letter == nil ? [3, 2] : []))
-                }
-            }
-            .accessibilityLabel(letter.map { "Priority \(label ?? $0.rawValue)" } ?? "No letter")
-    }
-
-    // Fixed colours, not hierarchical styles: inside a button those pick up the tint, and the
-    // letters must read the same everywhere.
-    private var ink: Color {
-        switch letter {
-        case .A: onBrand ? .brand : .white
-        case .B: .primary
-        default: .secondary
-        }
-    }
-
-    private var stroke: Color { letter == .B ? .primary : Color(.tertiaryLabel) }
-}
-
-extension Letter {
-    /// Tracy's name for each letter.
-    var name: String {
-        switch self {
-        case .A: "Must do"
-        case .B: "Should do"
-        case .C: "Nice to do"
-        case .D: "Delegate"
-        case .E: "Eliminate"
-        }
-    }
-
-    /// What the letter means, in plain words.
-    var detail: String {
-        switch self {
-        case .A: "Serious consequences if it's not done"
-        case .B: "Mild consequences"
-        case .C: "No consequences either way"
-        case .D: "Someone else can do it"
-        case .E: "Drop it"
-        }
-    }
-
-    var meaning: String { "\(name): \(detail.prefix(1).lowercased())\(detail.dropFirst())." }
-}
+// The app's shared pieces: letter menus, the check-off and its chime, toasts and the A1 card.
+// Letter marks and wording live in ios/Shared, which the widgets use too.
 
 /// The letters to choose from, each with its meaning. Used in menus and context menus.
 struct LetterChoices: View {
@@ -126,101 +61,13 @@ struct CheckButton: View {
     }
 }
 
-extension ItemType {
-    var name: String {
-        switch self {
-        case .task: "Task"
-        case .deadline: "Deadline"
-        case .exam: "Exam or test"
-        case .presentation: "Presentation"
-        case .reading: "Reading"
-        case .event: "Class or event"
-        }
-    }
-}
-
-enum Fmt {
-    static func date(_ d: Day) -> Date {
-        let p = d.split(separator: "-").compactMap { Int($0) }
-        guard p.count == 3 else { return .now }
-        return Calendar.current.date(from: DateComponents(year: p[0], month: p[1], day: p[2])) ?? .now
-    }
-
-    /// "Today", "Tomorrow", "Fri" within the week, otherwise "24 Oct" in the device's order.
-    static func day(_ d: Day, _ today: Day, inSentence: Bool = false) -> String {
-        let s: String = switch diffDays(today, d) {
-        case 0: "Today"
-        case 1: "Tomorrow"
-        case -1: "Yesterday"
-        case 2...6: date(d).formatted(.dateTime.weekday(.abbreviated))
-        default: date(d).formatted(.dateTime.month(.abbreviated).day())
-        }
-        return inSentence && ["Today", "Tomorrow", "Yesterday"].contains(s) ? s.lowercased() : s
-    }
-
-    static func long(_ d: Day) -> String { date(d).formatted(.dateTime.weekday(.wide).day().month(.wide)) }
-
-    static func time(_ hhmm: String?) -> String? {
-        guard let m = timeToMin(hhmm), let d = Calendar.current.date(bySettingHour: m / 60, minute: m % 60, second: 0, of: .now) else { return nil }
-        return d.formatted(date: .omitted, time: .shortened)
-    }
-
-    static func minutes(_ m: Int) -> String {
-        if m < 60 { return "\(m) min" }
-        let (h, r) = (m / 60, m % 60)
-        return r == 0 ? "\(h) h" : "\(h) h \(r) min"
-    }
-
-    static func recur(_ r: Recur) -> String {
-        let names = Calendar.current.shortWeekdaySymbols
-        let days = (r.days ?? []).sorted().map { names[$0] }.joined(separator: ", ")
-        let n = r.every
-        return switch r.freq {
-        case .daily: n == 1 ? "Every day" : "Every \(n) days"
-        case .weekdays: "Every weekday"
-        case .weekly, .biweekly:
-            n == 1 ? (days.isEmpty ? "Every week" : "Every \(days)")
-            : n == 2 && !days.isEmpty ? "Every other \(days)"
-            : "Every \(n) weeks" + (days.isEmpty ? "" : " on \(days)")
-        case .monthly: n == 1 ? "Every month" : "Every \(n) months"
-        case .yearly: n == 1 ? "Every year" : "Every \(n) years"
-        }
-    }
-
-    /// When an item happens, worded for its kind: "Exam Fri, 9:00 AM", "Due tomorrow".
-    static func when(_ it: Item, _ today: Day) -> String? {
-        if let r = it.recur { return [recur(r), time(it.time)].compactMap { $0 }.joined(separator: ", ") }
-        guard let d = it.date else { return nil }
-        let at = [day(d, today, inSentence: true), time(it.time)].compactMap { $0 }.joined(separator: ", ")
-        return switch it.type {
-        case .exam: "Exam \(at)"
-        case .deadline: "Due \(at)"
-        case .presentation: "Presenting \(at)"
-        case .reading: "Read by \(at)"
-        case .task, .event: day(d, today) + (time(it.time).map { ", \($0)" } ?? "")
-        }
-    }
-
-    /// A to-do's due date: "Due today", "Due Fri, 6:00 PM", "Overdue, Mon".
-    static func dueLine(_ date: Day?, _ time: String?, _ today: Day) -> String? {
-        guard let date else { return nil }
-        let at = [day(date, today, inSentence: true), time.flatMap { self.time($0) }].compactMap { $0 }.joined(separator: ", ")
-        return diffDays(today, date) < 0 ? "Overdue, \(at)" : "Due \(at)"
-    }
-
+// The parts of Fmt that need the app's reminders.
+extension Fmt {
     /// A reminder as people say it: "Today, 6:00 PM", "Fri, 9:00 AM".
     static func reminder(_ at: String?, _ today: Day) -> String? {
         guard let c = Reminders.remind(at), let d = Calendar.current.date(from: c) else { return nil }
         let dayPart = day(WilListCore.today(d), today)
         return "\(dayPart), \(d.formatted(date: .omitted, time: .shortened))"
-    }
-
-    /// Parts of a line under a title, spaced apart; nil when there are none.
-    static func meta(_ parts: [Text?]) -> Text? {
-        let parts = parts.compactMap { $0 }
-        guard var line = parts.first else { return nil }
-        for p in parts.dropFirst() { line = Text("\(line)   \(p)") }
-        return line
     }
 
     /// Small marks for what a task has: "1 of 3" steps, a bell for a reminder to come, a sun when on Today.
@@ -231,11 +78,6 @@ enum Fmt {
             upcoming ? Text(Image(systemName: "bell")).foregroundStyle(Color.secondary) : nil,
             onToday ? Text(Image(systemName: "sun.max")).foregroundStyle(Color.secondary) : nil,
         ]
-    }
-
-    /// The grey line under an item's title.
-    static func subline(_ it: Item, _ today: Day) -> String {
-        [when(it, today), it.course].compactMap { $0 }.joined(separator: ", ")
     }
 }
 

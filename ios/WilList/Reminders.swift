@@ -7,7 +7,6 @@ enum Reminders {
     static let category = "task"
     static let doneAction = "done"
     static let snoozeAction = "snooze"
-    private static let prefix = "remind-"
 
     /// Asks once; false when notifications are turned off for WilList.
     static func allowed() async -> Bool {
@@ -53,7 +52,7 @@ enum Reminders {
     /// Never asks: the question comes when someone first sets a reminder (see `ReminderRow`).
     static func sync(_ reminders: [Due]) async {
         let center = UNUserNotificationCenter.current()
-        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(prefix) }
+        let pending = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(reminderPrefix) }
         center.removePendingNotificationRequests(withIdentifiers: pending)
         let status = await center.notificationSettings().authorizationStatus
         guard !reminders.isEmpty, [.authorized, .provisional, .ephemeral].contains(status) else { return }
@@ -69,7 +68,7 @@ enum Reminders {
             content.categoryIdentifier = category
             content.userInfo = ["id": r.id]
             let trigger = UNCalendarNotificationTrigger(dateMatching: r.at, repeats: false)
-            try? await center.add(UNNotificationRequest(identifier: prefix + r.id, content: content, trigger: trigger))
+            try? await center.add(UNNotificationRequest(identifier: reminderPrefix + r.id, content: content, trigger: trigger))
         }
     }
 

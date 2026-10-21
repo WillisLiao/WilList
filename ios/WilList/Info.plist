@@ -26,6 +26,18 @@
 			</array>
 		</dict>
 	</array>
+	<!-- willist://goals, willist://today and willist://add: the widgets open the app with these. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.lull.willist</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>willist</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
 	<!-- Press and hold the app icon. -->

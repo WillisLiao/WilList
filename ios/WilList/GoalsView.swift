@@ -151,7 +151,7 @@ struct PlanList: View {
                             RoundedRectangle(cornerRadius: 4).fill(Color.brand.opacity(0.2)).padding(.horizontal, -4)
                         }
                     }
-                if let detail = detail(row) {
+                if let detail = Fmt.detail(row, today) {
                     Text(detail).foregroundStyle(grey)
                 }
                 // A session is part of something bigger: say what it is for and when that is due.
@@ -329,20 +329,9 @@ struct PlanList: View {
         .padding(.vertical, 4)
     }
 
-    /// What this row is about: the study session that is due, or when the item is.
-    private func detail(_ row: Row) -> String? {
-        if let s = row.session {
-            let more = row.extra > 0 ? " (+\(row.extra) more)" : ""
-            return "\(s.label), \(Fmt.minutes(s.minutes))\(more)"
-        }
-        if row.item.priority == .D, !row.item.delegateTo.isEmpty { return "Ask \(row.item.delegateTo)" }
-        let sub = Fmt.subline(row.item, today)
-        return sub.isEmpty ? nil : sub
-    }
-
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.
     private func line(_ row: Row) -> Text? {
-        Fmt.meta([detail(row).map { Text($0).foregroundStyle(row.overdue ? Color.red : Color.secondary) }]
+        Fmt.meta([Fmt.detail(row, today).map { Text($0).foregroundStyle(row.overdue ? Color.red : Color.secondary) }]
                  + Fmt.marks(row.item.steps, remind: row.item.remindAt, today: day == today && row.item.myDay == today))
     }
 

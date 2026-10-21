@@ -16,6 +16,8 @@ final class Store {
     var opening: String?
     /// A home-screen quick action waiting to be carried out.
     var quickAction: QuickAction?
+    /// The focus session running, if any (FocusView.swift). It outlives the app being closed.
+    var focus: FocusSession? = FocusSession.saved
 
     enum QuickAction: String { case add, search }
     private(set) var syncing = false
@@ -33,6 +35,8 @@ final class Store {
     /// One planner per app, shared by the screens and by Siri and Shortcuts.
     static let shared: Store = {
         #if DEBUG
+        // `-focus NO` on launch drops a focus session left running by an earlier run (screenshots, UI tests).
+        if UserDefaults.standard.string(forKey: "focus") == "NO" { FocusSession.saved = nil }
         // UI tests start from a known plan (`-plan a1`), in a file of their own.
         if let plan = UserDefaults.standard.string(forKey: "plan") { return TestPlan.store(plan) }
         #endif

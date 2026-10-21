@@ -12,9 +12,18 @@ struct WidgetGallery: View {
     var body: some View {
         let glance = Glance(store.state, today: store.today)
         let empty = Glance(AppState(), today: store.today)
-        // `-gallery lock` shows the Lock Screen and the large size; anything else the rest.
+        // `-gallery lock` shows the Lock Screen and the large size, `-gallery focus` the focus Live
+        // Activity running and paused; anything else the rest.
         VStack(spacing: 18) {
-            if UserDefaults.standard.string(forKey: "gallery") == "lock" {
+            if UserDefaults.standard.string(forKey: "gallery") == "focus" {
+                let a = FocusAttributes(title: "Problem set 5", label: "A1", minutes: 50)
+                let start = Date.now.addingTimeInterval(-8 * 60)
+                activity { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(3000), left: 2520)) }
+                activity { FocusLockView(attributes: a, state: .init(start: start, end: nil, left: 1234)) }
+                activity { FocusLockView(attributes: FocusAttributes(title: "Read chapter 4 for psych and write a one-page summary", label: "B2", minutes: 25),
+                                         state: .init(start: start, end: start.addingTimeInterval(1500), left: 1020)) }
+                activity { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(480), left: 0), over: true) }
+            } else if UserDefaults.standard.string(forKey: "gallery") == "lock" {
                 lock(width: 300) { FirstWidgetView(glance: glance, family: .accessoryInline) }
                 HStack(spacing: 12) {
                     lock(width: 76) { TodayWidgetView(glance: glance, family: .accessoryCircular) }
@@ -46,6 +55,14 @@ struct WidgetGallery: View {
             .padding(16)
             .frame(width: size.width, height: size.height)
             .background { if hero { Look.heroGround } else { Color.white } }
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    /// A Live Activity on the Lock Screen: 16 pt in from each side, its own white ground.
+    private func activity(@ViewBuilder content: () -> some View) -> some View {
+        content()
+            .frame(width: 370)
+            .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 

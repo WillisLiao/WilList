@@ -55,17 +55,28 @@ struct A1Card: View {
                     Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
                 }
             }
-            Button(action: finish) {
-                Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
-                    .contentTransition(.symbolEffect(.replace))
-                    .foregroundStyle(solid ? Color.brand : Color.white)
-                    .frame(maxWidth: .infinity)
+            HStack(spacing: 10) {
+                // Start: a focus session on it, with the timer on the Lock Screen too.
+                Button { store.startFocus(row) } label: {
+                    Label("Start", systemImage: "play.fill")
+                        .foregroundStyle(solid ? Color.white : Color.brand)
+                        .padding(.horizontal, 2)
+                }
+                .buttonStyle(.bordered)
+                .tint(solid ? Color.white : Color.brand)
+                .accessibilityHint("Starts a focus timer for \(Fmt.minutes(row.session?.minutes ?? store.state.settings.taskMin))")
+                Button(action: finish) {
+                    Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
+                        .contentTransition(.symbolEffect(.replace))
+                        .foregroundStyle(solid ? Color.brand : Color.white)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(solid ? Color.white : Color.brand)
+                .accessibilityIdentifier("markA1Done")
+                .sensoryFeedback(.success, trigger: done) { _, new in new }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(solid ? Color.white : Color.brand)
             .controlSize(.large)
-            .accessibilityIdentifier("markA1Done")
-            .sensoryFeedback(.success, trigger: done) { _, new in new }
             .padding(.top, 6)
             if streak > 0 {
                 Text("\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A.")

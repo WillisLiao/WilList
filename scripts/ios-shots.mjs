@@ -16,7 +16,8 @@
 //   -show "Email TA"                 open the to-do or item whose title starts with this
 //   -todoSort due                    Today's sort: manual, importance, due, alphabetical, created
 //   -welcome 2                       the first-run welcome at step 2 or 3, with sample lines (use FIRST=1)
-//   -gallery YES                     every widget at its real size
+//   -gallery YES|lock|focus          every widget at its real size, or the focus Live Activity
+//   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
 //   -look frog                       a look from ios/Shared/Look.swift (or LOOK=frog)
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never
@@ -95,6 +96,8 @@ const data = FIRST ? null : EMPTY ? JSON.stringify(normalize(blank)) : sample();
 const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : '')
   + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '') + (LOOK ? `-${LOOK}` : '');
 if (LOOK) argv.push('-look', LOOK);
+// A focus session left running by an earlier shot would cover the screen.
+if (!argv.includes('-focus')) argv.push('-focus', 'NO');
 
 for (const tab of tabs) {
   const save = path.join(support, 'willist.v1.json');

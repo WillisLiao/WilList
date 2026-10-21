@@ -22,6 +22,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle)]
         bar.titleTextAttributes = [.font: Self.titleFont(.headline)]
         UNUserNotificationCenter.current().delegate = self
+        // Mark done on the focus Live Activity runs here, with the app in the background if need be.
+        Focus.finish = { done in Store.shared.finishFocus(done: done) }
+        if Store.shared.focus == nil { LiveFocus.end() }
         return true
     }
 
@@ -34,9 +37,10 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         return config
     }
 
-    // Reminders show while WilList is open, too.
+    // Reminders show while WilList is open, too. The end of a focus session doesn't: the focus
+    // screen says so itself.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        [.banner, .list, .sound]
+        notification.request.identifier == FocusNotice.id ? [] : [.banner, .list, .sound]
     }
 
     // Mark done, snooze, or open the task the reminder is about.
@@ -84,6 +88,10 @@ struct RootView: View {
         .fullScreenCover(isPresented: $welcoming) {
             WelcomeView { tab = .today }.lookTint()
         }
+        // A focus session covers everything until Mark done or Stop.
+        .fullScreenCover(isPresented: Binding(get: { store.focus != nil }, set: { _ in })) {
+            FocusView().lookTint()
+        }
         #if DEBUG
         // `-gallery YES` on launch shows every widget at its real size (screenshots).
         .fullScreenCover(isPresented: $gallery) { WidgetGallery() }
@@ -106,8 +114,12 @@ struct RootView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in store.refreshDay() }
         #if DEBUG
-        // `-show <title>` on launch opens that to-do or item (screenshots).
+        // `-show <title>` on launch opens that to-do or item, `-focus YES` starts a focus session on
+        // the A1 (screenshots).
         .onAppear {
+            if UserDefaults.standard.bool(forKey: "focus"), store.focus == nil, let a1 = doRows(store.state.items, store.today).first {
+                store.startFocus(a1)
+            }
             guard let t = UserDefaults.standard.string(forKey: "show") else { return }
             store.opening = store.state.items.first { $0.title.hasPrefix(t) }?.id ?? store.state.todos.first { $0.title.hasPrefix(t) }?.id
         }

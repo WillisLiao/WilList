@@ -26,7 +26,7 @@
 			</array>
 		</dict>
 	</array>
-	<!-- willist://goals, willist://today and willist://add: the widgets open the app with these. -->
+	<!-- willist://today and willist://add: the widgets open the app with these. -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -38,6 +38,9 @@
 			</array>
 		</dict>
 	</array>
+	<!-- A focus session's timer on the Lock Screen and in the Dynamic Island. -->
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
 	<!-- Press and hold the app icon. -->

@@ -1,7 +1,8 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// set a reminder on one, Mark done on the A1 card at the top of Today, and the first-run welcome.
+/// set a reminder on one, Mark done on the A1 card at the top of Today, a focus session on it, and
+/// the first-run welcome.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -39,6 +40,18 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
     }
 
+    func testFocusOnTheA1() {
+        let app = launch(plan: "a1")
+        app.buttons["Start"].tap()
+        XCTAssertTrue(app.staticTexts["One thing. Stay with it until it's done."].waitForExistence(timeout: 5))
+        app.buttons["Pause"].tap()
+        XCTAssertTrue(app.buttons["Resume"].waitForExistence(timeout: 5))
+        app.buttons["focusDone"].tap()
+        // The focus screen closes on Today, where the next A has moved up into the card.
+        XCTAssertTrue(gone(app.staticTexts["Write the essay intro"]))
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].exists)
+    }
+
     func testFirstRunPicksAnA1() {
         let app = launch(plan: "new")
         let first = app.textFields["Read chapter 4 by Monday"]
@@ -67,7 +80,7 @@ final class CoreFlowsTests: XCTestCase {
     private func launch(plan: String, tab: String = "today") -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO"]
+        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO"]
         app.launch()
         return app
     }

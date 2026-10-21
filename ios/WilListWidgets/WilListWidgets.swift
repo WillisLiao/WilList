@@ -2,14 +2,16 @@ import SwiftUI
 import WidgetKit
 import WilListCore
 
-// Home Screen and Lock Screen widgets. Their faces are in ios/Shared/WidgetViews.swift; this file
-// says which sizes exist and when they redraw.
+// Home Screen and Lock Screen widgets, and the focus Live Activity (FocusActivity.swift). The
+// widgets' faces are in ios/Shared/WidgetViews.swift; this file says which sizes exist and when
+// they redraw.
 
 @main
 struct WilListWidgets: WidgetBundle {
     var body: some Widget {
         FirstWidget()
         TodayWidget()
+        FocusActivity()
     }
 }
 

@@ -21,6 +21,14 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 | **Goals** | The one goal that matters most, your goals with their next step, and 21 days of starting with an A. |
 | **More** | Import semester, coach, Worry Buster, 20 Ideas, Pre-game, principles, calendar export, backup, settings. |
 
+## iPhone and iPad app
+
+`ios/` wraps `app/` in a small native shell, so WilList gets an app icon and runs fully offline.
+`npm run ios` builds it and installs it on every paired iPhone and iPad that is unlocked and on this Mac's Wi-Fi.
+Your data is also kept in a native file, so iOS clearing website data can't lose it.
+Backups and calendar files open the share sheet.
+Reminders aren't in the app version yet.
+
 ## Typing
 
 | You type | WilList reads |

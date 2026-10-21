@@ -218,6 +218,9 @@ export function segmented(options, current, onPick, { ariaLabel, tabs = false } 
 }
 
 export function download(filename, text, type) {
+  // Inside the iOS app, files go to the share sheet instead.
+  const share = window.webkit?.messageHandlers?.share;
+  if (share) { share.postMessage({ filename, text, type }); return; }
   const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
   const a = h('a', { href: url, download: filename });

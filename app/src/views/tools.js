@@ -161,13 +161,14 @@ function settings(ctx) {
       h('option', { value: 'mdy', selected: st.dateOrder === 'mdy' }, 'Month/day (March 4)'),
       h('option', { value: 'dmy', selected: st.dateOrder === 'dmy' }, 'Day/month (3 April)'))),
     h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: st.tips, onchange: (e) => { st.tips = e.target.checked; } }), h('span', null, 'Coaching tips while typing')),
-    h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: st.notify, onchange: async (e) => {
+    // Only where this browser can show notifications at all.
+    'Notification' in window ? h('label', { class: 'check-row' }, h('input', { type: 'checkbox', checked: st.notify, onchange: async (e) => {
       st.notify = e.target.checked;
-      if (st.notify && 'Notification' in window && Notification.permission !== 'granted') {
+      if (st.notify && Notification.permission !== 'granted') {
         const p = await Notification.requestPermission();
         if (p !== 'granted') { st.notify = false; e.target.checked = false; toast('Notifications are blocked in this browser.'); }
       }
-    } }), h('span', null, 'Reminders while open')),
+    } }), h('span', null, 'Reminders while open')) : null,
     actions(h('button', { type: 'submit', class: 'btn primary' }, 'Save'), h('button', { type: 'button', class: 'btn quiet', onclick: () => close() }, 'Cancel')));
   close = openSheet('Settings', body);
 }

@@ -27,7 +27,10 @@ let installed = 0;
 for (const d of devices) {
   const name = d.deviceProperties?.name || d.identifier;
   try {
-    run('xcrun', ['devicectl', 'device', 'install', 'app', '--device', d.identifier, APP], 180000);
+    // Wi-Fi connections often drop on the first handshake; a second or third try usually works.
+    for (let attempt = 1; ; attempt++) {
+      try { run('xcrun', ['devicectl', 'device', 'install', 'app', '--device', d.identifier, APP], 180000); break; } catch (e) { if (attempt === 3) throw e; }
+    }
     run('xcrun', ['devicectl', 'device', 'process', 'launch', '--terminate-existing', '--device', d.identifier, BUNDLE], 60000);
     installed++;
   } catch {

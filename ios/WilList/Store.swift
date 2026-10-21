@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import UIKit
 import WidgetKit
 import WilListCore
 
@@ -30,6 +31,9 @@ final class Store {
         let id = UUID()
         var text: String
         var canUndo = false
+
+        /// Time to read it: five seconds, more for a longer message, ten at most.
+        var shownFor: Duration { .seconds(min(10, max(5, 2 + 0.4 * Double(text.split(separator: " ").count)))) }
     }
 
     /// One planner per app, shared by the screens and by Siri and Shortcuts.
@@ -69,7 +73,7 @@ final class Store {
         state = next
         if let label {
             undoState = before
-            toast = Toast(text: label, canUndo: true)
+            say(label, canUndo: true)
         }
         let data = try? JSONEncoder().encode(state), url = file
         writer.async { try? data?.write(to: url, options: .atomic) }
@@ -84,6 +88,7 @@ final class Store {
               saved != state else { return }
         state = saved
         undoState = nil
+        if toast?.canUndo == true { toast = nil } // its Undo would do nothing now
     }
 
     /// The widgets show the new plan a moment after the last change.
@@ -103,7 +108,11 @@ final class Store {
         toast = nil
     }
 
-    func say(_ text: String) { toast = Toast(text: text) }
+    /// A short message above the tab bar, read out by VoiceOver too.
+    func say(_ text: String, canUndo: Bool = false) {
+        toast = Toast(text: text, canUndo: canUndo)
+        UIAccessibility.post(notification: .announcement, argument: text)
+    }
 
     /// A first launch: nothing saved yet and the welcome not seen.
     var needsWelcome: Bool {

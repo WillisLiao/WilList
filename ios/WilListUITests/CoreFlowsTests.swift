@@ -45,12 +45,13 @@ final class CoreFlowsTests: XCTestCase {
         let app = launch(plan: "a1")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
         app.buttons["markA1Done"].tap()
-        // The next A moves up into the card, the finished one leaves Today, and Undo brings it back.
+        // The next A moves up into the card and the finished one leaves Today.
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
         XCTAssertTrue(gone(app.staticTexts["Write the essay intro"]))
-        XCTAssertTrue(app.staticTexts["Read chapter 4"].exists)
-        XCTAssertTrue(app.buttons["markA1Done"].exists)
+        // Undo, straight away while its message shows, brings it back.
         app.buttons["Undo"].tap()
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["markA1Done"].exists)
     }
 
     func testFocusOnTheA1() {

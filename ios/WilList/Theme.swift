@@ -130,6 +130,7 @@ extension Fmt {
 /// Shows the store's short messages ("Deleted…  Undo") above the tab bar.
 struct ToastHost: ViewModifier {
     @Environment(Store.self) private var store
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
 
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom) {
@@ -148,7 +149,9 @@ struct ToastHost: ViewModifier {
                 .padding(.bottom, 8)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
                 .task(id: toast.id) {
-                    try? await Task.sleep(for: .seconds(4))
+                    // With VoiceOver, Undo stays until it's reached, however long that takes.
+                    guard !(toast.canUndo && voiceOver) else { return }
+                    try? await Task.sleep(for: toast.shownFor)
                     if store.toast?.id == toast.id { withAnimation { store.toast = nil } }
                 }
             }

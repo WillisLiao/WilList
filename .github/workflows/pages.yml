@@ -31,7 +31,12 @@ jobs:
         run: >
           xcodebuild test -project ios/WilList.xcodeproj -scheme WilList
           -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath build/ci
-          -quiet
+          -resultBundlePath build/ci/tests.xcresult -quiet
+      - name: Say why a UI test failed
+        if: failure()
+        run: >
+          [ ! -d build/ci/tests.xcresult ] ||
+          xcrun xcresulttool get test-results summary --path build/ci/tests.xcresult
 
   deploy:
     needs: test

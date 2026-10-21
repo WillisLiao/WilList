@@ -78,7 +78,9 @@ All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.
   - A menu in a form row answers a tap anywhere on the row (`fillsRow()`), not only on its words.
   - Every set value has a grey clear button on the right.
 - **Sheets:** inline serif title. To-dos save as you type and close with Done. Items edit a copy and use Cancel and Save, because saving can re-plan the study sessions.
-- **Toast:** at the bottom, with Undo after a delete. Liquid Glass on iOS 26, the regular material before.
+- **Toast:** at the bottom, with Undo after a delete or a tick. Liquid Glass on iOS 26, the regular material before.
+  It stays long enough to read (five seconds, up to ten for a long message), and VoiceOver reads it out.
+  With VoiceOver on, a toast with Undo stays until Undo is reached or something replaces it.
 
 ## Motion
 

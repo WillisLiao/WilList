@@ -39,11 +39,13 @@ struct ImportSheet: View {
             }
         }
         .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.item]) { result in
-            guard case .success(let url) = result else { return }
-            let scoped = url.startAccessingSecurityScopedResource()
-            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            guard let data = try? Data(contentsOf: url) else { phase = .failed("Couldn't open that file."); return }
-            read(data, name: url.lastPathComponent)
+            if case .success(let url) = result { open(url) }
+        }
+        .task {
+            if let url = store.incomingFile {
+                store.incomingFile = nil
+                open(url)
+            }
         }
         .onChange(of: photo) {
             guard let photo else { return }
@@ -154,6 +156,13 @@ struct ImportSheet: View {
     }
 
     // MARK: reading
+
+    private func open(_ url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url) else { phase = .failed("Couldn't open that file."); return }
+        read(data, name: url.lastPathComponent)
+    }
 
     private func read(_ data: Data, name: String) {
         if (name as NSString).pathExtension.lowercased() == "ics" {

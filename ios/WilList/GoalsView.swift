@@ -85,6 +85,7 @@ struct GoalsView: View {
             }
             .sheet(isPresented: $adding) { AddItemSheet() }
             .sheet(isPresented: $importing) { ImportSheet() }
+            .onChange(of: store.incomingFile, initial: true) { if store.incomingFile != nil { importing = true } }
             .sheet(item: $editing) { ItemEditor(item: $0) }
             .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
             .sheet(isPresented: $editingPurpose) { PurposeEditor() }

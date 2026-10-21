@@ -9,6 +9,8 @@ final class Store {
     private(set) var state: AppState
     private(set) var today: Day = WilListCore.today()
     var toast: Toast?
+    /// A file shared to WilList from another app, waiting to be read.
+    var incomingFile: URL?
     private(set) var syncing = false
     private var undoState: AppState?
     private let file: URL
@@ -19,6 +21,9 @@ final class Store {
         var text: String
         var canUndo = false
     }
+
+    /// One planner per app, shared by the screens and by Siri and Shortcuts.
+    static let shared = Store()
 
     /// The same file the first, web-based version of the app kept, so nobody loses a plan.
     static let defaultFile: URL = {

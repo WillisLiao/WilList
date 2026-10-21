@@ -3,7 +3,7 @@ import WilListCore
 
 @main
 struct WilListApp: App {
-    @State private var store = Store()
+    @State private var store = Store.shared
 
     var body: some Scene {
         WindowGroup {
@@ -27,6 +27,10 @@ struct RootView: View {
             Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .onOpenURL { url in
+            store.incomingFile = url
+            tab = .goals
+        }
         .onChange(of: phase, initial: true) {
             guard phase == .active else { return }
             store.refreshDay()

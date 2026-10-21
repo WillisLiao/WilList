@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import UserNotifications
 import WilListCore
 
 /// Settings, calendar links, the Claude key and backups.
@@ -10,6 +11,12 @@ struct MoreView: View {
     @State private var key = Keychain.apiKey ?? ""
     @State private var restoring = false
     @State private var restoreError: String?
+    @AppStorage("newOnTop") private var newOnTop = false
+    @AppStorage("starredOnTop") private var starredOnTop = true
+    @AppStorage("confirmDelete") private var confirmDelete = false
+    @AppStorage("playSound") private var playSound = true
+    @AppStorage("readDates") private var readDates = true
+    @AppStorage("badge") private var badge = Badge.off
 
     var body: some View {
         NavigationStack {
@@ -30,6 +37,21 @@ struct MoreView: View {
                     Text("Calendars and schedules")
                 } footer: {
                     Text("A link from Canvas, Moodle, Google or Outlook keeps your deadlines and exams up to date.")
+                }
+
+                Section {
+                    Toggle("Add new to-dos on top", isOn: $newOnTop)
+                    Toggle("Move starred to-dos to top", isOn: $starredOnTop)
+                    Toggle("Recognize dates and times in titles", isOn: $readDates)
+                    Toggle("Play completion sound", isOn: $playSound)
+                    Toggle("Confirm before deleting", isOn: $confirmDelete)
+                    Picker("App icon badge", selection: $badge) {
+                        ForEach(Badge.allCases) { Text($0.name).tag($0) }
+                    }
+                } header: {
+                    Text("To-dos")
+                } footer: {
+                    Text("Reminders you set on a to-do or an item arrive as notifications, with Mark done right on them.")
                 }
 
                 Section {
@@ -92,6 +114,16 @@ struct MoreView: View {
             .sheet(isPresented: $addingFeed) { AddFeedSheet() }
             .sheet(isPresented: $importing) { ImportSheet() }
             .fileImporter(isPresented: $restoring, allowedContentTypes: [.json]) { restore($0) }
+            .onChange(of: badge) {
+                guard badge != .off else { return }
+                Task {
+                    if await Reminders.allowed() {
+                        try? await UNUserNotificationCenter.current().setBadgeCount(badge.count(store.state, today: store.today))
+                    } else {
+                        store.say("Notifications are off for WilList. Turn them on in the Settings app to see the badge.")
+                    }
+                }
+            }
             .toastHost()
         }
     }

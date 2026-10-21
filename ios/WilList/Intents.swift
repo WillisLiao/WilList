@@ -13,7 +13,8 @@ struct AddToDoIntent: AppIntent {
     @MainActor func perform() async throws -> some IntentResult & ProvidesDialog {
         let line = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !line.isEmpty else { return .result(dialog: "Nothing to add.") }
-        Store.shared.change { $0.addTodo(line) }
+        let store = Store.shared
+        store.change { _ = $0.addTodo(line, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder) }
         return .result(dialog: "Added \u{201C}\(line)\u{201D} to Today.")
     }
 }

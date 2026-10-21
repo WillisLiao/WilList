@@ -11,6 +11,12 @@ final class Store {
     var toast: Toast?
     /// A file shared to WilList from another app, waiting to be read.
     var incomingFile: URL?
+    /// A to-do or item to show, from a tapped reminder or a search result.
+    var opening: String?
+    /// A home-screen quick action waiting to be carried out.
+    var quickAction: QuickAction?
+
+    enum QuickAction: String { case add, search }
     private(set) var syncing = false
     private var undoState: AppState?
     private let file: URL
@@ -103,6 +109,28 @@ final class Store {
     func delete(_ id: String) {
         let title = state.items.first { $0.id == id }?.title ?? "item"
         change(undo: "Deleted \u{201C}\(title)\u{201D}") { s in s.items.removeAll { $0.id == id } }
+    }
+
+    // MARK: reminders
+
+    func answerReminder(_ id: String, action: String) {
+        refreshDay()
+        switch action {
+        case Reminders.doneAction:
+            if let t = state.todos.first(where: { $0.id == id }), !t.done {
+                change { $0.toggleTodo(id, today: today) }
+            } else if state.items.contains(where: { $0.id == id && !$0.done }) {
+                change { $0.complete(itemId: id, today: today) }
+            }
+        case Reminders.snoozeAction:
+            let later = Reminders.stamp(.now.addingTimeInterval(600))
+            change { s in
+                if let i = s.todos.firstIndex(where: { $0.id == id }) { s.todos[i].remindAt = later }
+                if let i = s.index(of: id) { s.items[i].remindAt = later }
+            }
+        default:
+            opening = id
+        }
     }
 
     // MARK: calendar links

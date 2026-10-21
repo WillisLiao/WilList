@@ -196,8 +196,8 @@ private func state(_ items: Item...) -> AppState {
 
 @Test func todos() {
     var s = AppState()
-    s.addTodo("  Buy stamps ")
-    s.addTodo("   ")
+    s.addTodo("  Buy stamps ", today: monday)
+    s.addTodo("   ", today: monday)
     #expect(s.todos.map(\.title) == ["Buy stamps"])
     s.toggleTodo(s.todos[0].id, today: monday)
     #expect(s.todos[0].done && s.todos[0].doneAt == monday)
@@ -205,6 +205,62 @@ private func state(_ items: Item...) -> AppState {
     #expect(!s.todos[0].done && s.todos[0].doneAt == nil)
     s.removeTodo(s.todos[0].id)
     #expect(s.todos.isEmpty)
+}
+
+@Test func todoDatesAndRepeats() throws {
+    var s = AppState()
+    let added = s.addTodo("Call mum tomorrow 6pm", today: monday, minute: 600)
+    let call = try #require(added)
+    #expect(call.title == "Call mum" && call.date == "2026-10-20" && call.time == "18:00")
+    let stamps = s.addTodo("Buy stamps", today: monday, onTop: true)
+    let plain = try #require(stamps)
+    #expect(plain.date == nil && plain.time == nil && s.todos.first == plain && plain.createdAt == monday)
+
+    var t = Todo(id: "w", title: "Water plants")
+    t.date = monday
+    t.recur = Recur(.weekly, days: [1])
+    t.remindAt = "2026-10-19T08:00"
+    t.steps = [Step(id: "s", title: "Fern", done: true)]
+    s.todos = [t]
+    s.toggleTodo("w", today: monday)
+    try #require(s.todos.count == 2)
+    let next = s.todos[1]
+    #expect(s.todos[0].done && !next.done && next.date == "2026-10-26" && next.remindAt == "2026-10-26T08:00")
+    #expect(next.steps.map(\.title) == ["Fern"] && next.steps.map(\.done) == [false])
+    s.toggleTodo("w", today: monday)
+    #expect(s.todos.map(\.id) == ["w"] && !s.todos[0].done, "ticking it back on takes the next one away")
+    // Ticked weeks late, the next one is still not in the past.
+    s.toggleTodo("w", today: "2026-11-11")
+    #expect(s.todos[1].date == "2026-11-16")
+
+    // With date recognition off, the line stays exactly as typed.
+    let literal = s.addTodo("Read chapter 5 friday", today: monday, readDates: false)
+    #expect(literal?.title == "Read chapter 5 friday" && literal?.date == nil)
+
+    // Items keep a reminder, steps and the day they were added to Today.
+    var item = Item(id: "i", title: "Lab report")
+    item.remindAt = "2026-10-20T09:00"
+    item.steps = [Step(id: "a", title: "Graphs")]
+    item.myDay = monday
+    #expect(try JSONDecoder().decode(Item.self, from: JSONEncoder().encode(item)) == item)
+
+    // An older save without any of the new fields still reads.
+    let old = try JSONDecoder().decode(Todo.self, from: Data(#"{"id":"t","title":"Old","done":true,"doneAt":"2026-10-01"}"#.utf8))
+    #expect(old.done && old.date == nil && old.steps.isEmpty && !old.starred && old.notes.isEmpty)
+}
+
+@Test func repeatsEveryFewAndYearly() {
+    #expect(repeats(Recur(.daily, interval: 3), from: monday, on: addDays(monday, 6)))
+    #expect(!repeats(Recur(.daily, interval: 3), from: monday, on: addDays(monday, 4)))
+    #expect(repeats(Recur(.yearly), from: "2024-02-10", on: "2026-02-10"))
+    #expect(!repeats(Recur(.yearly, interval: 2), from: "2024-02-10", on: "2025-02-10"))
+    #expect(repeats(Recur(.monthly, interval: 2), from: "2026-01-15", on: "2026-03-15"))
+    #expect(!repeats(Recur(.monthly, interval: 2), from: "2026-01-15", on: "2026-02-15"))
+    #expect(repeats(Recur(.weekly, interval: 3), from: monday, on: addDays(monday, 21)), "no days given: the start's weekday")
+    #expect(!repeats(Recur(.weekly, interval: 3), from: monday, on: addDays(monday, 14)))
+    #expect(nextRepeat(Recur(.weekdays), from: "2026-10-23", after: "2026-10-23") == "2026-10-26")
+    #expect(nextRepeat(Recur(.daily, until: "2026-10-20"), from: monday, after: "2026-10-20") == nil)
+    #expect(shiftReminder("2026-10-19T08:30", by: 7) == "2026-10-26T08:30")
 }
 
 @Test func studyTodayAndReadiness() {

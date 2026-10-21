@@ -10,6 +10,7 @@ struct StudyView: View {
     @State private var importing = false
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
+    @State private var searching = false
 
     private var today: Day { store.today }
     private var sessions: [Row] { studyRows(store.state.items, today) }
@@ -54,9 +55,13 @@ struct StudyView: View {
             .navigationTitle("Study")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
+                    Button("Search", systemImage: "magnifyingglass") { searching = true }
+                }
+                ToolbarItem(placement: .primaryAction) {
                     Button("Add", systemImage: "plus") { adding = true }
                 }
             }
+            .sheet(isPresented: $searching) { SearchView() }
             .refreshable { await store.syncFeeds(force: true) }
             .sheet(isPresented: $adding) { AddItemSheet(preset: .exam) }
             .sheet(isPresented: $importing) { ImportSheet() }
@@ -126,6 +131,7 @@ struct StudyView: View {
 
     private func complete(_ row: Row) {
         ticking.insert(row.key)
+        Chime.play()
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {

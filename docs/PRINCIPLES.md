@@ -106,7 +106,9 @@ The native app (`ios/`) keeps every idea above and arranges them in four tabs, s
 | **Load-aware planning.** | Study charts this week's planned study per day, with days over your daily study time in red. |
 | **A new habit takes about 21 days.** | The first card counts the days in a row you started with an A. Your goals shows 21 dots, filled where the first thing you finished was an A. |
 | **Victim language.** | While you type in **+**, "I'll try", "I wish", "I have to" and "problem" get a one-line nudge. |
-| **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a short haptic, then the row slides away. |
+| **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a short chime and haptic, then the row slides away. |
+| **Slice and dice the task.** | Every to-do and item can hold steps, ticked off one by one, with "1 of 3" in the list. |
+| **Plan every day in advance.** | Any to-do or item can have a reminder at a date and time, a due date and time, and a repeat; the reminder can be marked done from the notification. |
 
 Not in the iPhone app yet: the coach, focus mode, Worry Buster, 20 Ideas and Pre-game.
 Their data is kept untouched in the save file, so nothing is lost while they are missing.

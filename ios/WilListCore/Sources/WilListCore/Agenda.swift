@@ -11,14 +11,38 @@ public func occursOn(_ item: Item, _ iso: Day) -> Bool {
     if diffDays(start, iso) < 0 { return false }
     if let until = recur.until, diffDays(iso, until) < 0 { return false }
     if item.skips.contains(iso) { return false }
-    let wd = weekday(iso)
+    return repeats(recur, from: start, on: iso)
+}
+
+/// Whether a repeat that began on `start` falls on `iso` (on or after `start`; `until` aside).
+public func repeats(_ recur: Recur, from start: Day, on iso: Day) -> Bool {
+    let wd = weekday(iso), (a, b) = (dayParts(start), dayParts(iso))
     switch recur.freq {
-    case .daily: return true
-    case .weekdays: return wd >= 1 && wd <= 5
-    case .weekly: return recur.days?.contains(wd) ?? false
-    case .biweekly: return (recur.days?.contains(wd) ?? false) && (diffDays(weekStart(start), weekStart(iso)) / 7) % 2 == 0
-    case .monthly: return dayParts(iso).d == dayParts(start).d
+    case .daily:
+        return diffDays(start, iso) % recur.every == 0
+    case .weekdays:
+        return wd >= 1 && wd <= 5
+    case .weekly, .biweekly:
+        let days = recur.days ?? []
+        return (days.isEmpty ? wd == weekday(start) : days.contains(wd))
+            && (diffDays(weekStart(start), weekStart(iso)) / 7) % recur.every == 0
+    case .monthly:
+        return b.d == a.d && ((b.y - a.y) * 12 + b.m - a.m) % recur.every == 0
+    case .yearly:
+        return b.m == a.m && b.d == a.d && (b.y - a.y) % recur.every == 0
     }
+}
+
+/// The first day the repeat falls on after `day`, within its end date; nil when there is none.
+public func nextRepeat(_ recur: Recur, from start: Day, after day: Day) -> Day? {
+    var d = addDays(day, 1)
+    // Ten years covers every repeat WilList can make, yearly ones included.
+    for _ in 0..<3700 {
+        if let until = recur.until, diffDays(d, until) < 0 { return nil }
+        if repeats(recur, from: start, on: d) { return d }
+        d = addDays(d, 1)
+    }
+    return nil
 }
 
 /// Exams, presentations and one-off events are finished once their day has passed.
@@ -30,7 +54,7 @@ public func isPast(_ item: Item, _ today: Day) -> Bool {
 public func isOpen(_ item: Item, _ today: Day) -> Bool { !item.done && !isPast(item, today) }
 
 /// Letter first, then the order you ranked them in, then due date.
-func letterKey(_ it: Item) -> (Int, Double, String) { (it.priority?.rank ?? -1, it.order, it.date ?? "9999") }
+public func letterKey(_ it: Item) -> (Int, Double, String) { (it.priority?.rank ?? -1, it.order, it.date ?? "9999") }
 
 /// Fixed-time commitments for a day: classes, meetings, exams, presentations.
 public func scheduleOn(_ items: [Item], _ iso: Day) -> [Item] {

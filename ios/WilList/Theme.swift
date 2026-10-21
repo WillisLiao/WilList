@@ -1,3 +1,4 @@
+import AudioToolbox
 import SwiftUI
 import WilListCore
 
@@ -87,6 +88,21 @@ struct LetterChoices: View {
     }
 }
 
+/// The short chime for finishing something, unless it's turned off in More. It follows the
+/// ring/silent switch, as system sounds do.
+enum Chime {
+    private static let sound: SystemSoundID? = {
+        guard let url = Bundle.main.url(forResource: "done", withExtension: "wav") else { return nil }
+        var id: SystemSoundID = 0
+        return AudioServicesCreateSystemSoundID(url as CFURL, &id) == noErr ? id : nil
+    }()
+
+    static func play() {
+        guard UserDefaults.standard.object(forKey: "playSound") as? Bool ?? true, let sound else { return }
+        AudioServicesPlaySystemSound(sound)
+    }
+}
+
 /// The round check-off. Filling it plays a success tap.
 struct CheckButton: View {
     let done: Bool
@@ -155,13 +171,17 @@ enum Fmt {
 
     static func recur(_ r: Recur) -> String {
         let names = Calendar.current.shortWeekdaySymbols
-        let days = (r.days ?? []).map { names[$0] }.joined(separator: ", ")
+        let days = (r.days ?? []).sorted().map { names[$0] }.joined(separator: ", ")
+        let n = r.every
         return switch r.freq {
-        case .daily: "Every day"
+        case .daily: n == 1 ? "Every day" : "Every \(n) days"
         case .weekdays: "Every weekday"
-        case .weekly: "Every \(days)"
-        case .biweekly: "Every other \(days)"
-        case .monthly: "Every month"
+        case .weekly, .biweekly:
+            n == 1 ? (days.isEmpty ? "Every week" : "Every \(days)")
+            : n == 2 && !days.isEmpty ? "Every other \(days)"
+            : "Every \(n) weeks" + (days.isEmpty ? "" : " on \(days)")
+        case .monthly: n == 1 ? "Every month" : "Every \(n) months"
+        case .yearly: n == 1 ? "Every year" : "Every \(n) years"
         }
     }
 
@@ -177,6 +197,38 @@ enum Fmt {
         case .reading: "Read by \(at)"
         case .task, .event: day(d, today) + (time(it.time).map { ", \($0)" } ?? "")
         }
+    }
+
+    /// A to-do's due date: "Due today", "Due Fri, 6:00 PM", "Overdue, Mon".
+    static func dueLine(_ date: Day?, _ time: String?, _ today: Day) -> String? {
+        guard let date else { return nil }
+        let at = [day(date, today, inSentence: true), time.flatMap { self.time($0) }].compactMap { $0 }.joined(separator: ", ")
+        return diffDays(today, date) < 0 ? "Overdue, \(at)" : "Due \(at)"
+    }
+
+    /// A reminder as people say it: "Today, 6:00 PM", "Fri, 9:00 AM".
+    static func reminder(_ at: String?, _ today: Day) -> String? {
+        guard let c = Reminders.remind(at), let d = Calendar.current.date(from: c) else { return nil }
+        let dayPart = day(WilListCore.today(d), today)
+        return "\(dayPart), \(d.formatted(date: .omitted, time: .shortened))"
+    }
+
+    /// Parts of a line under a title, spaced apart; nil when there are none.
+    static func meta(_ parts: [Text?]) -> Text? {
+        let parts = parts.compactMap { $0 }
+        guard var line = parts.first else { return nil }
+        for p in parts.dropFirst() { line = Text("\(line)   \(p)") }
+        return line
+    }
+
+    /// Small marks for what a task has: "1 of 3" steps, a bell for a reminder to come, a sun when on Today.
+    static func marks(_ steps: [Step], remind: String?, today onToday: Bool) -> [Text?] {
+        let upcoming = Reminders.remind(remind).flatMap { Calendar.current.date(from: $0) }.map { $0 > .now } ?? false
+        return [
+            steps.isEmpty ? nil : Text("\(steps.filter(\.done).count) of \(steps.count)").foregroundStyle(Color.secondary),
+            upcoming ? Text(Image(systemName: "bell")).foregroundStyle(Color.secondary) : nil,
+            onToday ? Text(Image(systemName: "sun.max")).foregroundStyle(Color.secondary) : nil,
+        ]
     }
 
     /// The grey line under an item's title.

@@ -20,15 +20,42 @@ public enum Letter: String, Codable, Sendable, CaseIterable, Comparable {
 }
 
 public struct Recur: Codable, Equatable, Sendable {
-    public enum Freq: String, Codable, Sendable { case daily, weekdays, weekly, biweekly, monthly }
+    public enum Freq: String, Codable, Sendable { case daily, weekdays, weekly, biweekly, monthly, yearly }
     public var freq: Freq
+    /// Weekdays for weekly repeats, 0 = Sunday.
     public var days: [Int]?
     public var until: Day?
+    /// Every so many days, weeks, months or years; missing means every one.
+    public var interval: Int?
 
-    public init(_ freq: Freq, days: [Int]? = nil, until: Day? = nil) {
+    public init(_ freq: Freq, days: [Int]? = nil, until: Day? = nil, interval: Int? = nil) {
         self.freq = freq
         self.days = days
         self.until = until
+        self.interval = interval
+    }
+
+    /// How many units between repeats: biweekly is weekly every two.
+    public var every: Int { freq == .biweekly ? 2 : max(1, interval ?? 1) }
+}
+
+/// One step of a task, ticked off on its own.
+public struct Step: Codable, Equatable, Sendable, Identifiable {
+    public var id: String
+    public var title: String
+    public var done = false
+
+    public init(id: String, title: String, done: Bool = false) {
+        self.id = id
+        self.title = title
+        self.done = done
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        done = c.get(.done, false)
     }
 }
 
@@ -86,6 +113,11 @@ public struct Item: Codable, Equatable, Sendable, Identifiable {
     public var doneDates: [Day] = []
     public var goalId: String?
     public var createdAt: Day?
+    /// When to be reminded, "YYYY-MM-DDTHH:MM" in local time.
+    public var remindAt: String?
+    public var steps: [Step] = []
+    /// The day it was added to Today; it shows there on that day only.
+    public var myDay: Day?
 
     public init(id: String, title: String, type: ItemType = .task) {
         self.id = id
@@ -120,6 +152,9 @@ public struct Item: Codable, Equatable, Sendable, Identifiable {
         doneDates = c.get(.doneDates, [])
         goalId = c.get(.goalId)
         createdAt = c.get(.createdAt)
+        remindAt = c.get(.remindAt)
+        steps = c.list(.steps)
+        myDay = c.get(.myDay)
     }
 }
 
@@ -165,6 +200,16 @@ public struct Todo: Codable, Equatable, Sendable, Identifiable {
     public var title: String
     public var done = false
     public var doneAt: Day?
+    /// Due date and, optionally, time ("HH:MM").
+    public var date: Day?
+    public var time: String?
+    /// When to be reminded, "YYYY-MM-DDTHH:MM" in local time.
+    public var remindAt: String?
+    public var recur: Recur?
+    public var steps: [Step] = []
+    public var notes = ""
+    public var starred = false
+    public var createdAt: Day?
 
     public init(id: String, title: String, done: Bool = false, doneAt: Day? = nil) {
         self.id = id
@@ -179,6 +224,14 @@ public struct Todo: Codable, Equatable, Sendable, Identifiable {
         title = try c.decode(String.self, forKey: .title)
         done = c.get(.done, false)
         doneAt = c.get(.doneAt)
+        date = c.get(.date)
+        time = c.get(.time)
+        remindAt = c.get(.remindAt)
+        recur = c.get(.recur)
+        steps = c.list(.steps)
+        notes = c.get(.notes, "")
+        starred = c.get(.starred, false)
+        createdAt = c.get(.createdAt)
     }
 }
 

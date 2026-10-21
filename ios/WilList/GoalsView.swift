@@ -30,6 +30,7 @@ struct PlanList: View {
     @State private var importing = false
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
+    @State private var searching = false
 
     private var today: Day { store.today }
     private var day: Day { tomorrow ? addDays(today, 1) : today }
@@ -74,12 +75,22 @@ struct PlanList: View {
         .navigationTitle(tomorrow ? "Tomorrow" : "Goals")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
+                Button("Search", systemImage: "magnifyingglass") { searching = true }
+            }
+            ToolbarItem(placement: .primaryAction) {
                 Button("Add", systemImage: "plus") { adding = true }
             }
         }
+        .sheet(isPresented: $searching) { SearchView() }
         .sheet(isPresented: $adding) { AddItemSheet() }
         .sheet(isPresented: $importing) { ImportSheet() }
         .onChange(of: store.incomingFile, initial: true) { if !tomorrow && store.incomingFile != nil { importing = true } }
+        .onChange(of: store.opening, initial: true) {
+            if !tomorrow, let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
+                store.opening = nil
+                editing = it
+            }
+        }
         .sheet(item: $editing) { ItemEditor(item: $0) }
         .toastHost()
     }
@@ -176,9 +187,7 @@ struct PlanList: View {
                 Text(row.item.title)
                     .strikethrough(row.priority == .E || done, color: .secondary)
                     .foregroundStyle(row.priority == .E ? .secondary : .primary)
-                if let detail = detail(row) {
-                    Text(detail).font(.subheadline).foregroundStyle(row.overdue ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
-                }
+                if let line = line(row) { line.font(.subheadline) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
@@ -188,10 +197,20 @@ struct PlanList: View {
         .listRowInsets(EdgeInsets(top: 2, leading: 8, bottom: 2, trailing: 8))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.accentColor)
+            if !tomorrow { addToToday(row.item) }
         }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(row.item.id) }
         }
+    }
+
+    /// Puts an item on the Today tab too, for today.
+    private func addToToday(_ item: Item) -> some View {
+        let on = item.myDay == today
+        return Button(on ? "Remove from Today" : "Add to Today", systemImage: on ? "sun.max.fill" : "sun.max") {
+            withAnimation { store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = on ? nil : today } } }
+        }
+        .tint(.orange)
     }
 
     private func waitingRow(_ item: Item) -> some View {
@@ -270,8 +289,15 @@ struct PlanList: View {
         return sub.isEmpty ? nil : sub
     }
 
+    /// The line under a row: its detail, then small marks for steps, a reminder and Today.
+    private func line(_ row: Row) -> Text? {
+        Fmt.meta([detail(row).map { Text($0).foregroundStyle(row.overdue ? Color.red : Color.secondary) }]
+                 + Fmt.marks(row.item.steps, remind: row.item.remindAt, today: day == today && row.item.myDay == today))
+    }
+
     private func complete(_ row: Row) {
         ticking.insert(row.key)
+        Chime.play()
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {

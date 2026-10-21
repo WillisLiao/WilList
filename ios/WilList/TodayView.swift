@@ -1,132 +1,397 @@
 import SwiftUI
 import WilListCore
 
-/// Today: a plain checklist. No letters, no dates; write it down, tick it off.
+/// How Today's open to-dos are ordered.
+enum TodoSort: String, CaseIterable, Identifiable {
+    case manual, importance, due, alphabetical, created
+    var id: Self { self }
+
+    var name: String {
+        switch self {
+        case .manual: "My order"
+        case .importance: "Importance"
+        case .due: "Due date"
+        case .alphabetical: "Alphabetically"
+        case .created: "Creation date"
+        }
+    }
+}
+
+/// Today: a plain checklist. Type a line, tick it off. Tap one for steps, a reminder, a due date
+/// and time, a repeat and a note.
 struct TodayView: View {
     @Environment(Store.self) private var store
+    @AppStorage("todoSort") private var sort = TodoSort.manual
+    @AppStorage("showCompleted") private var showCompleted = true
+    @AppStorage("completedOpen") private var completedOpen = true
+    @AppStorage("newOnTop") private var newOnTop = false
+    @AppStorage("starredOnTop") private var starredOnTop = true
+    @AppStorage("confirmDelete") private var confirmDelete = false
+    @AppStorage("readDates") private var readDates = true
     @State private var draft = ""
     @FocusState private var typing: Bool
     @State private var ticking: Set<String> = []
+    @State private var editing: String?
+    @State private var searching = false
+    @State private var deleting: Todo?
+    @State private var editingItem: Item?
 
-    private var open: [Todo] { store.state.todos.filter { !$0.done } }
-    private var doneToday: [Todo] { store.state.todos.filter { $0.done && $0.doneAt == store.today } }
+    private var today: Day { store.today }
+    private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
+    private var completed: [Todo] {
+        store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
+    }
+    /// Items from Goals and Study added to Today, still to do today.
+    private var fromPlan: [Item] {
+        store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) }
+            .sorted { letterKey($0) < letterKey($1) }
+    }
 
     var body: some View {
         NavigationStack {
             List {
                 header
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 20))
-                Section {
-                    addRow
-                    ForEach(open) { todo in
-                        row(todo)
-                            .swipeActions(edge: .leading) {
-                                Button("Done", systemImage: "checkmark") { tick(todo) }.tint(.accentColor)
-                            }
-                            .swipeActions(edge: .trailing) {
-                                Button("Delete", systemImage: "trash", role: .destructive) { delete(todo) }
-                            }
+                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
+                Section { addRow }
+                if sort == .due {
+                    ForEach(dueGroups, id: \.name) { group in
+                        Section(group.name) { rows(group.todos, movable: false) }
                     }
-                    .onMove { from, to in
-                        var list = open
-                        list.move(fromOffsets: from, toOffset: to)
-                        store.change { s in s.todos = list + s.todos.filter(\.done) }
+                } else {
+                    Section { rows(open, movable: sort == .manual) }
+                }
+                if !fromPlan.isEmpty {
+                    Section("From Goals and Study") {
+                        ForEach(fromPlan) { planRow($0) }
                     }
                 }
-                if !doneToday.isEmpty {
+                if showCompleted && !completed.isEmpty {
                     Section {
-                        ForEach(doneToday) { todo in
-                            row(todo)
-                                .swipeActions(edge: .trailing) {
-                                    Button("Delete", systemImage: "trash", role: .destructive) { delete(todo) }
-                                }
-                        }
+                        if completedOpen { rows(completed, movable: false) }
                     } header: {
-                        Text("Done today")
+                        Button { withAnimation(.snappy) { completedOpen.toggle() } } label: {
+                            HStack(spacing: 6) {
+                                Text("Completed")
+                                Text("\(completed.count)").foregroundStyle(Color.secondary)
+                                Image(systemName: "chevron.right")
+                                    .font(.caption.weight(.semibold))
+                                    .rotationEffect(.degrees(completedOpen ? 90 : 0))
+                            }
+                            .foregroundStyle(Color.primary)
+                        }
+                        .buttonStyle(.borderless)
                     }
                 }
             }
             .listStyle(.plain)
             .scrollDismissesKeyboard(.interactively)
             .toolbar(.hidden, for: .navigationBar)
+            .sheet(item: Binding(get: { editing.map(Opened.init) }, set: { editing = $0?.id })) { TodoEditor(id: $0.id) }
+            .sheet(isPresented: $searching) { SearchView() }
+            .sheet(item: $editingItem) { ItemEditor(item: $0) }
+            .confirmationDialog("Delete \u{201C}\(deleting?.title ?? "")\u{201D}?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
+                Button("Delete", role: .destructive) { deleting.map(delete) }
+            }
+            #if DEBUG
+            // `-edit <id>` or `-sheet search` on launch, for screenshots.
+            .onAppear {
+                editing = UserDefaults.standard.string(forKey: "edit")
+                searching = UserDefaults.standard.string(forKey: "sheet") == "search"
+            }
+            #endif
+            // Home-screen quick actions: New to-do and Search.
+            .onChange(of: store.quickAction, initial: true) {
+                switch store.quickAction {
+                case .add: typing = true
+                case .search: searching = true
+                case nil: return
+                }
+                store.quickAction = nil
+            }
+            .onChange(of: store.opening, initial: true) {
+                if let id = store.opening, store.state.todos.contains(where: { $0.id == id }) {
+                    store.opening = nil
+                    editing = id
+                }
+            }
             .toastHost()
         }
     }
 
+    // MARK: header
+
     private var header: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(Fmt.long(store.today))
+        VStack(alignment: .leading, spacing: 2) {
+            Text(Fmt.long(today))
                 .font(.largeTitle.bold())
                 .fontDesign(.serif)
                 .accessibilityAddTraits(.isHeader)
-            Text(summary)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            HStack(spacing: 0) {
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 8)
+                tools
+            }
         }
     }
 
-    private var summary: String {
-        switch (open.count, doneToday.count) {
-        case (0, 0): "Write down what's on your mind, one line each."
-        case (0, let d): "All clear. \(d) done today."
-        case (let n, 0): "\(n) to do."
-        case (let n, let d): "\(n) to do, \(d) done."
+    private var tools: some View {
+        HStack(spacing: 0) {
+            Button("Search", systemImage: "magnifyingglass") { searching = true }
+                .labelStyle(.iconOnly)
+                .frame(width: 44, height: 44)
+                .buttonStyle(.borderless)
+            Menu {
+                Picker("Sort by", selection: $sort) {
+                    ForEach(TodoSort.allCases) { Text($0.name).tag($0) }
+                }
+                .pickerStyle(.inline)
+                Toggle("Show completed", isOn: $showCompleted)
+            } label: {
+                Label("Sort and view", systemImage: "arrow.up.arrow.down")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 44, height: 44)
+            }
         }
+        .font(.body.weight(.medium))
     }
+
+    private var summary: String {
+        let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
+        let doneToday = completed.filter { $0.doneAt == today }.count
+        var parts = [open.isEmpty ? (doneToday == 0 ? "Write down what's on your mind, one line each" : "All clear") : "\(open.count) to do"]
+        if overdue > 0 { parts.append("\(overdue) overdue") }
+        if doneToday > 0 { parts.append("\(doneToday) done today") }
+        return parts.joined(separator: ", ") + "."
+    }
+
+    // MARK: adding
 
     private var addRow: some View {
         HStack(spacing: 10) {
             Image(systemName: "plus.circle.fill")
                 .font(.title2)
-                .foregroundStyle(.tint)
+                .foregroundStyle(Color.accentColor)
                 .frame(width: 44, height: 44)
                 .accessibilityHidden(true)
-            TextField("Add a to-do", text: $draft)
-                .focused($typing)
-                .submitLabel(.done)
-                .onSubmit(add)
+            VStack(alignment: .leading, spacing: 2) {
+                TextField("Add a to-do", text: $draft)
+                    .focused($typing)
+                    .submitLabel(.done)
+                    .onSubmit(add)
+                // What the line will be saved as, when it names a day or a repeat.
+                if let reads = reads {
+                    Text(reads).font(.footnote).foregroundStyle(Color.accentColor)
+                }
+            }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 20))
+    }
+
+    private var reads: String? {
+        let t = draft.trimmingCharacters(in: .whitespaces)
+        guard !t.isEmpty else { return nil }
+        guard readDates else { return nil }
+        let p = quickAdd(t, today: today, minute: nowMinutes(), dateOrder: store.dateOrder)
+        let parts = [Fmt.dueLine(p.date ?? (p.recur != nil ? today : nil), p.date == nil ? nil : p.time, today), p.recur.map(Fmt.recur)]
+            .compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+
+    private func add() {
+        guard !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { typing = false; return }
+        let text = draft
+        withAnimation(.snappy) {
+            store.change { _ = $0.addTodo(text, today: today, minute: nowMinutes(), dateOrder: store.dateOrder,
+                                          onTop: newOnTop, readDates: readDates) }
+        }
+        draft = ""
+        typing = true // keep the keyboard up for the next one
+    }
+
+    // MARK: rows
+
+    private func rows(_ list: [Todo], movable: Bool) -> some View {
+        let reorder: ((IndexSet, Int) -> Void)? = movable ? { (from: IndexSet, to: Int) in move(from, to) } : nil
+        return 
+ForEach(list) { todo in
+            row(todo)
+                .swipeActions(edge: .leading) {
+                    if !todo.done {
+                        Button("Done", systemImage: "checkmark") { tick(todo) }.tint(.accentColor)
+                    }
+                }
+                .swipeActions(edge: .trailing) {
+                    Button("Delete", systemImage: "trash", role: confirmDelete ? nil : .destructive) {
+                        if confirmDelete { deleting = todo } else { delete(todo) }
+                    }
+                    .tint(.red)
+                }
+        }
+        .onMove(perform: reorder)
     }
 
     private func row(_ todo: Todo) -> some View {
         let checked = todo.done || ticking.contains(todo.id)
         return HStack(spacing: 10) {
             CheckButton(done: checked) { todo.done ? untick(todo) : tick(todo) }
-            Text(todo.title)
-                .strikethrough(checked, color: .secondary)
-                .foregroundStyle(todo.done ? .secondary : .primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(todo.title)
+                    .strikethrough(checked, color: .secondary)
+                    .foregroundStyle(todo.done ? .secondary : .primary)
+                if let meta = meta(todo) { meta.font(.subheadline) }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .onTapGesture { editing = todo.id }
+            StarButton(on: Binding(get: { todo.starred }, set: { v in
+                withAnimation(.snappy) { store.change { s in
+                    if let i = s.todos.firstIndex(where: { $0.id == todo.id }) { s.todos[i].starred = v }
+                } }
+            }))
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 20))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    private func add() {
-        let text = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { typing = false; return }
-        withAnimation(.snappy) { store.change { $0.addTodo(text) } }
-        draft = ""
-        typing = true // keep the keyboard up for the next one
+    /// An item added to Today from Goals or Study: tick it off here, or take it off Today.
+    private func planRow(_ item: Item) -> some View {
+        let checked = ticking.contains(item.id)
+        return HStack(spacing: 10) {
+            CheckButton(done: checked) { finish(item) }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title).strikethrough(checked, color: .secondary)
+                let sub = Fmt.subline(item, today)
+                if let line = Fmt.meta([sub.isEmpty ? nil : Text(sub).foregroundStyle(Color.secondary)]
+                                       + Fmt.marks(item.steps, remind: item.remindAt, today: false)) {
+                    line.font(.subheadline)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .onTapGesture { editingItem = item }
+            if item.priority != nil {
+                LetterMark(letter: item.priority, label: dayRows(store.state.items, today, realToday: today).first { $0.item.id == item.id }?.label)
+                    .padding(.trailing, 8)
+            }
+        }
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
+        .swipeActions(edge: .leading) {
+            Button("Done", systemImage: "checkmark") { finish(item) }.tint(.accentColor)
+        }
+        .swipeActions(edge: .trailing) {
+            Button("Remove from Today", systemImage: "sun.max") {
+                withAnimation { store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = nil } } }
+            }
+            .tint(.gray)
+        }
     }
 
-    // The circle fills first, then the row glides down to Done.
-    private func tick(_ todo: Todo) {
-        ticking.insert(todo.id)
+    /// Ticks off today's part of an item: its session or its occurrence if it has one today.
+    private func finish(_ item: Item) {
+        ticking.insert(item.id)
+        Chime.play()
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {
-                store.change { $0.toggleTodo(todo.id, today: store.today) }
+                store.change { s in
+                    if let row = dayRows(s.items, today, realToday: today).first(where: { $0.item.id == item.id }) {
+                        s.complete(row, today: today)
+                    } else {
+                        s.complete(itemId: item.id, today: today)
+                    }
+                }
+                ticking.remove(item.id)
+            }
+        }
+    }
+
+    /// The small line under a to-do: steps, due, reminder, repeat and note, only what it has.
+    private func meta(_ t: Todo) -> Text? {
+        var parts: [Text] = []
+        if !t.steps.isEmpty {
+            parts.append(Text("\(t.steps.filter(\.done).count) of \(t.steps.count)").foregroundStyle(Color.secondary))
+        }
+        if let due = Fmt.dueLine(t.date, t.time, today) {
+            let late = !t.done && diffDays(today, t.date ?? today) < 0
+            parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.accentColor : Color.secondary))
+        }
+        // With a due date shown, the bell alone says there's a reminder; without one, it says when.
+        if !t.done, let r = Fmt.reminder(t.remindAt, today) {
+            parts.append(Text(t.date == nil ? "\(Image(systemName: "bell")) \(r)" : "\(Image(systemName: "bell"))").foregroundStyle(Color.secondary))
+        }
+        if t.recur != nil { parts.append(Text(Image(systemName: "repeat")).foregroundStyle(Color.secondary)) }
+        if !t.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            parts.append(Text(Image(systemName: "note.text")).foregroundStyle(Color.secondary))
+        }
+        return Fmt.meta(parts)
+    }
+
+    // MARK: order
+
+    private func ordered(_ list: [Todo]) -> [Todo] {
+        let indexed = Array(list.enumerated())
+        func by(_ before: (Todo, Todo) -> Bool) -> [Todo] {
+            indexed.sorted { a, b in before(a.element, b.element) || (!before(b.element, a.element) && a.offset < b.offset) }.map(\.element)
+        }
+        var out: [Todo] = switch sort {
+        case .manual, .importance: list
+        case .due: by { ($0.date ?? "9999", $0.time ?? "99:99") < ($1.date ?? "9999", $1.time ?? "99:99") }
+        case .alphabetical: by { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        case .created: by { ($0.createdAt ?? "") > ($1.createdAt ?? "") }
+        }
+        if sort == .importance || (starredOnTop && sort != .due) {
+            out = out.filter(\.starred) + out.filter { !$0.starred }
+        }
+        return out
+    }
+
+    private struct DueGroup { let name: String; let todos: [Todo] }
+
+    /// Sorted by due date, the list falls into Overdue, Today, Tomorrow, This week, Later and No due date.
+    private var dueGroups: [DueGroup] {
+        let names = ["Overdue", "Today", "Tomorrow", "This week", "Later", "No due date"]
+        func name(_ t: Todo) -> String {
+            guard let d = t.date else { return names[5] }
+            let n = diffDays(today, d)
+            return n < 0 ? names[0] : n == 0 ? names[1] : n == 1 ? names[2] : n < 7 ? names[3] : names[4]
+        }
+        let all = open
+        return names.map { n in DueGroup(name: n, todos: all.filter { name($0) == n }) }.filter { !$0.todos.isEmpty }
+    }
+
+    // MARK: actions
+
+    // The circle fills first, then the row glides down to Completed.
+    private func tick(_ todo: Todo) {
+        ticking.insert(todo.id)
+        Chime.play()
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            withAnimation(.snappy) {
+                store.change { $0.toggleTodo(todo.id, today: today) }
                 ticking.remove(todo.id)
             }
         }
     }
 
+    private func move(_ from: IndexSet, _ to: Int) {
+        var list = open
+        list.move(fromOffsets: from, toOffset: to)
+        store.change { s in s.todos = list + s.todos.filter(\.done) }
+    }
+
     private func untick(_ todo: Todo) {
-        withAnimation(.snappy) { store.change { $0.toggleTodo(todo.id, today: store.today) } }
+        withAnimation(.snappy) { store.change { $0.toggleTodo(todo.id, today: today) } }
     }
 
     private func delete(_ todo: Todo) {
         withAnimation { store.change(undo: "Deleted \u{201C}\(todo.title)\u{201D}") { $0.removeTodo(todo.id) } }
     }
 }
+
+/// A sheet's subject by id.
+struct Opened: Identifiable { let id: String }

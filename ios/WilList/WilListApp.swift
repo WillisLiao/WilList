@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 import WilListCore
 
 @main
@@ -13,14 +14,36 @@ struct WilListApp: App {
     }
 }
 
-final class AppDelegate: NSObject, UIApplicationDelegate {
+final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     // Screen titles in New York, like the date on Today. Set once the app has launched: touching
     // UIKit appearance any earlier (in App.init) loses the accent colour.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let bar = UINavigationBar.appearance()
         bar.largeTitleTextAttributes = [.font: Self.serif(.largeTitle)]
         bar.titleTextAttributes = [.font: Self.serif(.headline)]
+        UNUserNotificationCenter.current().delegate = self
         return true
+    }
+
+    // Home-screen quick actions arrive through the scene.
+    func application(_ application: UIApplication, configurationForConnecting session: UISceneSession,
+                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        if let item = options.shortcutItem { SceneDelegate.perform(item) }
+        let config = UISceneConfiguration(name: nil, sessionRole: session.role)
+        config.delegateClass = SceneDelegate.self
+        return config
+    }
+
+    // Reminders show while WilList is open, too.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+        [.banner, .list, .sound]
+    }
+
+    // Mark done, snooze, or open the task the reminder is about.
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        guard let id = response.notification.request.content.userInfo["id"] as? String else { return }
+        let action = response.actionIdentifier
+        await MainActor.run { Store.shared.answerReminder(id, action: action) }
     }
 
     private static func serif(_ style: UIFont.TextStyle) -> UIFont {
@@ -37,6 +60,7 @@ struct RootView: View {
     @Environment(\.scenePhase) private var phase
     // `-tab goals` on launch opens a tab directly (screenshots, Shortcuts debugging).
     @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
+    @AppStorage("badge") private var badge = Badge.off
 
     var body: some View {
         TabView(selection: $tab) {
@@ -56,11 +80,41 @@ struct RootView: View {
             Task { await store.syncFeeds() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in store.refreshDay() }
+        #if DEBUG
+        // `-show <title>` on launch opens that to-do or item (screenshots).
+        .onAppear {
+            guard let t = UserDefaults.standard.string(forKey: "show") else { return }
+            store.opening = store.state.items.first { $0.title.hasPrefix(t) }?.id ?? store.state.todos.first { $0.title.hasPrefix(t) }?.id
+        }
+        #endif
+        // A tapped reminder or search result opens its to-do in Today, or its item in Goals.
+        .onChange(of: store.opening) {
+            if let id = store.opening { tab = store.state.todos.contains { $0.id == id } ? .today : .goals }
+        }
+        .onChange(of: store.quickAction) { if store.quickAction != nil { tab = .today } }
+        .task(id: badge.count(store.state, today: store.today)) {
+            try? await UNUserNotificationCenter.current().setBadgeCount(badge.count(store.state, today: store.today))
+        }
+        .task(id: Reminders.due(store.state, today: store.today)) {
+            await Reminders.sync(Reminders.due(store.state, today: store.today))
+        }
         .task(id: store.state.settings) {
             if await !Reminders.update(store.state.settings) {
                 store.change { $0.settings.notify = false }
                 store.say("Notifications are off for WilList. Turn them on in the Settings app.")
             }
         }
+    }
+}
+
+/// Carries out the home-screen quick actions ("New to-do", "Search").
+final class SceneDelegate: NSObject, UIWindowSceneDelegate {
+    func windowScene(_ windowScene: UIWindowScene, performActionFor shortcutItem: UIApplicationShortcutItem) async -> Bool {
+        Self.perform(shortcutItem)
+        return true
+    }
+
+    static func perform(_ item: UIApplicationShortcutItem) {
+        Store.shared.quickAction = Store.QuickAction(rawValue: item.type.components(separatedBy: ".").last ?? "")
     }
 }

@@ -166,16 +166,59 @@ extension AppState {
 
     // Plain to-dos on Today.
 
-    public mutating func addTodo(_ title: String) {
-        let t = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !t.isEmpty { todos.append(Todo(id: newID(), title: t)) }
+    /// Adds a to-do, read the way you'd say it: "Call mum tomorrow 6pm" is due tomorrow at 6.
+    @discardableResult
+    /// With `readDates` off, the line is kept exactly as typed.
+    public mutating func addTodo(_ text: String, today: Day, minute: Int = 0, dateOrder: String = "mdy",
+                                 onTop: Bool = false, readDates: Bool = true) -> Todo? {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+        var todo = Todo(id: newID(), title: t)
+        if readDates {
+            let p = quickAdd(t, today: today, minute: minute, dateOrder: dateOrder)
+            if !p.title.isEmpty { todo.title = p.title }
+            todo.date = p.date ?? (p.recur != nil ? today : nil)
+            todo.time = todo.date == nil ? nil : p.time
+            todo.recur = p.recur
+        }
+        todo.createdAt = today
+        if onTop { todos.insert(todo, at: 0) } else { todos.append(todo) }
+        return todo
     }
 
+    /// Ticks a to-do off or back on. Ticking off a repeating one adds the next, due on its next
+    /// day (never in the past), with the reminder moved along and the steps unticked; ticking it
+    /// back on takes that untouched next one away again.
     public mutating func toggleTodo(_ id: String, today: Day) {
         guard let i = todos.firstIndex(where: { $0.id == id }) else { return }
         todos[i].done.toggle()
         todos[i].doneAt = todos[i].done ? today : nil
+        let t = todos[i]
+        guard let recur = t.recur, let due = t.date,
+              let next = nextRepeat(recur, from: due, after: diffDays(due, today) > 0 ? addDays(today, -1) : due) else { return }
+        if t.done {
+            var n = t
+            n.id = newID()
+            n.done = false
+            n.doneAt = nil
+            n.date = next
+            n.remindAt = shiftReminder(t.remindAt, by: diffDays(due, next))
+            n.steps = t.steps.map { Step(id: newID(), title: $0.title) }
+            n.createdAt = today
+            todos.insert(n, at: i + 1)
+        } else if let k = todos.firstIndex(where: { $0.id != t.id && !$0.done && $0.title == t.title && $0.recur == recur
+                                                    && $0.date == next && !$0.steps.contains(where: \.done) }) {
+            todos.remove(at: k)
+        }
     }
 
     public mutating func removeTodo(_ id: String) { todos.removeAll { $0.id == id } }
+}
+
+/// A reminder ("YYYY-MM-DDTHH:MM") moved by whole days, at the same time of day.
+public func shiftReminder(_ at: String?, by days: Int) -> String? {
+    guard let at, let t = at.firstIndex(of: "T") else { return at }
+    let d = String(at[..<t])
+    guard isValidDay(d) else { return nil }
+    return addDays(d, days) + at[t...]
 }

@@ -12,6 +12,14 @@ struct ItemEditor: View {
 
     private var planned: Bool { plannedTypes.contains(item.type) && item.recur == nil }
 
+    private var dueWord: String {
+        switch item.type {
+        case .deadline, .reading: "Due"
+        case .exam, .presentation, .event: "On"
+        case .task: "Date"
+        }
+    }
+
     var body: some View {
         NavigationStack {
             Form {
@@ -31,21 +39,16 @@ struct ItemEditor: View {
                     if let l = item.priority { Text(l.meaning) }
                 }
 
+                Section("Steps") {
+                    StepsList(steps: $item.steps)
+                }
+
                 Section {
-                    Toggle("Date", isOn: Binding(get: { item.date != nil }, set: { item.date = $0 ? (item.date ?? store.today) : nil }))
-                    if let d = item.date {
-                        DatePicker("On", selection: Binding(get: { Fmt.date(d) }, set: { item.date = WilListCore.today($0) }), displayedComponents: .date)
-                        Toggle("Time", isOn: Binding(get: { item.time != nil }, set: { item.time = $0 ? (item.time ?? "09:00") : nil }))
-                        if let t = item.time {
-                            DatePicker("At", selection: Binding(
-                                get: { Calendar.current.date(bySettingHour: (timeToMin(t) ?? 540) / 60, minute: (timeToMin(t) ?? 540) % 60, second: 0, of: .now) ?? .now },
-                                set: { item.time = minToTime(nowMinutes($0)) }), displayedComponents: .hourAndMinute)
-                        }
-                    }
-                    if let r = item.recur {
-                        LabeledContent("Repeats", value: Fmt.recur(r))
-                        Button("Stop repeating", role: .destructive) { item.recur = nil }
-                    }
+                    AddToTodayRow(myDay: $item.myDay, today: store.today)
+                    ReminderRow(at: $item.remindAt, today: store.today)
+                    DueRow(date: $item.date, time: $item.time, today: store.today,
+                           title: dueWord, add: "Add a date")
+                    RepeatRow(recur: $item.recur, date: $item.date, today: store.today)
                     if item.type == .event {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)
                     }

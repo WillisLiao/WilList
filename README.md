@@ -29,10 +29,23 @@ It has four tabs:
 
 | | |
 |---|---|
-| **Today** | A plain checklist under today's date. Type a line, press return, type the next. Tick it off and it slides into Done. |
+| **Today** | A plain checklist under today's date. Type a line, press return, type the next; "Call mum tomorrow 6pm" is due tomorrow at 6. Tick it off and it slides into Completed. Below your to-dos are the items you added to Today from Goals and Study. |
 | **Goals** | Your main goal, what to do first as one large card, then the rest by letter, with the letter on the right of each row. Items still waiting for a letter get a **Letter** button. **Plan tomorrow** and **Bring in a schedule** sit at the bottom; your other goals and 21 days of starting with an A are behind the main goal. |
 | **Study** | Today's study sessions, this week's study per day (red where a day has more than your daily study time), and each exam and deadline coming up, with a line only when it needs attention. |
-| **More** | Calendar links, study settings, your Claude key and backups. |
+| **More** | Calendar links, to-do and study settings, your Claude key and backups. |
+
+Every to-do and every item has the task details of Microsoft To Do, on the screen you get by tapping it:
+
+- **Steps**, each ticked off on its own, with "1 of 3" in the list.
+- **Remind me**: later today, tomorrow at 9, next week, or any date and time. The reminder arrives as a notification with **Mark done** and **Remind me in 10 minutes** on it.
+- **Due date and time**: today, tomorrow, next week or any date, with an optional time. Overdue shows in red.
+- **Repeat**: daily, weekdays, weekly, monthly, yearly, or every so many days, weeks, months or years on chosen weekdays. Ticking off a repeating to-do adds the next one.
+- **A note**, and for to-dos **a star** for important, and for items **Add to Today**.
+
+Today sorts by your own order, importance, due date (grouped into Overdue, Today, Tomorrow, This week and Later), alphabetically or by creation date, and can hide completed to-dos.
+**Search** (Today, Goals and Study) finds to-dos and items by title, step, note or course.
+More has Microsoft To Do's settings: new to-dos on top, starred to-dos on top, recognising dates in titles, a completion sound, confirming before deleting, and an app icon badge for what's open on Today or what's due.
+Pressing and holding the app icon offers **New to-do** and **Search**.
 
 Ways in, from the least effort:
 

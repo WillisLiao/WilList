@@ -18,11 +18,11 @@ struct ItemEditor: View {
                 Section {
                     TextField("Title", text: $item.title, axis: .vertical).font(.title3)
                     Picker("Kind", selection: $item.type) {
-                        ForEach(ItemType.allCases, id: \.self) { Label($0.name, systemImage: $0.symbol).tag($0) }
+                        ForEach(ItemType.allCases, id: \.self) { Text($0.name).tag($0) }
                     }
                     Picker("Letter", selection: $item.priority) {
                         Text("None").tag(Letter?.none)
-                        ForEach(Letter.allCases, id: \.self) { Text($0.rawValue).tag(Letter?.some($0)) }
+                        ForEach(Letter.allCases, id: \.self) { Text("\($0.rawValue)  \($0.name)").tag(Letter?.some($0)) }
                     }
                     if item.priority == .D {
                         TextField("Who will do it?", text: $item.delegateTo)

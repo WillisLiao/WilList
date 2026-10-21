@@ -1,16 +1,34 @@
 import SwiftUI
 import WilListCore
 
-/// Goals: the ABCDE list with the one thing to do first, the items still waiting for a letter,
-/// the A1-first habit and the long-term goals behind it all.
+/// Goals: your main goal, the one thing to do first, the rest of the day in ABCDE order and
+/// anything still waiting for a letter. Tomorrow and the full list of goals are one tap away.
 struct GoalsView: View {
+    // `-open tomorrow` or `-open goals` on launch opens that screen (screenshots).
+    @State private var path = UserDefaults.standard.string(forKey: "open").flatMap(GoalsPage.init).map { [$0] } ?? []
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            PlanList(tomorrow: false)
+                .navigationDestination(for: GoalsPage.self) { page in
+                    switch page {
+                    case .tomorrow: PlanList(tomorrow: true)
+                    case .goals: GoalsList()
+                    }
+                }
+        }
+    }
+}
+
+enum GoalsPage: String, Hashable { case tomorrow, goals }
+
+/// One day in ABCDE order with its first thing on top. Goals shows today; Plan tomorrow shows tomorrow.
+struct PlanList: View {
     @Environment(Store.self) private var store
+    let tomorrow: Bool
     @State private var adding = false
     @State private var importing = false
     @State private var editing: Item?
-    @State private var editingGoal: Goal?
-    @State private var editingPurpose = false
-    @State private var tomorrow = false
     @State private var ticking: Set<String> = []
 
     private var today: Day { store.today }
@@ -23,127 +41,140 @@ struct GoalsView: View {
     private var evening: Bool { nowMinutes() >= (timeToMin(store.state.settings.planTime) ?? 1230) }
 
     var body: some View {
-        NavigationStack {
-            ScrollViewReader { proxy in
+        ScrollViewReader { proxy in
             List {
+                if !tomorrow { goalRow }
                 Section {
-                    Picker("Day", selection: $tomorrow) {
-                        Text("Today").tag(false)
-                        Text("Tomorrow").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                } footer: {
-                    if evening && !tomorrow {
-                        Text("It's evening. Plan tomorrow now and wake up knowing your A1.")
-                    }
+                    if let first { firstCard(first) } else { emptyCard }
+                    ForEach(rest) { itemRow($0) }
+                        .onMove(perform: move)
                 }
-
-                Section(tomorrow ? "First thing tomorrow" : "Do this first") {
-                    if let first {
-                        firstBlock(first)
-                    } else {
-                        Text(waiting.isEmpty ? "Nothing on the list. Add what you need to do with +." : "Nothing lettered yet. Give the items below a letter and the most important one shows here.")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                if !rest.isEmpty {
-                    Section("Then") {
-                        ForEach(rest) { itemRow($0) }
-                            .onMove(perform: move)
-                    }
-                }
-
                 if !waiting.isEmpty {
-                    Section {
-                        ForEach(waiting) { sortRow($0) }
-                    } header: {
-                        Text("Needs a letter")
-                    } footer: {
-                        Text(Letter.allCases.map { "\($0.rawValue): \($0.meaning)" }.joined(separator: "\n"))
+                    Section("Needs a letter") {
+                        ForEach(waiting) { waitingRow($0) }
                     }
                     .id("letters")
                 }
-
-                Section("21 days of A1 first") { StreakDots(firstDone: store.state.meta.firstDone, today: today) }
-                    .id("streak")
-
-                goalsSection
-
-                Section {
-                    Button { importing = true } label: {
-                        Label("Bring in a schedule", systemImage: "square.and.arrow.down")
-                    }
-                } footer: {
-                    Text("A syllabus, a timetable, a project plan or a roster, from a file, a photo or a calendar link.")
+                if !tomorrow {
+                    Section { planningRows }
+                        .id("bottom")
                 }
             }
+            .listStyle(.plain)
             #if DEBUG
-            // `-scroll streak` on launch, for screenshots of the lower sections.
-            .onAppear { UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) } }
+            // `-scroll letters` or `-sheet add|import` on launch, for screenshots.
+            .onAppear {
+                guard !tomorrow else { return }
+                UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) }
+                adding = UserDefaults.standard.string(forKey: "sheet") == "add"
+                importing = UserDefaults.standard.string(forKey: "sheet") == "import"
+            }
             #endif
-            }
-            .navigationTitle("Goals")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button("Add", systemImage: "plus") { adding = true }
-                }
-            }
-            .sheet(isPresented: $adding) { AddItemSheet() }
-            .sheet(isPresented: $importing) { ImportSheet() }
-            .onChange(of: store.incomingFile, initial: true) { if store.incomingFile != nil { importing = true } }
-            .sheet(item: $editing) { ItemEditor(item: $0) }
-            .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
-            .sheet(isPresented: $editingPurpose) { PurposeEditor() }
-            .toastHost()
         }
+        .navigationTitle(tomorrow ? "Tomorrow" : "Goals")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button("Add", systemImage: "plus") { adding = true }
+            }
+        }
+        .sheet(isPresented: $adding) { AddItemSheet() }
+        .sheet(isPresented: $importing) { ImportSheet() }
+        .onChange(of: store.incomingFile, initial: true) { if !tomorrow && store.incomingFile != nil { importing = true } }
+        .sheet(item: $editing) { ItemEditor(item: $0) }
+        .toastHost()
     }
 
     // MARK: rows
 
-    private func firstBlock(_ row: Row) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
+    private var goalRow: some View {
+        let goal = store.state.mdp, others = store.state.goals.count
+        return NavigationLink(value: GoalsPage.goals) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(goal.isEmpty ? "Set your main goal" : goal)
+                    .font(.headline)
+                    .fontDesign(.serif)
+                    .foregroundStyle(goal.isEmpty ? Color.accentColor : .primary)
+                    .lineLimit(2)
+                Text(goal.isEmpty ? "The one goal that would change the most for you"
+                     : others == 0 ? "Your main goal" : "Your main goal and \(others) more")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        }
+        .listRowSeparator(.hidden)
+    }
+
+    private func firstCard(_ row: Row) -> some View {
+        let done = ticking.contains(row.key)
+        let streak = tomorrow ? 0 : a1Streak(store.state.meta.firstDone, today)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
                 LetterMark(letter: row.priority, label: row.label, large: true)
+                Text(tomorrow ? "First thing tomorrow" : "Do this first")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
                 Spacer()
-                if row.overdue { Text("Overdue").font(.footnote.weight(.medium)).foregroundStyle(.red) }
+                if row.overdue { Text("Overdue").font(.subheadline.weight(.medium)).foregroundStyle(.red) }
             }
-            Text(row.item.title)
-                .font(.title2.weight(.semibold))
-                .fixedSize(horizontal: false, vertical: true)
-            if let detail = detail(row) {
-                Text(detail).foregroundStyle(.secondary)
-            }
-            // A session is part of something bigger: say what it is for and when that is due.
-            if row.session != nil, let due = Fmt.when(row.item, day) {
-                Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(row.item.title)
+                    .font(.title2.weight(.semibold))
+                    .fontDesign(.serif)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let detail = detail(row) {
+                    Text(detail).foregroundStyle(.secondary)
+                }
+                // A session is part of something bigger: say what it is for and when that is due.
+                if row.session != nil, let due = Fmt.when(row.item, day) {
+                    Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(.secondary)
+                }
             }
             Button {
                 complete(row)
             } label: {
-                Label(ticking.contains(row.key) ? "Done" : "Mark done", systemImage: ticking.contains(row.key) ? "checkmark.circle.fill" : "checkmark")
+                Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
                     .contentTransition(.symbolEffect(.replace))
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .sensoryFeedback(.success, trigger: ticking.contains(row.key)) { _, new in new }
-            .padding(.top, 4)
+            .sensoryFeedback(.success, trigger: done) { _, new in new }
+            .padding(.top, 6)
+            if streak > 0 {
+                Text("\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+            }
         }
-        .padding(.vertical, 6)
+        .padding(18)
+        .background(Color.accentColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .contentShape(Rectangle())
         .onTapGesture { editing = row.item }
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+    }
+
+    private var emptyCard: some View {
+        Text(!waiting.isEmpty ? "Give the items below a letter. The most important one shows up here."
+             : tomorrow ? "Nothing planned for tomorrow yet. Add what you'll do with +."
+             : "Nothing on the list. Add what you need to do with +.")
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
     }
 
     private func itemRow(_ row: Row) -> some View {
-        HStack(spacing: 10) {
-            CheckButton(done: ticking.contains(row.key)) { complete(row) }
-            LetterMark(letter: row.priority, label: row.label)
+        let done = ticking.contains(row.key)
+        return HStack(spacing: 8) {
+            CheckButton(done: done) { complete(row) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.item.title)
-                    .strikethrough(row.priority == .E || ticking.contains(row.key), color: .secondary)
+                    .strikethrough(row.priority == .E || done, color: .secondary)
                     .foregroundStyle(row.priority == .E ? .secondary : .primary)
                 if let detail = detail(row) {
                     Text(detail).font(.subheadline).foregroundStyle(row.overdue ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
@@ -152,56 +183,80 @@ struct GoalsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { editing = row.item }
+            letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
         }
-        .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 2, leading: 8, bottom: 2, trailing: 8))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.accentColor)
         }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(row.item.id) }
-            Menu {
-                letterButtons(row.item)
-            } label: {
-                Label("Letter", systemImage: "textformat.abc")
-            }
         }
-        .contextMenu { letterButtons(row.item) }
     }
 
-    private func sortRow(_ item: Item) -> some View {
-        let suggested = suggestedLetter(item.type, weightPct: item.weightPct)
-        return VStack(alignment: .leading, spacing: 8) {
+    private func waitingRow(_ item: Item) -> some View {
+        HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
                 let sub = Fmt.subline(item, today)
                 if !sub.isEmpty { Text(sub).font(.subheadline).foregroundStyle(.secondary) }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { editing = item }
-            HStack(spacing: 8) {
-                ForEach(Letter.allCases, id: \.self) { l in
-                    Button {
-                        withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
-                    } label: {
-                        LetterMark(letter: l, large: true, suggested: l == suggested)
-                    }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel("\(l.rawValue): \(l.meaning)")
-                }
+            letterMenu(item) {
+                Text("Letter")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+                    .padding(.horizontal, 14)
+                    .frame(minHeight: 30)
+                    .background(Color.accentColor.opacity(0.12), in: Capsule())
             }
-            .sensoryFeedback(.selection, trigger: item.priority)
         }
-        .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 8))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
     }
 
-    @ViewBuilder private func letterButtons(_ item: Item) -> some View {
-        ForEach(Letter.allCases, id: \.self) { l in
-            Button("\(l.rawValue): \(l.meaning)") { withAnimation { store.change { $0.setLetter(item.id, l, today: today) } } }
+    /// Tapping a letter (or "Letter") lists the five with what each one means.
+    private func letterMenu(_ item: Item, @ViewBuilder label: () -> some View) -> some View {
+        Menu {
+            LetterChoices(suggested: item.priority == nil ? suggestedLetter(item.type, weightPct: item.weightPct) : nil,
+                          allowNone: item.priority != nil) { l in
+                withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
+            }
+        } label: {
+            label().frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
         }
-        Button("No letter") { withAnimation { store.change { $0.setLetter(item.id, nil, today: today) } } }
+        .buttonStyle(.borderless)
+        .sensoryFeedback(.selection, trigger: item.priority)
+        .accessibilityLabel(item.priority.map { "Letter \($0.rawValue), \($0.name). Change" } ?? "Give it a letter")
+    }
+
+    private var planningRows: some View {
+        Group {
+            NavigationLink(value: GoalsPage.tomorrow) {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Plan tomorrow")
+                        if evening {
+                            Text("It's evening. Pick tomorrow's first thing now.").font(.subheadline).foregroundStyle(.secondary)
+                        }
+                    }
+                } icon: {
+                    Image(systemName: "moon").foregroundStyle(.secondary)
+                }
+            }
+            Button { importing = true } label: {
+                Label {
+                    Text("Bring in a schedule").foregroundStyle(Color.primary)
+                } icon: {
+                    Image(systemName: "square.and.arrow.down").foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(.vertical, 4)
     }
 
     /// What this row is about: the study session that is due, or when the item is.
@@ -243,42 +298,64 @@ struct GoalsView: View {
             }
         }
     }
+}
 
-    // MARK: goals
+/// Your main goal, the other goals, and how often the day started with an A.
+struct GoalsList: View {
+    @Environment(Store.self) private var store
+    @State private var editingGoal: Goal?
+    @State private var editingPurpose = false
 
-    private var goalsSection: some View {
-        Section {
-            Button { editingPurpose = true } label: {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Main goal").font(.subheadline).foregroundStyle(.secondary)
-                    Text(store.state.mdp.isEmpty ? "What one goal would change the most for you? Write it here." : store.state.mdp)
+    var body: some View {
+        List {
+            Section {
+                Button { editingPurpose = true } label: {
+                    Text(store.state.mdp.isEmpty ? "What one goal would change the most for you?" : store.state.mdp)
+                        .font(.title3)
+                        .fontDesign(.serif)
                         .foregroundStyle(store.state.mdp.isEmpty ? .secondary : .primary)
                         .multilineTextAlignment(.leading)
-                }
-            }
-            .tint(.primary)
-            ForEach(store.state.goals) { goal in
-                Button { editingGoal = goal } label: {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(goal.title)
-                        if isValidDay(goal.deadline) {
-                            Text("By \(Fmt.date(goal.deadline).formatted(.dateTime.day().month(.wide).year()))")
-                                .font(.subheadline).foregroundStyle(.secondary)
-                        }
-                    }
+                        .padding(.vertical, 4)
                 }
                 .tint(.primary)
+            } header: {
+                Text("Main goal")
+            } footer: {
+                Text("The goal that would help you most if you reached it.")
             }
-            .onDelete { idx in
-                let ids = idx.map { store.state.goals[$0].id }
-                store.change(undo: "Deleted a goal") { s in s.goals.removeAll { ids.contains($0.id) } }
+
+            Section {
+                ForEach(store.state.goals) { goal in
+                    Button { editingGoal = goal } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(goal.title)
+                            if isValidDay(goal.deadline) {
+                                Text("By \(Fmt.date(goal.deadline).formatted(.dateTime.day().month(.wide).year()))")
+                                    .font(.subheadline).foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .tint(.primary)
+                }
+                .onDelete { idx in
+                    let ids = idx.map { store.state.goals[$0].id }
+                    store.change(undo: "Deleted a goal") { s in s.goals.removeAll { ids.contains($0.id) } }
+                }
+                Button("Add a goal", systemImage: "plus") { editingGoal = Goal(id: "", title: "") }
+            } header: {
+                Text("Other goals")
+            } footer: {
+                Text("Give each goal a deadline, then break it into items with a letter.")
             }
-            Button("Add a goal", systemImage: "plus") { editingGoal = Goal(id: "", title: "") }
-        } header: {
-            Text("Goals")
-        } footer: {
-            Text("Written goals with a deadline get done. Break each one into items with a letter.")
+
+            Section("Last 21 days") {
+                StreakDots(firstDone: store.state.meta.firstDone, today: store.today)
+            }
         }
+        .navigationTitle("Your goals")
+        .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
+        .sheet(isPresented: $editingPurpose) { PurposeEditor() }
+        .toastHost()
     }
 }
 

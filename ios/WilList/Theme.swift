@@ -9,7 +9,6 @@ struct LetterMark: View {
     let letter: Letter?
     var label: String?
     var large = false
-    var suggested = false
 
     var body: some View {
         let text = label ?? letter?.rawValue ?? "–"
@@ -23,7 +22,7 @@ struct LetterMark: View {
             .background(letter == .A ? Color.accentColor : Color.clear, in: Capsule())
             .overlay {
                 if letter != .A {
-                    Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: suggested ? 2 : 1.25, dash: letter == .D ? [3, 2] : []))
+                    Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: 1.25, dash: letter == .D ? [3, 2] : []))
                 }
             }
             .accessibilityLabel(letter.map { "Priority \(label ?? $0.rawValue)" } ?? "No letter")
@@ -39,21 +38,51 @@ struct LetterMark: View {
         }
     }
 
-    private var stroke: Color {
-        if suggested { return .accentColor }
-        return letter == .B ? .primary : Color(.tertiaryLabel)
-    }
+    private var stroke: Color { letter == .B ? .primary : Color(.tertiaryLabel) }
 }
 
 extension Letter {
-    /// Tracy's meaning of each letter, in plain words.
-    var meaning: String {
+    /// Tracy's name for each letter.
+    var name: String {
         switch self {
-        case .A: "Must do: serious consequences if it's not done."
-        case .B: "Should do: mild consequences."
-        case .C: "Nice to do: no consequences either way."
-        case .D: "Delegate: someone else can do it."
-        case .E: "Eliminate: drop it."
+        case .A: "Must do"
+        case .B: "Should do"
+        case .C: "Nice to do"
+        case .D: "Delegate"
+        case .E: "Eliminate"
+        }
+    }
+
+    /// What the letter means, in plain words.
+    var detail: String {
+        switch self {
+        case .A: "Serious consequences if it's not done"
+        case .B: "Mild consequences"
+        case .C: "No consequences either way"
+        case .D: "Someone else can do it"
+        case .E: "Drop it"
+        }
+    }
+
+    var meaning: String { "\(name): \(detail.prefix(1).lowercased())\(detail.dropFirst())." }
+}
+
+/// The letters to choose from, each with its meaning. Used in menus and context menus.
+struct LetterChoices: View {
+    let suggested: Letter?
+    var allowNone = false
+    let choose: (Letter?) -> Void
+
+    var body: some View {
+        ForEach(Letter.allCases, id: \.self) { l in
+            Button { choose(l) } label: {
+                Text("\(l.rawValue)  \(l.name)\(l == suggested ? " (suggested)" : "")")
+                Text(l.detail)
+            }
+        }
+        if allowNone {
+            Divider()
+            Button("No letter") { choose(nil) }
         }
     }
 }
@@ -88,17 +117,6 @@ extension ItemType {
         case .presentation: "Presentation"
         case .reading: "Reading"
         case .event: "Class or event"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .task: "checkmark.circle"
-        case .deadline: "flag"
-        case .exam: "pencil.line"
-        case .presentation: "person.wave.2"
-        case .reading: "book"
-        case .event: "calendar"
         }
     }
 }

@@ -29,7 +29,7 @@ struct MoreView: View {
                 } header: {
                     Text("Calendars and schedules")
                 } footer: {
-                    Text("A calendar link from Canvas, Moodle, Blackboard, Google or Outlook keeps deadlines and exams up to date. WilList reads it each time you open the app.")
+                    Text("A link from Canvas, Moodle, Google or Outlook keeps your deadlines and exams up to date.")
                 }
 
                 Section {
@@ -44,7 +44,7 @@ struct MoreView: View {
                 } header: {
                     Text("Study plan")
                 } footer: {
-                    Text("New items are planned with these. Plan everything again to apply them to what's already there; A's get first claim on each day.")
+                    Text("Plan everything again to use these for what's already planned.")
                 }
 
                 Section {
@@ -55,7 +55,7 @@ struct MoreView: View {
                 } header: {
                     Text("Your day")
                 } footer: {
-                    Text("From the planning time on, Goals suggests planning tomorrow. Planning the night before saves time the next day.")
+                    Text("Planning the night before saves time the next day.")
                 }
 
                 Section {
@@ -69,7 +69,7 @@ struct MoreView: View {
                 } header: {
                     Text("Claude")
                 } footer: {
-                    Text("Lets Claude read any file or photo you bring in. The key stays in this iPhone's keychain and requests go straight to Anthropic, billed to your account.")
+                    Text("Claude reads the files and photos you bring in. Your key stays on this iPhone.")
                 }
 
                 Section {
@@ -80,7 +80,7 @@ struct MoreView: View {
                 } header: {
                     Text("Your data")
                 } footer: {
-                    Text(restoreError ?? "Everything stays on this device. A backup also works in the WilList website.")
+                    Text(restoreError ?? "Everything stays on this device.")
                 }
 
                 Section {

@@ -4,11 +4,29 @@ import WilListCore
 @main
 struct WilListApp: App {
     @State private var store = Store.shared
+    @UIApplicationDelegateAdaptor private var delegate: AppDelegate
 
     var body: some Scene {
         WindowGroup {
             RootView().environment(store)
         }
+    }
+}
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    // Screen titles in New York, like the date on Today. Set once the app has launched: touching
+    // UIKit appearance any earlier (in App.init) loses the accent colour.
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        let bar = UINavigationBar.appearance()
+        bar.largeTitleTextAttributes = [.font: Self.serif(.largeTitle)]
+        bar.titleTextAttributes = [.font: Self.serif(.headline)]
+        return true
+    }
+
+    private static func serif(_ style: UIFont.TextStyle) -> UIFont {
+        let base = UIFont.preferredFont(forTextStyle: style).fontDescriptor
+        let d = base.withDesign(.serif)?.withSymbolicTraits(.traitBold) ?? base
+        return UIFont(descriptor: d, size: 0)
     }
 }
 

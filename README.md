@@ -23,13 +23,15 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 ## iPhone and iPad app
 
-`ios/` is a native SwiftUI app for iOS 18 and later (with Liquid Glass on iOS 26), with four tabs:
+`ios/` is a native SwiftUI app for iOS 18 and later (with Liquid Glass on iOS 26).
+It is always light: white, with one bright green for ticking off, the A's and the main button, and red only for problems.
+It has four tabs:
 
 | | |
 |---|---|
 | **Today** | A plain checklist under today's date. Type a line, press return, type the next. Tick it off and it slides into Done. |
-| **Goals** | The ABCDE list: what to do first as a large card, then the rest by letter, the items still waiting for a letter, 21 days of starting with an A, and your goals. **Bring in a schedule** sits at the bottom. |
-| **Study** | Today's study sessions, the next 7 days against your daily study time, and whether each exam and deadline coming up is on track. |
+| **Goals** | Your main goal, what to do first as one large card, then the rest by letter, with the letter on the right of each row. Items still waiting for a letter get a **Letter** button. **Plan tomorrow** and **Bring in a schedule** sit at the bottom; your other goals and 21 days of starting with an A are behind the main goal. |
+| **Study** | Today's study sessions, this week's study per day (red where a day has more than your daily study time), and each exam and deadline coming up, with a line only when it needs attention. |
 | **More** | Calendar links, study settings, your Claude key and backups. |
 
 Ways in, from the least effort:

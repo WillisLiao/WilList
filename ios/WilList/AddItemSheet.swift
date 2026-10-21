@@ -7,7 +7,11 @@ struct AddItemSheet: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     var preset: ItemType?
+    #if DEBUG
+    @State private var text = UserDefaults.standard.string(forKey: "draft") ?? ""
+    #else
     @State private var text = ""
+    #endif
     @State private var chosenLetter: Letter??
     @State private var chosenType: ItemType?
     @State private var added: [String] = []
@@ -41,8 +45,11 @@ struct AddItemSheet: View {
                     HStack(spacing: 8) {
                         ForEach(Letter.allCases, id: \.self) { l in
                             Button { chosenLetter = .some(l == letter ? nil : l) } label: {
-                                LetterMark(letter: l, large: true, suggested: false)
-                                    .opacity(letter == nil || letter == l ? 1 : 0.35)
+                                Text(l.rawValue)
+                                    .font(.headline)
+                                    .foregroundStyle(letter == l ? Color.white : Color.primary)
+                                    .frame(maxWidth: .infinity, minHeight: 40)
+                                    .background(letter == l ? Color.accentColor : Color(.secondarySystemFill), in: Capsule())
                             }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("\(l.rawValue): \(l.meaning)")
@@ -73,7 +80,12 @@ struct AddItemSheet: View {
                 }
             }
             .sensoryFeedback(.success, trigger: added.count)
-            .onAppear { focused = true }
+            .onAppear {
+                #if DEBUG
+                if UserDefaults.standard.string(forKey: "draft") != nil { return } // screenshots without the keyboard
+                #endif
+                focused = true
+            }
         }
     }
 
@@ -88,11 +100,11 @@ struct AddItemSheet: View {
     /// What WilList read from the text, so a wrong guess is caught before it's saved.
     private var understood: some View {
         let p = parsed
-        return Section("WilList reads") {
+        return Section {
             Picker("Kind", selection: Binding(get: { type }, set: { chosenType = $0 })) {
-                ForEach(ItemType.allCases, id: \.self) { Label($0.name, systemImage: $0.symbol).tag($0) }
+                ForEach(ItemType.allCases, id: \.self) { Text($0.name).tag($0) }
             }
-            LabeledContent("Title", value: p.title)
+            if p.title != text.trimmingCharacters(in: .whitespaces) { LabeledContent("Title", value: p.title) }
             if let d = p.date {
                 LabeledContent("When", value: [Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)), Fmt.time(p.time)].compactMap { $0 }.joined(separator: ", "))
             }

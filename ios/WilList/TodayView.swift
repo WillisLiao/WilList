@@ -57,7 +57,7 @@ struct TodayView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(Fmt.long(store.today))
-                .font(.largeTitle)
+                .font(.largeTitle.bold())
                 .fontDesign(.serif)
                 .accessibilityAddTraits(.isHeader)
             Text(summary)

@@ -210,8 +210,9 @@ private struct ImportOption: View {
     var body: some View {
         Label {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).foregroundStyle(.primary)
-                Text(detail).font(.subheadline).foregroundStyle(.secondary)
+                // Fixed colours: inside a button, hierarchical styles take on the tint.
+                Text(title).foregroundStyle(Color.primary)
+                Text(detail).font(.subheadline).foregroundStyle(Color.secondary)
             }
         } icon: {
             Image(systemName: symbol)

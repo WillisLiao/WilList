@@ -17,6 +17,21 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - run: npm run lint
+
+  # The iPhone app: the Swift core's tests, then the app and its widgets built for the simulator.
+  ios:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift core tests
+        working-directory: ios/WilListCore
+        run: swift test
+      - name: Build the app for the simulator
+        run: >
+          xcodebuild -project ios/WilList.xcodeproj -scheme WilList -configuration Debug
+          -destination 'generic/platform=iOS Simulator' -derivedDataPath build/ci
+          -quiet build
 
   deploy:
     needs: test

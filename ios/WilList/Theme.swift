@@ -44,20 +44,66 @@ enum Chime {
 struct CheckButton: View {
     let done: Bool
     let action: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: done ? Look.current.box.done : Look.current.box.empty)
-                .font(.title2)
-                .foregroundStyle(done ? Color.brand : Color(.tertiaryLabel))
-                .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, value: done)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
+            ZStack {
+                if !reduceMotion { TickBurst(done: done) }
+                Image(systemName: done ? Look.current.box.done : Look.current.box.empty)
+                    .font(.title2)
+                    .foregroundStyle(done ? Color.brand : Color(.tertiaryLabel))
+                    .contentTransition(.symbolEffect(.replace))
+                    .symbolEffect(.bounce, value: done)
+            }
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .sensoryFeedback(trigger: done) { old, new in !old && new ? .success : nil }
         .accessibilityLabel(done ? "Done" : "Mark done")
+    }
+}
+
+/// A ring and six sparks thrown off the box as it fills, gone before the row moves away.
+private struct TickBurst: View {
+    let done: Bool
+
+    private struct Frame {
+        var spread = 0.0
+        var opacity = 0.0
+    }
+
+    var body: some View {
+        KeyframeAnimator(initialValue: Frame(), trigger: done) { f in
+            ZStack {
+                Circle()
+                    .stroke(Color.brand, lineWidth: 2 * (1 - f.spread) + 0.5)
+                    .frame(width: 24 + 16 * f.spread, height: 24 + 16 * f.spread)
+                ForEach(0..<6, id: \.self) { i in
+                    Circle()
+                        .fill(Color.brand)
+                        .frame(width: 4 - 1.5 * f.spread, height: 4 - 1.5 * f.spread)
+                        .offset(y: -(13 + 14 * f.spread))
+                        .rotationEffect(.degrees(Double(i) * 60 + 30))
+                }
+            }
+            // Unticking plays it too, unseen.
+            .opacity(done ? f.opacity : 0)
+        } keyframes: { _ in
+            // MoveKeyframe starts each burst from the box; a zero-length keyframe before a spring is NaN.
+            KeyframeTrack(\.spread) {
+                MoveKeyframe(0)
+                SpringKeyframe(1, duration: 0.42, spring: .snappy)
+            }
+            KeyframeTrack(\.opacity) {
+                MoveKeyframe(1)
+                LinearKeyframe(1, duration: 0.16)
+                CubicKeyframe(0, duration: 0.28)
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

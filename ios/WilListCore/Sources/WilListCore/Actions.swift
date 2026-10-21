@@ -213,6 +213,27 @@ extension AppState {
     }
 
     public mutating func removeTodo(_ id: String) { todos.removeAll { $0.id == id } }
+
+    /// Moves a to-do that turned out to matter into the plan as a lettered task, with its steps,
+    /// due date, reminder, repeat and note. It stays on Today for the rest of today. Returns the
+    /// new item.
+    @discardableResult
+    public mutating func letterTodo(_ id: String, _ letter: Letter, today: Day) -> Item? {
+        guard let t = todos.first(where: { $0.id == id }), !t.done else { return nil }
+        var draft = Item(id: "", title: t.title)
+        draft.date = t.date
+        draft.time = t.time
+        draft.recur = t.recur
+        draft.priority = letter
+        draft.notes = t.notes
+        draft.remindAt = t.remindAt
+        draft.steps = t.steps
+        draft.myDay = today
+        let it = makeItem(draft, settings, today, items)
+        items.append(it)
+        removeTodo(id)
+        return it
+    }
 }
 
 /// A reminder ("YYYY-MM-DDTHH:MM") moved by whole days, at the same time of day.

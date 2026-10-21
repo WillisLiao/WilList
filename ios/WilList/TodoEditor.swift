@@ -1,8 +1,8 @@
 import SwiftUI
 import WilListCore
 
-/// Everything about one to-do: steps, a reminder, when it's due, a repeat and a note.
-/// Changes save as you make them.
+/// Everything about one to-do: steps, a reminder, when it's due, a repeat and a note, and a letter
+/// to move it into the plan. Changes save as you make them.
 struct TodoEditor: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
@@ -57,6 +57,19 @@ struct TodoEditor: View {
                 TextField("Add a note", text: field(\.notes), axis: .vertical).lineLimit(3...12)
             }
 
+            // A to-do that turned out to matter: into the plan, where it can be the A1.
+            if !todo.done {
+                Section {
+                    Menu {
+                        LetterChoices(suggested: nil) { letter in letter.map { give(todo, $0) } }
+                    } label: {
+                        Label("Give it a letter", systemImage: "list.number").fillsRow()
+                    }
+                } footer: {
+                    Text("It moves into Plan with its steps, dates and note, and stays on Today for today.")
+                }
+            }
+
             Section {
                 Button("Delete to-do", role: .destructive) {
                     if confirmDelete { asking = true } else { delete(todo) }
@@ -84,6 +97,14 @@ struct TodoEditor: View {
         let f = { (d: Day) in Fmt.date(d).formatted(.dateTime.weekday(.wide).day().month(.wide)) }
         if todo.done, let d = todo.doneAt { return "Completed \(f(d))" }
         return todo.createdAt.map { "Created \(f($0))" } ?? ""
+    }
+
+    private func give(_ todo: Todo, _ letter: Letter) {
+        let today = store.today
+        dismiss()
+        withAnimation {
+            store.change(undo: "Moved \u{201C}\(todo.title)\u{201D} to Plan as \(letter.rawValue)") { $0.letterTodo(todo.id, letter, today: today) }
+        }
     }
 
     private func delete(_ todo: Todo) {

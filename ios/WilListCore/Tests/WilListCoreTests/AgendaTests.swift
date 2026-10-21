@@ -207,6 +207,27 @@ private func state(_ items: Item...) -> AppState {
     #expect(s.todos.isEmpty)
 }
 
+@Test func aTodoThatMattersMovesIntoThePlan() throws {
+    var s = AppState()
+    var t = Todo(id: "t", title: "Email the TA")
+    t.date = monday
+    t.time = "17:00"
+    t.remindAt = "2026-10-19T16:00"
+    t.steps = [Step(id: "s", title: "Find the quiz", done: true)]
+    t.notes = "Quiz 3"
+    s.todos = [t, Todo(id: "u", title: "Buy stamps")]
+    let result = s.letterTodo("t", .A, today: monday)
+    let moved = try #require(result)
+    #expect(s.todos.map(\.id) == ["u"])
+    #expect(s.items == [moved])
+    #expect(moved.title == "Email the TA" && moved.type == .task && moved.priority == .A)
+    #expect(moved.date == monday && moved.time == "17:00" && moved.remindAt == "2026-10-19T16:00")
+    #expect(moved.steps == t.steps && moved.notes == "Quiz 3" && moved.myDay == monday)
+    #expect(doRows(s.items, monday).first?.item.id == moved.id, "it is the A1 now")
+    let gone = s.letterTodo("gone", .B, today: monday)
+    #expect(gone == nil)
+}
+
 @Test func todoDatesAndRepeats() throws {
     var s = AppState()
     let added = s.addTodo("Call mum tomorrow 6pm", today: monday, minute: 600)

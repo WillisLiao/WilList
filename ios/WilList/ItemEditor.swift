@@ -52,7 +52,11 @@ struct ItemEditor: View {
                     if item.type == .event {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)
                     }
-                    TextField("Course or project", text: Binding(get: { item.course ?? "" }, set: { item.course = $0.isEmpty ? nil : $0 }))
+                    Label {
+                        TextField("Course or project", text: Binding(get: { item.course ?? "" }, set: { item.course = $0.isEmpty ? nil : $0 }))
+                    } icon: {
+                        Image(systemName: "graduationcap").foregroundStyle(Color.brand)
+                    }
                 }
 
                 if planned {

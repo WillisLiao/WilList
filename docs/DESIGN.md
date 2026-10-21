@@ -71,7 +71,8 @@ All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.
   - Remind me: Later today (3 hours on, on the hour, until 10 PM), Tomorrow 9:00 AM, Next week (Monday 9:00 AM), Pick a date and time (a calendar sheet with Set). Set, it reads "Remind me at 9:00 AM" over "Tomorrow".
   - Due: Today, Tomorrow, Next week, Pick a date, then "Add a time" (5:00 PM to start).
   - Repeat: Daily, Weekdays, Weekly, Monthly, Yearly, Custom (every N days, weeks, months or years, weeks on chosen weekdays). A repeat needs a date, so setting one without a date starts it today.
-  - Add to Today (items only), Note, Delete at the bottom.
+  - Add to Today (items only), Note, Give it a letter (to-dos only: it moves into Plan with everything it has, and stays on Today for today), Delete at the bottom.
+  - A menu in a form row answers a tap anywhere on the row (`fillsRow()`), not only on its words.
   - Every set value has a grey clear button on the right.
 - **Sheets:** inline serif title. To-dos save as you type and close with Done. Items edit a copy and use Cancel and Save, because saving can re-plan the study sessions.
 - **Toast:** at the bottom, with Undo after a delete. Liquid Glass on iOS 26, the regular material before.

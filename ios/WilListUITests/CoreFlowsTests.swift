@@ -1,8 +1,8 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// set a reminder on one, Mark done on the A1 card at the top of Today, a focus session on it, and
-/// the first-run welcome.
+/// set a reminder on one, give one a letter, Mark done on the A1 card at the top of Today, a focus
+/// session on it, and the first-run welcome.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -26,6 +26,19 @@ final class CoreFlowsTests: XCTestCase {
         allowNotifications()
         XCTAssertTrue(app.staticTexts["Remind me at 9:00\u{202F}AM"].waitForExistence(timeout: 5)
                       || app.staticTexts["Remind me at 9:00 AM"].exists)
+    }
+
+    func testGiveATodoALetter() {
+        let app = launch(plan: "empty")
+        add("Email the TA", in: app)
+        app.staticTexts["Email the TA"].tap()
+        let give = app.buttons["Give it a letter"]
+        XCTAssertTrue(give.waitForExistence(timeout: 5))
+        give.tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS 'Must do'")).firstMatch.tap()
+        // Back on Today it is the A1, on the card.
+        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Email the TA"].exists)
     }
 
     func testMarkTheA1Done() {

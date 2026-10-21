@@ -177,6 +177,9 @@ extension View {
 
     func heroCard(empty: Bool = false) -> some View { modifier(HeroCard(empty: empty)) }
 
+    /// A menu's label in a form row answers a tap anywhere on the row, not only on its words.
+    func fillsRow() -> some View { frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle()) }
+
     /// Liquid Glass on iOS 26 and later; the system material before that.
     @ViewBuilder func floating() -> some View {
         if #available(iOS 26, *) {

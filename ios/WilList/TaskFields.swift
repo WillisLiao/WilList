@@ -195,7 +195,7 @@ struct DueRow: View {
                 pick("Next week", addDays(today, ReminderRow.daysToMonday))
                 Button("Pick a date") { date = addDays(today, 1) }
             } label: {
-                Label(add, systemImage: "calendar")
+                Label(add, systemImage: "calendar").fillsRow()
             }
         }
     }
@@ -229,7 +229,7 @@ struct RepeatRow: View {
                     }
                 }
             } else {
-                Menu { choices } label: { Label("Repeat", systemImage: "repeat") }
+                Menu { choices } label: { Label("Repeat", systemImage: "repeat").fillsRow() }
             }
         }
         .sheet(isPresented: $customizing) {

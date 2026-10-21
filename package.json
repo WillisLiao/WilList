@@ -10,7 +10,8 @@
     "test:e2e": "node tests/e2e.mjs",
     "lint": "npx --yes eslint@10 --config scripts/eslint.config.mjs app/src app/sw.js tests scripts",
     "shots": "node scripts/shots.mjs shots",
-    "ios": "node scripts/ios.mjs"
+    "ios": "node scripts/ios.mjs",
+    "ios:shots": "node scripts/ios-shots.mjs"
   },
   "license": "MIT"
 }

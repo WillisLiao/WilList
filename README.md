@@ -55,6 +55,8 @@ Ways in, from the least effort:
 
 The planner, the parser, the importer and the Claude request live in `ios/WilListCore`, a Swift package with its own tests: `swift test` in that folder.
 `npm run ios` builds the app and installs it on every paired iPhone and iPad that is unlocked and on this Mac's Wi-Fi.
+`npm run ios:shots` takes screenshots of the app in the iOS Simulator with a full sample planner loaded.
+Working on WilList with a coding agent: start from `CLAUDE.md`, then `handoffs/HANDOFF.md`.
 It keeps your plan in the same file the earlier web-based app used, so updating loses nothing.
 
 ## Typing

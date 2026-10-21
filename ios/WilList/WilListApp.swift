@@ -73,7 +73,7 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $tab) {
-            Tab("Today", systemImage: "checklist", value: .today) { TodayView { tab = .plan } }
+            Tab("Today", systemImage: "checklist", value: .today) { TodayView() }
             Tab("Plan", systemImage: "list.number", value: .plan) { PlanView() }
             Tab("Study", systemImage: "book.closed", value: .study) { StudyView() }
             Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }

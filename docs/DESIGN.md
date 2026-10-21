@@ -36,7 +36,7 @@ Never add another hue. Never colour decoration.
 ## Words
 
 - Plain verbs, the user's words: "Remind me", "Add a due date", "Mark done", "Plan tomorrow", "Bring in a schedule".
-- Tracy's terms keep a plain explanation beside them: "A  Must do: serious consequences if it's not done".
+- Tracy's terms keep a plain explanation beside them: "A  Must do: serious consequences if not done".
 - No explanatory footers unless they help the user decide or act. Say a status only when it needs attention (no "On track").
 - Errors say what happened and what to do: "Notifications are off for WilList. Turn them on in the Settings app to get reminders."
 - Never the em dash.
@@ -47,7 +47,7 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Your A1 as one large card under today's date, how many items wait for a letter, then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Your A1 as one large card under today's date, how many items wait for a letter (a tap letters them), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |
@@ -64,6 +64,7 @@ All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.
 - **LetterMark:** letters differ by intensity, not hue. A is filled green with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
 - **StarButton:** grey outline, filled green when important.
 - **A1 card** (`A1Card.swift`, at the top of Today): pale green, corner radius 22, the letter and "Do this first", the serif title, at most two grey lines, a full-width "Mark done" (bordered prominent, large), and "3 days in a row you started with an A" when there is a streak. Done, it offers Undo and the next A moves up into the card.
+- **Letter sorter** (`LetterSorter.swift`): letters the items waiting for one, one at a time. The item's title large at the top, the five letters as big rows with what each one means, the suggested one outlined and tagged, Skip for now, Back. It ends by naming your A1. Opened from Today's "2 waiting for a letter" and Plan's "Letter them".
 - **Task details** (`TaskFields.swift`), the same for to-dos and items:
   - Steps: tick, type to add (return adds the next), swipe to delete, drag to reorder.
   - Remind me: Later today (3 hours on, on the hour, until 10 PM), Tomorrow 9:00 AM, Next week (Monday 9:00 AM), Pick a date and time (a calendar sheet with Set). Set, it reads "Remind me at 9:00 AM" over "Tomorrow".

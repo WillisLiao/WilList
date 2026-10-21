@@ -31,6 +31,7 @@ struct PlanList: View {
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
     @State private var searching = false
+    @State private var sorting: LetterSorter.Batch?
 
     private var today: Day { store.today }
     private var day: Day { tomorrow ? addDays(today, 1) : today }
@@ -48,8 +49,17 @@ struct PlanList: View {
                         .onMove(perform: move)
                 }
                 if !waiting.isEmpty {
-                    Section("Needs a letter") {
+                    Section {
                         ForEach(waiting) { waitingRow($0) }
+                    } header: {
+                        HStack {
+                            Text("Needs a letter")
+                            Spacer()
+                            Button("Letter them") { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) }
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Color.brand)
+                                .buttonStyle(.borderless)
+                        }
                     }
                     .id("letters")
                 }
@@ -89,6 +99,7 @@ struct PlanList: View {
             }
         }
         .sheet(item: $editing) { ItemEditor(item: $0) }
+        .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
         .toastHost()
     }
 

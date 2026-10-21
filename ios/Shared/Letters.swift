@@ -60,7 +60,7 @@ extension Letter {
     /// What the letter means, in plain words.
     var detail: String {
         switch self {
-        case .A: "Serious consequences if it's not done"
+        case .A: "Serious consequences if not done"
         case .B: "Mild consequences"
         case .C: "No consequences either way"
         case .D: "Someone else can do it"

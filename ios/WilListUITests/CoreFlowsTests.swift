@@ -52,9 +52,14 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["Start"].tap()
         XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5), "Today opens on the A1 card")
         XCTAssertTrue(app.staticTexts["Write the lab report"].exists)
-        // The other line waits for a letter in Plan, one tap away.
-        app.buttons["1 waiting for a letter in Plan"].tap()
+        // The other line waits for a letter, one tap away.
+        app.buttons["1 waiting for a letter"].tap()
         XCTAssertTrue(app.staticTexts["Email Prof. Chen"].waitForExistence(timeout: 5))
+        app.buttons["B, Should do. Mild consequences"].tap()
+        XCTAssertTrue(app.staticTexts["All lettered"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Your A1 is \u{201C}Write the lab report\u{201D}."].exists)
+        app.buttons["Done"].tap()
+        XCTAssertTrue(gone(app.buttons["1 waiting for a letter"]))
     }
 
     // MARK: helpers

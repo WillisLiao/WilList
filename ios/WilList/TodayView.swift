@@ -21,8 +21,6 @@ enum TodoSort: String, CaseIterable, Identifiable {
 /// steps, a reminder, a due date and time, a repeat and a note.
 struct TodayView: View {
     @Environment(Store.self) private var store
-    /// Opens the Plan tab, where items wait for a letter.
-    let showPlan: () -> Void
     @AppStorage("todoSort") private var sort = TodoSort.manual
     @AppStorage("showCompleted") private var showCompleted = true
     @AppStorage("completedOpen") private var completedOpen = true
@@ -37,6 +35,7 @@ struct TodayView: View {
     @State private var searching = false
     @State private var deleting: Todo?
     @State private var editingItem: Item?
+    @State private var sorting: LetterSorter.Batch?
 
     private var today: Day { store.today }
     private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
@@ -50,7 +49,7 @@ struct TodayView: View {
         store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.item.id }
             .sorted { letterKey($0) < letterKey($1) }
     }
-    /// Items in Plan still waiting for a letter.
+    /// Items still waiting for a letter.
     private var waiting: Int { unsorted(store.state.items, today).count }
 
     var body: some View {
@@ -115,14 +114,16 @@ struct TodayView: View {
             .sheet(item: Binding(get: { editing.map(Opened.init) }, set: { editing = $0?.id })) { TodoEditor(id: $0.id) }
             .sheet(isPresented: $searching) { SearchView() }
             .sheet(item: $editingItem) { ItemEditor(item: $0) }
+            .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
             .confirmationDialog("Delete \u{201C}\(deleting?.title ?? "")\u{201D}?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
                 Button("Delete", role: .destructive) { deleting.map(delete) }
             }
             #if DEBUG
-            // `-edit <id>` or `-sheet search` on launch, for screenshots.
+            // `-edit <id>` or `-sheet search|letters` on launch, for screenshots.
             .onAppear {
                 editing = UserDefaults.standard.string(forKey: "edit")
                 searching = UserDefaults.standard.string(forKey: "sheet") == "search"
+                if UserDefaults.standard.string(forKey: "sheet") == "letters" { letterThem() }
             }
             #endif
             // Home-screen quick actions: New to-do and Search.
@@ -163,16 +164,18 @@ struct TodayView: View {
         }
     }
 
-    /// Items waiting for a letter in Plan: one tap takes you there.
+    /// Items waiting for a letter: one tap letters them, one at a time.
     private var lettersRow: some View {
-        Button(action: showPlan) {
+        Button(action: letterThem) {
             HStack(spacing: 6) {
-                Text("\(waiting) waiting for a letter in Plan")
+                Text("\(waiting) waiting for a letter")
                 Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(Color.brand)
-            .frame(minHeight: 44)
+            // The whole row answers a tap, not just the words.
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .listRowSeparator(.hidden)
@@ -208,6 +211,10 @@ struct TodayView: View {
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done today") }
         return parts.joined(separator: ", ") + "."
+    }
+
+    private func letterThem() {
+        sorting = LetterSorter.Batch(ids: unsorted(store.state.items, today).map(\.id))
     }
 
     // MARK: adding

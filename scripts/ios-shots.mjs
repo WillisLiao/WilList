@@ -10,7 +10,7 @@
 //   -tab today|plan|study|more       which tab opens
 //   -open tomorrow|goals             Plan: push Tomorrow or Your goals
 //   -scroll letters|bottom           Plan: scroll to Needs a letter or the bottom rows
-//   -sheet add|import|search         open that sheet (add and import from Plan, search from Today)
+//   -sheet add|import|search|letters open that sheet (add and import from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)
 //   -show "Email TA"                 open the to-do or item whose title starts with this

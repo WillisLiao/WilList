@@ -139,7 +139,7 @@ struct GoalEditor: View {
                         Text("Personal").tag(Goal.Area.personal)
                         Text("Health and self").tag(Goal.Area.`self`)
                     }
-                    Toggle("Deadline", isOn: $hasDeadline)
+                    Toggle("Deadline", isOn: $hasDeadline).tint(.brand)
                     if hasDeadline { DatePicker("By", selection: $deadline, displayedComponents: .date) }
                 }
                 Section("Why you want it") { TextField("The reasons that will keep you going", text: $goal.why, axis: .vertical) }

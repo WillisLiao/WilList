@@ -1,4 +1,3 @@
-import Charts
 import SwiftUI
 import WilListCore
 
@@ -35,12 +34,10 @@ struct StudyView: View {
                             Text("No study planned this week.").foregroundStyle(.secondary)
                         } else {
                             WeekChart(days: week, budget: store.state.settings.perDayMin, today: today)
-                            if week.contains(where: \.over) {
-                                Text("Red days have more than your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .listRowSeparator(.hidden, edges: .top)
-                            }
+                            Text("The dashed line is your \(Fmt.minutes(store.state.settings.perDayMin)) a day.\(week.contains(where: \.over) ? " Red is past it." : "")")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .listRowSeparator(.hidden, edges: .top)
                         }
                     }
 
@@ -164,32 +161,49 @@ struct StudyView: View {
     }
 }
 
-/// Planned study per day for the next week, against the daily budget.
+/// Planned study per day for the next week: each bar is green up to your daily study time (the
+/// dashed line) and red past it, so a heavy day shows how much is too much.
 struct WeekChart: View {
     let days: [Ahead]
     let budget: Int
     let today: Day
+    private let height: CGFloat = 110
 
     var body: some View {
-        Chart {
-            ForEach(days, id: \.date) { d in
-                BarMark(x: .value("Day", d.date), y: .value("Minutes", d.load), width: .ratio(0.55))
-                    .foregroundStyle(d.over ? Color.red : Color.brand.opacity(0.35))
-                    .cornerRadius(3)
-            }
-        }
-        .chartYAxis(.hidden)
-        .chartYScale(domain: 0...Double(max(budget, days.map(\.load).max() ?? 0)) * 1.1)
-        .chartXAxis {
-            AxisMarks(values: days.map(\.date)) { value in
-                AxisValueLabel(centered: true) {
-                    if let d = value.as(String.self) { dayLabel(d) }
+        let top = Double(max(budget, days.map(\.load).max() ?? 0)) * 1.1
+        let y = { (minutes: Int) in height * Double(minutes) / top }
+        VStack(spacing: 8) {
+            ZStack(alignment: .bottom) {
+                HStack(alignment: .bottom, spacing: 0) {
+                    ForEach(days, id: \.date) { d in
+                        VStack(spacing: 0) {
+                            Color.red.frame(height: y(max(d.load - budget, 0)))
+                            Color.brand.opacity(0.35).frame(height: y(min(d.load, budget)))
+                        }
+                        .frame(width: 24)
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                        .frame(maxWidth: .infinity)
+                    }
                 }
+                Rule()
+                    .stroke(.tertiary, style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                    .frame(height: 1)
+                    .offset(y: -y(budget))
+            }
+            .frame(height: height, alignment: .bottom)
+            HStack(spacing: 0) {
+                ForEach(days, id: \.date) { dayLabel($0.date).frame(maxWidth: .infinity) }
             }
         }
-        .frame(height: 130)
         .padding(.vertical, 8)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel(days.map { "\(Fmt.day($0.date, today)): \(Fmt.minutes($0.load))" }.joined(separator: ", "))
+    }
+
+    private struct Rule: Shape {
+        func path(in r: CGRect) -> Path {
+            Path { $0.move(to: CGPoint(x: r.minX, y: r.midY)); $0.addLine(to: CGPoint(x: r.maxX, y: r.midY)) }
+        }
     }
 
     private func dayLabel(_ d: Day) -> some View {

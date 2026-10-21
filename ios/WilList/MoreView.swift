@@ -40,11 +40,11 @@ struct MoreView: View {
                 }
 
                 Section {
-                    Toggle("Add new to-dos on top", isOn: $newOnTop)
-                    Toggle("Move starred to-dos to top", isOn: $starredOnTop)
-                    Toggle("Recognize dates and times in titles", isOn: $readDates)
-                    Toggle("Play completion sound", isOn: $playSound)
-                    Toggle("Confirm before deleting", isOn: $confirmDelete)
+                    Toggle("Add new to-dos on top", isOn: $newOnTop).tint(.brand)
+                    Toggle("Move starred to-dos to top", isOn: $starredOnTop).tint(.brand)
+                    Toggle("Recognize dates and times in titles", isOn: $readDates).tint(.brand)
+                    Toggle("Play completion sound", isOn: $playSound).tint(.brand)
+                    Toggle("Confirm before deleting", isOn: $confirmDelete).tint(.brand)
                     Picker("App icon badge", selection: $badge) {
                         ForEach(Badge.allCases) { Text($0.name).tag($0) }
                     }
@@ -74,6 +74,7 @@ struct MoreView: View {
                     clock("Day ends", \.dayEnd)
                     clock("Plan tomorrow from", \.planTime)
                     Toggle("Remind me to plan", isOn: Binding(get: { store.state.settings.notify }, set: { on in store.change { $0.settings.notify = on } }))
+                        .tint(.brand)
                 } header: {
                     Text("Your day")
                 } footer: {

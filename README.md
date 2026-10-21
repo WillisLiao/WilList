@@ -23,7 +23,7 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 ## iPhone and iPad app
 
-`ios/` is a native SwiftUI app for iOS 26, with four tabs:
+`ios/` is a native SwiftUI app for iOS 18 and later (with Liquid Glass on iOS 26), with four tabs:
 
 | | |
 |---|---|

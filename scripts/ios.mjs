@@ -19,7 +19,8 @@ run('xcodebuild', ['-project', 'ios/WilList.xcodeproj', '-scheme', 'WilList', '-
 const list = path.join(os.tmpdir(), `willist-devices-${process.pid}.json`);
 execFileSync('xcrun', ['devicectl', 'list', 'devices', '--json-output', list], { stdio: 'ignore' });
 const devices = JSON.parse(fs.readFileSync(list, 'utf8')).result.devices.filter((d) =>
-  d.hardwareProperties?.platform === 'iOS' && d.connectionProperties?.pairingState === 'paired' &&
+  d.hardwareProperties?.platform === 'iOS' && d.hardwareProperties?.reality === 'physical' &&
+  d.connectionProperties?.pairingState === 'paired' &&
   `${d.deviceProperties?.name} ${d.hardwareProperties?.deviceType}`.toLowerCase().includes(only));
 fs.rmSync(list, { force: true });
 
@@ -31,10 +32,15 @@ for (const d of devices) {
     for (let attempt = 1; ; attempt++) {
       try { run('xcrun', ['devicectl', 'device', 'install', 'app', '--device', d.identifier, APP], 180000); break; } catch (e) { if (attempt === 3) throw e; }
     }
-    run('xcrun', ['devicectl', 'device', 'process', 'launch', '--terminate-existing', '--device', d.identifier, BUNDLE], 60000);
-    installed++;
   } catch {
     console.log(`Could not reach ${name}. Unlock it, keep it on this Mac's Wi-Fi, and run this again.`);
+    continue;
+  }
+  installed++;
+  try {
+    run('xcrun', ['devicectl', 'device', 'process', 'launch', '--terminate-existing', '--device', d.identifier, BUNDLE], 60000);
+  } catch {
+    console.log(`Installed on ${name}. It was locked, so open WilList yourself.`);
   }
 }
 console.log(`Installed on ${installed} of ${devices.length} device(s).`);

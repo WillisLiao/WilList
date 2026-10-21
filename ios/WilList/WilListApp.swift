@@ -27,7 +27,7 @@ struct RootView: View {
             Tab("Study", systemImage: "book.closed", value: .study) { StudyView() }
             Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .minimizingTabBar()
         .onOpenURL { url in
             store.incomingFile = url
             tab = .goals

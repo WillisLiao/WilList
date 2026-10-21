@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "WilListCore",
-    platforms: [.iOS(.v26), .macOS(.v15)],
+    platforms: [.iOS(.v18), .macOS(.v15)],
     products: [.library(name: "WilListCore", targets: ["WilListCore"])],
     targets: [
         .target(name: "WilListCore"),

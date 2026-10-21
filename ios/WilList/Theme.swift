@@ -183,7 +183,7 @@ struct ToastHost: ViewModifier {
                 }
                 .padding(.horizontal, 20)
                 .frame(minHeight: 50)
-                .glassEffect(.regular, in: .capsule)
+                .floating()
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -199,4 +199,22 @@ struct ToastHost: ViewModifier {
 
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
+
+    /// Liquid Glass on iOS 26 and later; the system material before that.
+    @ViewBuilder func floating() -> some View {
+        if #available(iOS 26, *) {
+            glassEffect(.regular, in: .capsule)
+        } else {
+            background(.regularMaterial, in: Capsule())
+        }
+    }
+
+    /// The tab bar shrinks while you scroll down, where the system supports it (iOS 26).
+    @ViewBuilder func minimizingTabBar() -> some View {
+        if #available(iOS 26, *) {
+            tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            self
+        }
+    }
 }

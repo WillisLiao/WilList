@@ -68,7 +68,8 @@ public func icsDateTime(_ prop: ICSProp?, calendar: Calendar = .current) -> (dat
 
 private func durationProp(_ v: String?) -> Int? {
     guard let v, let m = match(v, #"^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?"#) else { return nil }
-    let n = (Int(m[1] ?? "0") ?? 0) * 1440 + (Int(m[2] ?? "0") ?? 0) * 60 + (Int(m[3] ?? "0") ?? 0)
+    let part = { (i: Int) -> Int in Int(m[i] ?? "0") ?? 0 }
+    let n: Int = part(1) * 1440 + part(2) * 60 + part(3)
     return n > 0 ? n : nil
 }
 

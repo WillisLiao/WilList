@@ -69,6 +69,7 @@ struct PlanList: View {
                 }
             }
             .listStyle(.plain)
+            .readableColumn()
             #if DEBUG
             // `-scroll letters` or `-sheet add|import` on launch, for screenshots.
             .onAppear {

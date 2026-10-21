@@ -53,6 +53,7 @@ struct GoalsList: View {
                 StreakDots(firstDone: store.state.meta.firstDone, today: store.today)
             }
         }
+        .readableColumn()
         .navigationTitle("Your goals")
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
         .sheet(isPresented: $editingPurpose) { PurposeEditor() }

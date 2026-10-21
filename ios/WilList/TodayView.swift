@@ -109,6 +109,7 @@ struct TodayView: View {
                 }
             }
             .listStyle(.plain)
+            .readableColumn()
             .scrollDismissesKeyboard(.interactively)
             .toolbar(.hidden, for: .navigationBar)
             .sheet(item: Binding(get: { editing.map(Opened.init) }, set: { editing = $0?.id })) { TodoEditor(id: $0.id) }

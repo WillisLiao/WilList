@@ -50,6 +50,7 @@ struct StudyView: View {
                 }
             }
             .listStyle(.plain)
+            .readableColumn()
             .navigationTitle("Study")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {

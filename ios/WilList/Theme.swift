@@ -157,6 +157,19 @@ struct ToastHost: ViewModifier {
     }
 }
 
+struct ReadableColumn: ViewModifier {
+    @State private var width: CGFloat = 0
+    /// nil on a phone: the system's own margins, which keep a grouped list's cards inset.
+    private var margin: CGFloat? { width > 700 ? (width - 700) / 2 : nil }
+
+    func body(content: Content) -> some View {
+        content
+            .contentMargins(.horizontal, margin, for: .scrollContent)
+            .toolbarTitleDisplayMode(margin == nil ? .automatic : .inline)
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
+    }
+}
+
 /// The ground of the A1 card in the current look: pale, filled solid, or outlined. An empty card
 /// (nothing to do first yet) stays pale in every look.
 struct HeroCard: ViewModifier {
@@ -176,6 +189,10 @@ extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
 
     func heroCard(empty: Bool = false) -> some View { modifier(HeroCard(empty: empty)) }
+
+    /// On a wide screen (iPad), a list keeps to a readable column in the middle, and its title
+    /// moves up beside the tabs, out of the column's way.
+    func readableColumn() -> some View { modifier(ReadableColumn()) }
 
     /// A menu's label in a form row answers a tap anywhere on the row, not only on its words.
     func fillsRow() -> some View { frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle()) }

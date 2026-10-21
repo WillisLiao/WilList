@@ -111,6 +111,7 @@ struct MoreView: View {
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
                 }
             }
+            .readableColumn()
             .navigationTitle("More")
             .sheet(isPresented: $addingFeed) { AddFeedSheet() }
             .sheet(isPresented: $importing) { ImportSheet() }

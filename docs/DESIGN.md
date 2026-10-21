@@ -54,6 +54,9 @@ Each screen has one job and one primary action.
 
 Search (magnifying glass) sits on Today, Plan and Study and covers everything.
 
+On a wide screen (iPad) every list keeps to a centred 700 pt column (`readableColumn()`).
+There the highlighted tab names the screen, so a tab's own title steps aside, and a pushed screen's title sits centred above the column.
+
 ## Components
 
 All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.swift`.
@@ -99,3 +102,5 @@ No decorative or entrance animation.
 7. **iOS 26 only APIs** (`glassEffect`, `tabBarMinimizeBehavior`) go through the gated helpers `floating()` and `minimizingTabBar()` in `Theme.swift`; the deployment target is iOS 18.
 8. **Notifications:** iOS keeps at most 64 pending, so `Reminders.sync` schedules the soonest 60 and re-syncs whenever the plan changes (`.task(id: Reminders.due(...))` in `RootView`). Permission is asked only when someone sets a reminder or turns on the badge, never at launch.
 9. **Simulator:** a permission prompt from an earlier run keeps reappearing even after reinstalling; `xcrun simctl erase <device>` clears it. The first launch after an install takes a few seconds; `npm run ios:shots` waits five.
+10. **Wide-screen margins:** `.safeAreaPadding` on a `NavigationStack` reaches neither its bar nor its lists, so the column is `.contentMargins(.horizontal, ..., for: .scrollContent)` on each list.
+    A margin of 0 there also strips a grouped list's card inset; pass `nil` for the system default.

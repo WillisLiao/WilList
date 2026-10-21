@@ -53,7 +53,17 @@ struct TodayView: View {
                 header
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
-                Section { addRow }
+                Section {
+                    addRow
+                    // An empty list shows what a line can say.
+                    if nothing && readDates && draft.isEmpty {
+                        Text("Dates are read for you: \u{201C}Call mum tomorrow 6pm\u{201D}.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 66, bottom: 4, trailing: 20))
+                    }
+                }
                 if sort == .due {
                     ForEach(dueGroups, id: \.name) { group in
                         Section(group.name) { rows(group.todos, movable: false) }
@@ -125,14 +135,14 @@ struct TodayView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(Fmt.long(today))
                 .font(.largeTitle.bold())
-                .fontDesign(.serif)
+                .fontDesign(Look.current.titles)
                 .accessibilityAddTraits(.isHeader)
             HStack(spacing: 0) {
                 Text(summary)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 8)
-                tools
+                if !nothing { tools }
             }
         }
     }
@@ -158,10 +168,13 @@ struct TodayView: View {
         .font(.body.weight(.medium))
     }
 
+    /// Nothing on Today at all, done or not: a new list.
+    private var nothing: Bool { store.state.todos.isEmpty && fromPlan.isEmpty }
+
     private var summary: String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
         let doneToday = completed.filter { $0.doneAt == today }.count
-        var parts = [open.isEmpty ? (doneToday == 0 ? "Write down what's on your mind, one line each" : "All clear") : "\(open.count) to do"]
+        var parts = [open.isEmpty ? (doneToday == 0 ? "Add what you need to do, one line each" : "All clear") : "\(open.count) to do"]
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done today") }
         return parts.joined(separator: ", ") + "."
@@ -173,7 +186,7 @@ struct TodayView: View {
         HStack(spacing: 10) {
             Image(systemName: "plus.circle.fill")
                 .font(.title2)
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Color.brand)
                 .frame(width: 44, height: 44)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
@@ -183,7 +196,7 @@ struct TodayView: View {
                     .onSubmit(add)
                 // What the line will be saved as, when it names a day or a repeat.
                 if let reads = reads {
-                    Text(reads).font(.footnote).foregroundStyle(Color.accentColor)
+                    Text(reads).font(.footnote).foregroundStyle(Color.brand)
                 }
             }
         }
@@ -220,7 +233,7 @@ ForEach(list) { todo in
             row(todo)
                 .swipeActions(edge: .leading) {
                     if !todo.done {
-                        Button("Done", systemImage: "checkmark") { tick(todo) }.tint(.accentColor)
+                        Button("Done", systemImage: "checkmark") { tick(todo) }.tint(.brand)
                     }
                 }
                 .swipeActions(edge: .trailing) {
@@ -280,7 +293,7 @@ ForEach(list) { todo in
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .leading) {
-            Button("Done", systemImage: "checkmark") { finish(item) }.tint(.accentColor)
+            Button("Done", systemImage: "checkmark") { finish(item) }.tint(.brand)
         }
         .swipeActions(edge: .trailing) {
             Button("Remove from Today", systemImage: "sun.max") {
@@ -317,7 +330,7 @@ ForEach(list) { todo in
         }
         if let due = Fmt.dueLine(t.date, t.time, today) {
             let late = !t.done && diffDays(today, t.date ?? today) < 0
-            parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.accentColor : Color.secondary))
+            parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.brand : Color.secondary))
         }
         // With a due date shown, the bell alone says there's a reminder; without one, it says when.
         if !t.done, let r = Fmt.reminder(t.remindAt, today) {

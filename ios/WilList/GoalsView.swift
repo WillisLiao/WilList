@@ -103,8 +103,8 @@ struct PlanList: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(goal.isEmpty ? "Set your main goal" : goal)
                     .font(.headline)
-                    .fontDesign(.serif)
-                    .foregroundStyle(goal.isEmpty ? Color.accentColor : .primary)
+                    .fontDesign(Look.current.titles)
+                    .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
                     .lineLimit(2)
                 Text(goal.isEmpty ? "The one goal that would change the most for you"
                      : others == 0 ? "Your main goal" : "Your main goal and \(others) more")
@@ -119,26 +119,44 @@ struct PlanList: View {
     private func firstCard(_ row: Row) -> some View {
         let done = ticking.contains(row.key)
         let streak = tomorrow ? 0 : a1Streak(store.state.meta.firstDone, today)
+        // On a card filled with the brand colour (the Frog look) the words turn white.
+        let solid = Look.current.hero == .solid
+        let ink = solid ? Color.white : Color.primary
+        let grey = solid ? Color.white.opacity(0.85) : Color.secondary
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 10) {
-                LetterMark(letter: row.priority, label: row.label, large: true)
+                LetterMark(letter: row.priority, label: row.label, large: true, onBrand: solid)
                 Text(tomorrow ? "First thing tomorrow" : "Do this first")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(grey)
                 Spacer()
-                if row.overdue { Text("Overdue").font(.subheadline.weight(.medium)).foregroundStyle(.red) }
+                if row.overdue {
+                    Text("Overdue")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.red)
+                        .padding(.horizontal, solid ? 8 : 0)
+                        .padding(.vertical, solid ? 3 : 0)
+                        .background(solid ? Color.white : .clear, in: Capsule())
+                }
             }
             VStack(alignment: .leading, spacing: 4) {
                 Text(row.item.title)
                     .font(.title2.weight(.semibold))
-                    .fontDesign(.serif)
+                    .fontDesign(Look.current.titles)
+                    .foregroundStyle(ink)
                     .fixedSize(horizontal: false, vertical: true)
+                    .background {
+                        // The Notebook look runs a highlighter over the one thing to do.
+                        if Look.current.hero == .outline {
+                            RoundedRectangle(cornerRadius: 4).fill(Color.brand.opacity(0.2)).padding(.horizontal, -4)
+                        }
+                    }
                 if let detail = detail(row) {
-                    Text(detail).foregroundStyle(.secondary)
+                    Text(detail).foregroundStyle(grey)
                 }
                 // A session is part of something bigger: say what it is for and when that is due.
                 if row.session != nil, let due = Fmt.when(row.item, day) {
-                    Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(.secondary)
+                    Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
                 }
             }
             Button {
@@ -146,37 +164,68 @@ struct PlanList: View {
             } label: {
                 Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
                     .contentTransition(.symbolEffect(.replace))
+                    .foregroundStyle(solid ? Color.brand : Color.white)
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(solid ? Color.white : Color.brand)
             .controlSize(.large)
             .sensoryFeedback(.success, trigger: done) { _, new in new }
             .padding(.top, 6)
             if streak > 0 {
                 Text("\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A.")
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(grey)
                     .frame(maxWidth: .infinity)
             }
         }
-        .padding(18)
-        .background(Color.accentColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .heroCard()
         .contentShape(Rectangle())
         .onTapGesture { editing = row.item }
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
     }
 
+    /// The A1's place when there is nothing to do first: what goes here, and the one way to fill it.
     private var emptyCard: some View {
-        Text(!waiting.isEmpty ? "Give the items below a letter. The most important one shows up here."
-             : tomorrow ? "Nothing planned for tomorrow yet. Add what you'll do with +."
-             : "Nothing on the list. Add what you need to do with +.")
-            .foregroundStyle(.secondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                LetterMark(letter: nil, label: "A1", large: true)
+                Text(tomorrow ? "First thing tomorrow" : "Do this first")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+            Text(emptyMessage)
+                .fixedSize(horizontal: false, vertical: true)
+            // With items waiting below, their Letter buttons are the way to fill this card.
+            if waiting.isEmpty {
+                Button { adding = true } label: {
+                    Text("Add a task").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .padding(.top, 4)
+            }
+        }
+        .heroCard(empty: true)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+    }
+
+    private var emptyMessage: String {
+        if !waiting.isEmpty { return "Give the items below a letter. The most important one shows up here." }
+        if tomorrow { return "Nothing planned for tomorrow yet." }
+        if let next = nextUp { return "Nothing to do today. Next: \(next.title), \(Fmt.day(next.day, today, inSentence: true))." }
+        return "Your most important task shows up here, so you always know what to do first."
+    }
+
+    /// The soonest lettered thing still to come, for a day with nothing on it.
+    private var nextUp: (title: String, day: Day)? {
+        store.state.items
+            .filter { isOpen($0, today) && ($0.priority.map { $0 <= .C } ?? false) }
+            .compactMap { it in (it.sessions.first { !$0.done }?.date ?? it.date).map { (title: it.title, day: $0) } }
+            .filter { diffDays(today, $0.day) > 0 }
+            .min { $0.day < $1.day }
     }
 
     private func itemRow(_ row: Row) -> some View {
@@ -190,13 +239,14 @@ struct PlanList: View {
                 if let line = line(row) { line.font(.subheadline) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
             .onTapGesture { editing = row.item }
             letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
         }
-        .listRowInsets(EdgeInsets(top: 2, leading: 8, bottom: 2, trailing: 8))
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 16))
         .swipeActions(edge: .leading) {
-            Button("Done", systemImage: "checkmark") { complete(row) }.tint(.accentColor)
+            Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
             if !tomorrow { addToToday(row.item) }
         }
         .swipeActions(edge: .trailing) {
@@ -210,7 +260,7 @@ struct PlanList: View {
         return Button(on ? "Remove from Today" : "Add to Today", systemImage: on ? "sun.max.fill" : "sun.max") {
             withAnimation { store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = on ? nil : today } } }
         }
-        .tint(.orange)
+        .tint(.gray)
     }
 
     private func waitingRow(_ item: Item) -> some View {
@@ -221,18 +271,19 @@ struct PlanList: View {
                 if !sub.isEmpty { Text(sub).font(.subheadline).foregroundStyle(.secondary) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
             .onTapGesture { editing = item }
             letterMenu(item) {
                 Text("Letter")
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Color.brand)
                     .padding(.horizontal, 14)
                     .frame(minHeight: 30)
-                    .background(Color.accentColor.opacity(0.12), in: Capsule())
+                    .background(Color.brand.opacity(0.12), in: Capsule())
             }
         }
-        .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 8))
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
@@ -246,7 +297,7 @@ struct PlanList: View {
                 withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
             }
         } label: {
-            label().frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+            label().frame(minWidth: 44, minHeight: 44, alignment: .trailing).contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .sensoryFeedback(.selection, trigger: item.priority)
@@ -338,7 +389,7 @@ struct GoalsList: View {
                 Button { editingPurpose = true } label: {
                     Text(store.state.mdp.isEmpty ? "What one goal would change the most for you?" : store.state.mdp)
                         .font(.title3)
-                        .fontDesign(.serif)
+                        .fontDesign(Look.current.titles)
                         .foregroundStyle(store.state.mdp.isEmpty ? .secondary : .primary)
                         .multilineTextAlignment(.leading)
                         .padding(.vertical, 4)

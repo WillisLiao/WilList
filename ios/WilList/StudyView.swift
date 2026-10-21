@@ -20,35 +20,36 @@ struct StudyView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Study today") {
-                    if sessions.isEmpty {
-                        Text("Nothing to study today.").foregroundStyle(.secondary)
+                if sessions.isEmpty && ahead.isEmpty && week.allSatisfy({ $0.load == 0 }) {
+                    firstRun
+                } else {
+                    Section("Study today") {
+                        if sessions.isEmpty {
+                            Text("Nothing to study today.").foregroundStyle(.secondary)
+                        }
+                        ForEach(sessions) { sessionRow($0) }
                     }
-                    ForEach(sessions) { sessionRow($0) }
-                }
 
-                Section("This week") {
-                    WeekChart(days: week, budget: store.state.settings.perDayMin, today: today)
-                    if week.contains(where: \.over) {
-                        Text("Red days have more than your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .listRowSeparator(.hidden, edges: .top)
-                    }
-                }
-
-                Section("Coming up") {
-                    if ahead.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("No exams or deadlines in the next 45 days.").foregroundStyle(.secondary)
-                            HStack {
-                                Button("Add an exam") { adding = true }.buttonStyle(.bordered)
-                                Button("Bring in a schedule") { importing = true }.buttonStyle(.bordered)
+                    Section("This week") {
+                        if week.allSatisfy({ $0.load == 0 }) {
+                            Text("No study planned this week.").foregroundStyle(.secondary)
+                        } else {
+                            WeekChart(days: week, budget: store.state.settings.perDayMin, today: today)
+                            if week.contains(where: \.over) {
+                                Text("Red days have more than your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .listRowSeparator(.hidden, edges: .top)
                             }
                         }
-                        .padding(.vertical, 4)
                     }
-                    ForEach(ahead, id: \.item.id) { readinessRow($0) }
+
+                    Section("Coming up") {
+                        if ahead.isEmpty {
+                            Text("No exams or deadlines in the next 45 days.").foregroundStyle(.secondary)
+                        }
+                        ForEach(ahead, id: \.item.id) { readinessRow($0) }
+                    }
                 }
             }
             .listStyle(.plain)
@@ -68,6 +69,27 @@ struct StudyView: View {
             .sheet(item: $editing) { ItemEditor(item: $0) }
             .toastHost()
         }
+    }
+
+    /// Nothing to study yet: what this tab does, and the two ways to start.
+    private var firstRun: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Add an exam or a deadline, and WilList spreads your study over the days before it, so you never have to cram.")
+                .fixedSize(horizontal: false, vertical: true)
+            Button { adding = true } label: {
+                Text("Add an exam or deadline").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            Button { importing = true } label: {
+                Text("Bring in a schedule").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+        .heroCard(empty: true)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
     }
 
     private func sessionRow(_ row: Row) -> some View {
@@ -91,7 +113,7 @@ struct StudyView: View {
         }
         .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 16))
         .swipeActions(edge: .leading) {
-            Button("Done", systemImage: "checkmark") { complete(row) }.tint(.accentColor)
+            Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
         }
     }
 
@@ -152,7 +174,7 @@ struct WeekChart: View {
         Chart {
             ForEach(days, id: \.date) { d in
                 BarMark(x: .value("Day", d.date), y: .value("Minutes", d.load), width: .ratio(0.55))
-                    .foregroundStyle(d.over ? Color.red : Color.accentColor.opacity(0.35))
+                    .foregroundStyle(d.over ? Color.red : Color.brand.opacity(0.35))
                     .cornerRadius(3)
             }
         }

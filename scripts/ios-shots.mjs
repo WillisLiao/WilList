@@ -2,6 +2,9 @@
 //   npm run ios:shots                          the four tabs, into shots/ios
 //   npm run ios:shots -- goals -open tomorrow  one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
+//   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
+//   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
+//   LOOK=frog npm run ios:shots                a design variation from ios/WilList/Look.swift (files get -frog)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
 //   -tab today|goals|study|more      which tab opens
@@ -79,11 +82,17 @@ const container = run('xcrun', ['simctl', 'get_app_container', device.udid, BUND
 const support = path.join(container, 'Library', 'Application Support');
 fs.mkdirSync(support, { recursive: true });
 fs.mkdirSync(OUT, { recursive: true });
-const data = sample();
-const suffix = argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : '';
+const { EMPTY, FIRST, LOOK } = process.env;
+const blank = emptyState();
+blank.meta.onboarded = true;
+const data = FIRST ? null : EMPTY ? JSON.stringify(normalize(blank)) : sample();
+const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : '')
+  + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '') + (LOOK ? `-${LOOK}` : '');
+if (LOOK) argv.push('-look', LOOK);
 
 for (const tab of tabs) {
-  fs.writeFileSync(path.join(support, 'willist.v1.json'), data);
+  const save = path.join(support, 'willist.v1.json');
+  if (data) fs.writeFileSync(save, data); else fs.rmSync(save, { force: true });
   tryRun('xcrun', ['simctl', 'terminate', device.udid, BUNDLE]);
   run('xcrun', ['simctl', 'launch', device.udid, BUNDLE, '-tab', tab, ...argv]);
   run('sleep', ['5']); // the first launch after an install is slow

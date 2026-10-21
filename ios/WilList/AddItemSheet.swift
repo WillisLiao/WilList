@@ -49,7 +49,7 @@ struct AddItemSheet: View {
                                     .font(.headline)
                                     .foregroundStyle(letter == l ? Color.white : Color.primary)
                                     .frame(maxWidth: .infinity, minHeight: 40)
-                                    .background(letter == l ? Color.accentColor : Color(.secondarySystemFill), in: Capsule())
+                                    .background(letter == l ? Color.brand : Color(.secondarySystemFill), in: Capsule())
                             }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("\(l.rawValue): \(l.meaning)")
@@ -69,7 +69,7 @@ struct AddItemSheet: View {
                     }
                 }
             }
-            .navigationTitle("New item")
+            .navigationTitle("New \(type.name.lowercased())")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

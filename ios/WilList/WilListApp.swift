@@ -15,12 +15,12 @@ struct WilListApp: App {
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // Screen titles in New York, like the date on Today. Set once the app has launched: touching
-    // UIKit appearance any earlier (in App.init) loses the accent colour.
+    // Screen titles in the look's face (New York for Meadow), like the date on Today. Set once the
+    // app has launched: touching UIKit appearance any earlier (in App.init) loses the accent colour.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let bar = UINavigationBar.appearance()
-        bar.largeTitleTextAttributes = [.font: Self.serif(.largeTitle)]
-        bar.titleTextAttributes = [.font: Self.serif(.headline)]
+        bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle)]
+        bar.titleTextAttributes = [.font: Self.titleFont(.headline)]
         UNUserNotificationCenter.current().delegate = self
         return true
     }
@@ -46,9 +46,14 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         await MainActor.run { Store.shared.answerReminder(id, action: action) }
     }
 
-    private static func serif(_ style: UIFont.TextStyle) -> UIFont {
+    private static func titleFont(_ style: UIFont.TextStyle) -> UIFont {
+        let design: UIFontDescriptor.SystemDesign = switch Look.current.titles {
+        case .serif: .serif
+        case .rounded: .rounded
+        default: .default
+        }
         let base = UIFont.preferredFont(forTextStyle: style).fontDescriptor
-        let d = base.withDesign(.serif)?.withSymbolicTraits(.traitBold) ?? base
+        let d = (base.withDesign(design) ?? base).withSymbolicTraits(.traitBold) ?? base
         return UIFont(descriptor: d, size: 0)
     }
 }
@@ -61,6 +66,7 @@ struct RootView: View {
     // `-tab goals` on launch opens a tab directly (screenshots, Shortcuts debugging).
     @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
     @AppStorage("badge") private var badge = Badge.off
+    @State private var welcoming = Store.shared.needsWelcome
 
     var body: some View {
         TabView(selection: $tab) {
@@ -70,6 +76,11 @@ struct RootView: View {
             Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }
         }
         .minimizingTabBar()
+        .lookTint()
+        // The first launch writes the first plan, then opens on its A1.
+        .fullScreenCover(isPresented: $welcoming) {
+            WelcomeView { tab = .goals }.lookTint()
+        }
         .onOpenURL { url in
             store.incomingFile = url
             tab = .goals

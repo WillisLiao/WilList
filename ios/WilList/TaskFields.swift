@@ -15,9 +15,9 @@ struct StepsList: View {
         ForEach($steps) { $step in
             HStack(spacing: 12) {
                 Button { withAnimation(.snappy) { step.done.toggle() } } label: {
-                    Image(systemName: step.done ? "checkmark.circle.fill" : "circle")
+                    Image(systemName: step.done ? Look.current.box.done : Look.current.box.empty)
                         .font(.title3)
-                        .foregroundStyle(step.done ? Color.accentColor : Color(.tertiaryLabel))
+                        .foregroundStyle(step.done ? Color.brand : Color(.tertiaryLabel))
                         .contentTransition(.symbolEffect(.replace))
                 }
                 .buttonStyle(.borderless)
@@ -31,7 +31,7 @@ struct StepsList: View {
         .onDelete { steps.remove(atOffsets: $0) }
         .onMove { steps.move(fromOffsets: $0, toOffset: $1) }
         HStack(spacing: 12) {
-            Image(systemName: "plus").font(.title3).foregroundStyle(Color.accentColor).frame(width: 24)
+            Image(systemName: "plus").font(.title3).foregroundStyle(Color.brand).frame(width: 24)
             TextField(steps.isEmpty ? "Add a step" : "Next step", text: $draft)
                 .focused($adding)
                 .submitLabel(.next)
@@ -69,7 +69,7 @@ struct ReminderRow: View {
                     // "Remind me at 9:00 AM" over "Tomorrow", as Microsoft To Do puts it.
                     HStack(spacing: 12) {
                         Image(systemName: "bell.fill")
-                            .foregroundStyle(date < .now ? Color.red : Color.accentColor)
+                            .foregroundStyle(date < .now ? Color.red : Color.brand)
                             .frame(width: 24)
                         VStack(alignment: .leading, spacing: 1) {
                             Text("Remind me at \(date.formatted(date: .omitted, time: .shortened))")
@@ -294,7 +294,7 @@ private struct CustomRepeat: View {
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(on ? Color.white : Color.primary)
                                         .frame(maxWidth: .infinity, minHeight: 40)
-                                        .background(on ? Color.accentColor : Color(.secondarySystemFill), in: Circle())
+                                        .background(on ? Color.brand : Color(.secondarySystemFill), in: Circle())
                                 }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel(Calendar.current.weekdaySymbols[d])
@@ -340,7 +340,7 @@ private struct SetRow<Content: View>: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: symbol)
-                .foregroundStyle(overdue ? Color.red : Color.accentColor)
+                .foregroundStyle(overdue ? Color.red : Color.brand)
                 .frame(width: 24)
             content
             Button(action: clear) {
@@ -376,7 +376,7 @@ struct StarButton: View {
         Button { on.toggle() } label: {
             Image(systemName: on ? "star.fill" : "star")
                 .font(.title3)
-                .foregroundStyle(on ? Color.accentColor : Color(.tertiaryLabel))
+                .foregroundStyle(on ? Color.brand : Color(.tertiaryLabel))
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

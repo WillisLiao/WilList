@@ -10,6 +10,8 @@ struct LetterMark: View {
     let letter: Letter?
     var label: String?
     var large = false
+    /// On a card filled with the brand colour, the A turns white with a green letter.
+    var onBrand = false
 
     var body: some View {
         let text = label ?? letter?.rawValue ?? "–"
@@ -20,10 +22,10 @@ struct LetterMark: View {
             .foregroundStyle(ink)
             .padding(.horizontal, text.count > 1 ? 6 : 0)
             .frame(minWidth: large ? 40 : 30, minHeight: large ? 32 : 26)
-            .background(letter == .A ? Color.accentColor : Color.clear, in: Capsule())
+            .background(letter == .A ? (onBrand ? Color.white : Color.brand) : Color.clear, in: Capsule())
             .overlay {
                 if letter != .A {
-                    Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: 1.25, dash: letter == .D ? [3, 2] : []))
+                    Capsule().strokeBorder(stroke, style: StrokeStyle(lineWidth: 1.25, dash: letter == .D || letter == nil ? [3, 2] : []))
                 }
             }
             .accessibilityLabel(letter.map { "Priority \(label ?? $0.rawValue)" } ?? "No letter")
@@ -33,7 +35,7 @@ struct LetterMark: View {
     // letters must read the same everywhere.
     private var ink: Color {
         switch letter {
-        case .A: .white
+        case .A: onBrand ? .brand : .white
         case .B: .primary
         default: .secondary
         }
@@ -110,9 +112,9 @@ struct CheckButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: done ? "checkmark.circle.fill" : "circle")
+            Image(systemName: done ? Look.current.box.done : Look.current.box.empty)
                 .font(.title2)
-                .foregroundStyle(done ? Color.accentColor : Color(.tertiaryLabel))
+                .foregroundStyle(done ? Color.brand : Color(.tertiaryLabel))
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, value: done)
                 .frame(width: 44, height: 44)
@@ -267,8 +269,25 @@ struct ToastHost: ViewModifier {
     }
 }
 
+/// The ground of the A1 card in the current look: pale, filled solid, or outlined. An empty card
+/// (nothing to do first yet) stays pale in every look.
+struct HeroCard: ViewModifier {
+    var empty = false
+
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
+        let hero = empty ? .pale : Look.current.hero
+        content
+            .padding(18)
+            .background(hero == .solid ? Color.brand : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
+            .overlay { if hero == .outline { shape.strokeBorder(Color.brand, lineWidth: 1.5) } }
+    }
+}
+
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
+
+    func heroCard(empty: Bool = false) -> some View { modifier(HeroCard(empty: empty)) }
 
     /// Liquid Glass on iOS 26 and later; the system material before that.
     @ViewBuilder func floating() -> some View {

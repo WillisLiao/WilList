@@ -1,7 +1,7 @@
 import SwiftUI
 import WilListCore
 
-/// Search across every tab: to-dos, and the items in Goals and Study, by title, step, note or course.
+/// Search across every tab: to-dos, and the items in Plan and Study, by title, step, note or course.
 struct SearchView: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
@@ -38,7 +38,7 @@ struct SearchView: View {
                     }
                 }
                 if !items.isEmpty {
-                    Section("Goals and study") {
+                    Section("Plan and Study") {
                         ForEach(items) { it in
                             Button { item = it } label: {
                                 result(it.title, Fmt.subline(it, store.today), done: it.done, letter: it.priority)
@@ -53,7 +53,7 @@ struct SearchView: View {
                     ContentUnavailableView.search(text: query)
                 }
             }
-            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "To-dos, goals, study, notes")
+            .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "To-dos, plan, study, notes")
             .navigationTitle("Search")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

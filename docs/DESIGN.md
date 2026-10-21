@@ -20,7 +20,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 | Paper | system white (plain `List`), system grouped grey in `Form`s | Backgrounds. Main tabs use plain white lists; settings and detail sheets use grouped forms. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
-| Green | `AccentColor` asset, `#1DA35A` | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
+| Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable) | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
 | Pale green | green at 9% (the A1 card), 12% (the Letter button), 35% (study bars) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
 
@@ -47,12 +47,12 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | A quick checklist under today's date, plus anything added to Today from Goals and Study | Type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
-| Goals | Your main goal, your A1 as one large card, the rest of today in ABCDE order, items needing a letter, then Plan tomorrow and Bring in a schedule | "Mark done" on the A1 card |
+| Today | Your A1 as one large card under today's date, how many items wait for a letter, then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |
 
-Search (magnifying glass) sits on Today, Goals and Study and covers everything.
+Search (magnifying glass) sits on Today, Plan and Study and covers everything.
 
 ## Components
 
@@ -63,7 +63,7 @@ All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.
 - **CheckButton:** 44 pt, an empty grey circle that fills green with a bounce, a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in More). The row waits 450 ms filled, then glides away.
 - **LetterMark:** letters differ by intensity, not hue. A is filled green with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
 - **StarButton:** grey outline, filled green when important.
-- **A1 card:** pale green, corner radius 22, the letter and "Do this first", the serif title, at most two grey lines, a full-width "Mark done" (bordered prominent, large), and "3 days in a row you started with an A" when there is a streak.
+- **A1 card** (`A1Card.swift`, at the top of Today): pale green, corner radius 22, the letter and "Do this first", the serif title, at most two grey lines, a full-width "Mark done" (bordered prominent, large), and "3 days in a row you started with an A" when there is a streak. Done, it offers Undo and the next A moves up into the card.
 - **Task details** (`TaskFields.swift`), the same for to-dos and items:
   - Steps: tick, type to add (return adds the next), swipe to delete, drag to reorder.
   - Remind me: Later today (3 hours on, on the hour, until 10 PM), Tomorrow 9:00 AM, Next week (Monday 9:00 AM), Pick a date and time (a calendar sheet with Set). Set, it reads "Remind me at 9:00 AM" over "Tomorrow".

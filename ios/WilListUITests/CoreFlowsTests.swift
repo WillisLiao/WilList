@@ -1,7 +1,7 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// set a reminder on one, Mark done on the A1 card, and the first-run welcome.
+/// set a reminder on one, Mark done on the A1 card at the top of Today, and the first-run welcome.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -28,13 +28,15 @@ final class CoreFlowsTests: XCTestCase {
     }
 
     func testMarkTheA1Done() {
-        let app = launch(plan: "a1", tab: "goals")
+        let app = launch(plan: "a1")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
         app.buttons["markA1Done"].tap()
-        // The next A moves up into the card, and the finished one leaves the list.
+        // The next A moves up into the card, the finished one leaves Today, and Undo brings it back.
         XCTAssertTrue(gone(app.staticTexts["Write the essay intro"]))
         XCTAssertTrue(app.staticTexts["Read chapter 4"].exists)
         XCTAssertTrue(app.buttons["markA1Done"].exists)
+        app.buttons["Undo"].tap()
+        XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
     }
 
     func testFirstRunPicksAnA1() {
@@ -48,9 +50,11 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["Write the lab report"].tap()
         app.buttons["Make it my A1"].tap()
         app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5), "the plan opens on the A1 card")
+        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5), "Today opens on the A1 card")
         XCTAssertTrue(app.staticTexts["Write the lab report"].exists)
-        XCTAssertTrue(app.staticTexts["Email Prof. Chen"].exists, "the other line waits for a letter")
+        // The other line waits for a letter in Plan, one tap away.
+        app.buttons["1 waiting for a letter in Plan"].tap()
+        XCTAssertTrue(app.staticTexts["Email Prof. Chen"].waitForExistence(timeout: 5))
     }
 
     // MARK: helpers
@@ -72,10 +76,11 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(app.staticTexts[line].waitForExistence(timeout: 5))
     }
 
-    /// Answers the notification permission prompt, the first time there is one.
+    /// Answers the notification permission prompt, the first time there is one. Allow is its
+    /// second button in every language the simulator may run in.
     private func allowNotifications() {
-        let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").buttons["Allow"]
-        if allow.waitForExistence(timeout: 3) { allow.tap() }
+        let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+        if alert.waitForExistence(timeout: 3) { alert.buttons.element(boundBy: 1).tap() }
     }
 
     private func gone(_ element: XCUIElement) -> Bool {

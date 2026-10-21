@@ -129,6 +129,12 @@ public func dayRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row]
     return rows
 }
 
+/// The day's rows worth doing yourself, A to C: never something to hand off or drop. The first
+/// one is the day's A1, on the card at the top of Today and on the widgets.
+public func doRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row] {
+    dayRows(items, day, realToday: realToday).filter { $0.priority.map { $0 <= .C } ?? false }
+}
+
 /// Study sessions due today or missed, one row per item, soonest deadline first. Unlike the
 /// lettered list, items still waiting for a letter are included: the work is real either way.
 public func studyRows(_ items: [Item], _ today: Day) -> [Row] {

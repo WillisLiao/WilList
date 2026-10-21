@@ -1,7 +1,7 @@
 import Foundation
 import WilListCore
 
-/// What the widgets show: the day's first thing and what follows it (as on Goals), and the open
+/// What the widgets show: the day's A1 and what follows it (as on Today and Plan), and the open
 /// to-dos (as on Today). Built from the saved plan with the same functions the screens use.
 struct Glance: Equatable {
     struct Line: Equatable, Identifiable {
@@ -23,8 +23,7 @@ struct Glance: Equatable {
 
     init(_ s: AppState, today: Day) {
         self.today = today
-        // Never something to hand off or drop, as on Goals.
-        let rows = dayRows(s.items, today).filter { $0.priority.map { $0 <= .C } ?? false }
+        let rows = doRows(s.items, today)
         let line = { (r: Row) in
             Line(id: r.key, title: r.item.title, detail: Fmt.detail(r, today), label: r.label, letter: r.priority, overdue: r.overdue)
         }

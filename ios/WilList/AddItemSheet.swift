@@ -60,7 +60,7 @@ struct AddItemSheet: View {
                 } header: {
                     Text("Letter")
                 } footer: {
-                    Text(letter?.meaning ?? "No letter yet. It waits under Needs a letter in Goals.")
+                    Text(letter?.meaning ?? "No letter yet. It waits under Needs a letter in Plan.")
                 }
 
                 if !added.isEmpty {

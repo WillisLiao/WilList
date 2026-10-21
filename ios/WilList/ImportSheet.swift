@@ -143,7 +143,7 @@ struct ImportSheet: View {
             Button {
                 let chosen = keep.sorted().map { found[$0] }
                 store.change { s in s.applyImport(planImport(s.items, chosen), today: store.today) }
-                store.say("Added \(chosen.count) \(chosen.count == 1 ? "item" : "items"). Give them a letter in Goals.")
+                store.say("Added \(chosen.count) \(chosen.count == 1 ? "item" : "items"). Give them a letter in Plan.")
                 dismiss()
             } label: {
                 Text("Add \(keep.count) \(keep.count == 1 ? "item" : "items")").frame(maxWidth: .infinity)

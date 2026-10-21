@@ -5,7 +5,7 @@ import SwiftUI
 /// `-look frog` on launch, and `npm run ios:shots` shoots them with `LOOK=frog`.
 /// ponytail: four looks behind one switch; delete the ones not chosen.
 enum Look: String, CaseIterable {
-    /// Bright green, New York titles, a pale green A1 card.
+    /// Green that reads on white (4.5:1), New York titles, a pale green A1 card.
     case meadow
     /// Eat that frog: a deeper green, and the A1 card filled solid so it can't be missed.
     case frog
@@ -22,7 +22,7 @@ enum Look: String, CaseIterable {
 
     var accent: Color {
         switch self {
-        case .meadow: Color(hex: 0x1DA35A)
+        case .meadow: Color(hex: 0x12884A)
         case .frog: Color(hex: 0x0E7C42)
         case .notebook: Color(hex: 0x14A04B)
         case .lagoon: Color(hex: 0x0A8796)

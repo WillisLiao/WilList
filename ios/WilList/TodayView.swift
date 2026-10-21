@@ -17,10 +17,12 @@ enum TodoSort: String, CaseIterable, Identifiable {
     }
 }
 
-/// Today: a plain checklist. Type a line, tick it off. Tap one for steps, a reminder, a due date
-/// and time, a repeat and a note.
+/// Today: the day's A1 on one card, then a plain checklist. Type a line, tick it off. Tap one for
+/// steps, a reminder, a due date and time, a repeat and a note.
 struct TodayView: View {
     @Environment(Store.self) private var store
+    /// Opens the Plan tab, where items wait for a letter.
+    let showPlan: () -> Void
     @AppStorage("todoSort") private var sort = TodoSort.manual
     @AppStorage("showCompleted") private var showCompleted = true
     @AppStorage("completedOpen") private var completedOpen = true
@@ -41,22 +43,35 @@ struct TodayView: View {
     private var completed: [Todo] {
         store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
     }
-    /// Items from Goals and Study added to Today, still to do today.
-    private var fromPlan: [Item] {
-        store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) }
+    /// The day's first thing, on its card at the top.
+    private var first: Row? { doRows(store.state.items, today).first }
+    /// Items from Plan and Study added to Today, still to do today. The A1 has its card.
+    private func planItems(besides a1: Row?) -> [Item] {
+        store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.item.id }
             .sorted { letterKey($0) < letterKey($1) }
     }
+    /// Items in Plan still waiting for a letter.
+    private var waiting: Int { unsorted(store.state.items, today).count }
 
     var body: some View {
+        let first = self.first, fromPlan = planItems(besides: first)
         NavigationStack {
             List {
-                header
+                header(first: first, fromPlan: fromPlan)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
+                if let first {
+                    // A new A1 is a new card: its Mark done starts over.
+                    A1Card(row: first) { editingItem = $0 }
+                        .id(first.key)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                }
+                if waiting > 0 { lettersRow }
                 Section {
                     addRow
-                    // An empty list shows what a line can say.
-                    if nothing && readDates && draft.isEmpty {
+                    // A list with no to-dos yet shows what a line can say.
+                    if store.state.todos.isEmpty && readDates && draft.isEmpty {
                         Text("Dates are read for you: \u{201C}Call mum tomorrow 6pm\u{201D}.")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -72,7 +87,7 @@ struct TodayView: View {
                     Section { rows(open, movable: sort == .manual) }
                 }
                 if !fromPlan.isEmpty {
-                    Section("From Goals and Study") {
+                    Section("From Plan and Study") {
                         ForEach(fromPlan) { planRow($0) }
                     }
                 }
@@ -131,20 +146,37 @@ struct TodayView: View {
 
     // MARK: header
 
-    private var header: some View {
+    private func header(first: Row?, fromPlan: [Item]) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(Fmt.long(today))
                 .font(.largeTitle.bold())
                 .fontDesign(Look.current.titles)
                 .accessibilityAddTraits(.isHeader)
             HStack(spacing: 0) {
-                Text(summary)
+                Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 8)
-                if !nothing { tools }
+                // A new list has nothing to search or sort yet.
+                if !(store.state.todos.isEmpty && store.state.items.isEmpty) { tools }
             }
         }
+    }
+
+    /// Items waiting for a letter in Plan: one tap takes you there.
+    private var lettersRow: some View {
+        Button(action: showPlan) {
+            HStack(spacing: 6) {
+                Text("\(waiting) waiting for a letter in Plan")
+                Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(Color.brand)
+            .frame(minHeight: 44)
+        }
+        .buttonStyle(.borderless)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 4, trailing: 20))
     }
 
     private var tools: some View {
@@ -168,13 +200,11 @@ struct TodayView: View {
         .font(.body.weight(.medium))
     }
 
-    /// Nothing on Today at all, done or not: a new list.
-    private var nothing: Bool { store.state.todos.isEmpty && fromPlan.isEmpty }
-
-    private var summary: String {
+    /// Everything on Today still to do, A1 included; the overdue to-dos; all finished today.
+    private func summary(_ toDo: Int) -> String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
-        let doneToday = completed.filter { $0.doneAt == today }.count
-        var parts = [open.isEmpty ? (doneToday == 0 ? "Add what you need to do, one line each" : "All clear") : "\(open.count) to do"]
+        let doneToday = completed.filter { $0.doneAt == today }.count + doneOn(store.state.items, today).count
+        var parts = [toDo == 0 ? (doneToday == 0 ? "Add what you need to do, one line each" : "All clear") : "\(toDo) to do"]
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done today") }
         return parts.joined(separator: ", ") + "."
@@ -269,7 +299,7 @@ ForEach(list) { todo in
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    /// An item added to Today from Goals or Study: tick it off here, or take it off Today.
+    /// An item added to Today from Plan or Study: tick it off here, or take it off Today.
     private func planRow(_ item: Item) -> some View {
         let checked = ticking.contains(item.id)
         return HStack(spacing: 10) {
@@ -310,7 +340,7 @@ ForEach(list) { todo in
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {
-                store.change { s in
+                store.change(undo: "Marked \u{201C}\(item.title)\u{201D} done") { s in
                     if let row = dayRows(s.items, today, realToday: today).first(where: { $0.item.id == item.id }) {
                         s.complete(row, today: today)
                     } else {

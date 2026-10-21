@@ -1,16 +1,16 @@
 // Screenshots of the iPhone app in the iOS Simulator, with a full sample planner loaded.
 //   npm run ios:shots                          the four tabs, into shots/ios
-//   npm run ios:shots -- goals -open tomorrow  one tab, with debug launch arguments
+//   npm run ios:shots -- plan -open tomorrow   one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
-//   LOOK=frog npm run ios:shots                a design variation from ios/WilList/Look.swift (files get -frog)
+//   LOOK=frog npm run ios:shots                a design variation from ios/Shared/Look.swift (files get -frog)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
-//   -tab today|goals|study|more      which tab opens
-//   -open tomorrow|goals             Goals: push Plan tomorrow or Your goals
-//   -scroll letters|bottom           Goals: scroll to Needs a letter or the bottom rows
-//   -sheet add|import|search         open that sheet (add and import from Goals, search from Today)
+//   -tab today|plan|study|more       which tab opens
+//   -open tomorrow|goals             Plan: push Tomorrow or Your goals
+//   -scroll letters|bottom           Plan: scroll to Needs a letter or the bottom rows
+//   -sheet add|import|search         open that sheet (add and import from Plan, search from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)
 //   -show "Email TA"                 open the to-do or item whose title starts with this
@@ -33,7 +33,7 @@ const OUT = 'shots/ios';
 process.chdir(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
 
 const argv = process.argv.slice(2);
-const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'goals', 'study', 'more'];
+const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'plan', 'study', 'more'];
 const run = (cmd, args, quiet = false) => execFileSync(cmd, args, { encoding: 'utf8', stdio: quiet ? 'ignore' : 'pipe' });
 const tryRun = (cmd, args) => { try { run(cmd, args, true); } catch { /* already in that state */ } };
 

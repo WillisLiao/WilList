@@ -97,14 +97,14 @@ The native app (`ios/`) keeps every idea above and arranges them in four tabs, s
 
 | Principle | In the iPhone app |
 |---|---|
-| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Goals and Study have **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
+| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Plan and Study have **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
 | **Get the whole term onto the list at once.** | Calendar links (Canvas, Moodle, Blackboard, Brightspace, Google, Outlook) are read every time the app opens. **Bring in a schedule** has Claude read any file or photo, for any course, job or project, and shows what it found before anything is added. |
-| **ABCDE and A1 first.** | Goals opens with what to do first as one large card with a Mark done button, then the rest numbered A1, A2, B1, each letter on the right of its row. Items without a letter wait under "Needs a letter" with a **Letter** button. |
+| **ABCDE and A1 first.** | Today opens with what to do first as one large card with a Mark done button, and the widgets show the same A1. Plan numbers the day A1, A2, B1, each letter on the right of its row. Items without a letter wait under "Needs a letter" with a **Letter** button, and Today says how many are waiting. |
 | **Consider consequences.** | Tapping a letter lists all five with what each one means, and the suggested one is marked. A share of the grade suggests the letter, as on the web. |
-| **Make tomorrow's list the night before.** | Goals ends with **Plan tomorrow**. From your planning time it says it's evening, and an optional notification at that time says so. |
+| **Make tomorrow's list the night before.** | Plan ends with **Plan tomorrow**. From your planning time it says it's evening, and an optional notification at that time says so. |
 | **Sub-deadlines and spaced repetition.** | Study lists today's sessions and, for each exam and deadline in the next 45 days, how many sessions are done and whether it is on track, behind or short of time. |
 | **Load-aware planning.** | Study charts this week's planned study per day, with days over your daily study time in red. |
-| **A new habit takes about 21 days.** | The first card counts the days in a row you started with an A. Your goals shows 21 dots, filled where the first thing you finished was an A. |
+| **A new habit takes about 21 days.** | The A1 card counts the days in a row you started with an A. Your goals shows 21 dots, filled where the first thing you finished was an A. |
 | **Victim language.** | While you type in **+**, "I'll try", "I wish", "I have to" and "problem" get a one-line nudge. |
 | **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a short chime and haptic, then the row slides away. |
 | **Slice and dice the task.** | Every to-do and item can hold steps, ticked off one by one, with "1 of 3" in the list. |

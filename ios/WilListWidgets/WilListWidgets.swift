@@ -72,7 +72,7 @@ private struct FirstWidgetEntry: View {
             .containerBackground(for: .widget) {
                 if family == .systemSmall || family == .systemMedium { Look.heroGround }
             }
-            .widgetURL(URL(string: "willist://goals"))
+            .widgetURL(URL(string: "willist://today"))
     }
 }
 

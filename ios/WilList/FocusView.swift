@@ -8,6 +8,7 @@ import WilListCore
 struct FocusView: View {
     @Environment(Store.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         if let f = store.focus {
@@ -50,7 +51,7 @@ struct FocusView: View {
                 .padding(.horizontal, 24)
                 .padding(.top, 24)
             Spacer(minLength: 24)
-            HStack(spacing: 12) {
+            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))) {
                 if !over {
                     Button { f.paused ? store.resumeFocus() : store.pauseFocus() } label: {
                         Label(f.paused ? "Resume" : "Pause", systemImage: f.paused ? "play.fill" : "pause.fill")

@@ -10,6 +10,7 @@ struct A1Card: View {
     /// Opens the item's details.
     let open: (Item) -> Void
     @State private var done = false
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var today: Day { store.today }
     // On a card filled with the brand colour (the Frog look) the words turn white.
@@ -55,12 +56,15 @@ struct A1Card: View {
                     Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
                 }
             }
-            HStack(spacing: 10) {
+            // Side by side; one above the other at the largest text sizes, so no word breaks.
+            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))) {
                 // Start: a focus session on it, with the timer on the Lock Screen too.
                 Button { store.startFocus(row) } label: {
                     Label("Start", systemImage: "play.fill")
                         .foregroundStyle(solid ? Color.white : Color.brand)
+                        .lineLimit(1)
                         .padding(.horizontal, 2)
+                        .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : nil)
                 }
                 .buttonStyle(.bordered)
                 .tint(solid ? Color.white : Color.brand)

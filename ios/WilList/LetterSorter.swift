@@ -114,16 +114,10 @@ struct LetterSorter: View {
             HStack(spacing: 14) {
                 LetterMark(letter: letter, large: true)
                 VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 8) {
-                        Text(letter.name).font(.headline)
-                        if letter == suggested && !current {
-                            Text("Suggested")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(Color.brand)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color.brand.opacity(0.12), in: Capsule())
-                        }
+                    // The tag goes under the name when both don't fit on a line.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 8) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
+                        VStack(alignment: .leading, spacing: 4) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
                     }
                     Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
                 }
@@ -143,6 +137,18 @@ struct LetterSorter: View {
         .buttonStyle(Pressable())
         .accessibilityLabel("\(letter.rawValue), \(letter.name). \(letter.detail)\(letter == suggested ? ". Suggested" : "")")
         .accessibilityAddTraits(current ? .isSelected : [])
+    }
+
+    @ViewBuilder private func tag(_ letter: Letter, _ suggested: Letter?, _ current: Bool) -> some View {
+        if letter == suggested && !current {
+            Text("Suggested")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.brand)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(Color.brand.opacity(0.12), in: Capsule())
+                .fixedSize()
+        }
     }
 
     private var finished: some View {

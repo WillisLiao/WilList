@@ -13,6 +13,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		57A10000000000000000003B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 57A10000000000000000000B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 57A100000000000000000006;
+			remoteInfo = WilList;
+		};
 		57A100000000000000000030 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 57A10000000000000000000B /* Project object */;
@@ -39,6 +46,7 @@
 /* Begin PBXFileReference section */
 		57A100000000000000000001 /* WilList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WilList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		57A100000000000000000020 /* WilListWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WilListWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		57A100000000000000000031 /* WilListUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WilListUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -64,9 +72,17 @@
 		57A100000000000000000002 /* WilList */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (57A100000000000000000014 /* Exceptions for "WilList" folder in "WilList" target */, ); path = WilList; sourceTree = "<group>"; };
 		57A100000000000000000021 /* WilListWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (57A100000000000000000023 /* Exceptions for "WilListWidgets" folder in "WilListWidgets" target */, ); path = WilListWidgets; sourceTree = "<group>"; };
 		57A100000000000000000022 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Shared; sourceTree = "<group>"; };
+		57A100000000000000000032 /* WilListUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = WilListUITests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		57A100000000000000000036 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		57A100000000000000000027 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -92,6 +108,7 @@
 				57A100000000000000000002 /* WilList */,
 				57A100000000000000000022 /* Shared */,
 				57A100000000000000000021 /* WilListWidgets */,
+				57A100000000000000000032 /* WilListUITests */,
 				57A100000000000000000005 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -101,6 +118,7 @@
 			children = (
 				57A100000000000000000001 /* WilList.app */,
 				57A100000000000000000020 /* WilListWidgets.appex */,
+				57A100000000000000000031 /* WilListUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -108,6 +126,27 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		57A100000000000000000033 /* WilListUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 57A100000000000000000034 /* Build configuration list for PBXNativeTarget "WilListUITests" */;
+			buildPhases = (
+				57A100000000000000000035 /* Sources */,
+				57A100000000000000000036 /* Frameworks */,
+				57A100000000000000000037 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				57A10000000000000000003A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				57A100000000000000000032 /* WilListUITests */,
+			);
+			name = WilListUITests;
+			productName = WilListUITests;
+			productReference = 57A100000000000000000031 /* WilListUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		57A100000000000000000006 /* WilList */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 57A100000000000000000007 /* Build configuration list for PBXNativeTarget "WilList" */;
@@ -174,6 +213,10 @@
 					57A100000000000000000024 = {
 						CreatedOnToolsVersion = 26.5;
 					};
+					57A100000000000000000033 = {
+						CreatedOnToolsVersion = 26.5;
+						TestTargetID = 57A100000000000000000006;
+					};
 				};
 			};
 			buildConfigurationList = 57A10000000000000000000C /* Build configuration list for PBXProject "WilList" */;
@@ -195,11 +238,19 @@
 			targets = (
 				57A100000000000000000006 /* WilList */,
 				57A100000000000000000024 /* WilListWidgets */,
+				57A100000000000000000033 /* WilListUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		57A100000000000000000037 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		57A100000000000000000028 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -217,6 +268,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		57A100000000000000000035 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		57A100000000000000000026 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -234,6 +292,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		57A10000000000000000003A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 57A100000000000000000006 /* WilList */;
+			targetProxy = 57A10000000000000000003B /* PBXContainerItemProxy */;
+		};
 		57A10000000000000000002F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 57A100000000000000000024 /* WilListWidgets */;
@@ -242,6 +305,40 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		57A100000000000000000038 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 45MSS5RXML;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lull.willist.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WilList;
+			};
+			name = Debug;
+		};
+		57A100000000000000000039 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 45MSS5RXML;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.lull.willist.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = WilList;
+			};
+			name = Release;
+		};
 		57A10000000000000000002A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -401,6 +498,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		57A100000000000000000034 /* Build configuration list for PBXNativeTarget "WilListUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				57A100000000000000000038 /* Debug */,
+				57A100000000000000000039 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		57A100000000000000000025 /* Build configuration list for PBXNativeTarget "WilListWidgets" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

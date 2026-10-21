@@ -27,11 +27,11 @@ jobs:
       - name: Swift core tests
         working-directory: ios/WilListCore
         run: swift test
-      - name: Build the app for the simulator
+      - name: Build the app and run the UI tests
         run: >
-          xcodebuild -project ios/WilList.xcodeproj -scheme WilList -configuration Debug
-          -destination 'generic/platform=iOS Simulator' -derivedDataPath build/ci
-          -quiet build
+          xcodebuild test -project ios/WilList.xcodeproj -scheme WilList
+          -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath build/ci
+          -quiet
 
   deploy:
     needs: test

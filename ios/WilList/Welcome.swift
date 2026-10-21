@@ -118,6 +118,7 @@ struct WelcomeView: View {
             ForEach(lines.indices, id: \.self) { i in
                 HStack(spacing: 12) {
                     Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                        .accessibilityHidden(true)
                     Text(lines[i]).frame(maxWidth: .infinity, alignment: .leading)
                     Button("Remove", systemImage: "xmark.circle.fill") {
                         withAnimation(.snappy) { _ = lines.remove(at: i) }
@@ -132,6 +133,7 @@ struct WelcomeView: View {
             }
             HStack(spacing: 12) {
                 Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(Color.brand)
+                    .accessibilityHidden(true)
                 TextField(lines.isEmpty ? "Read chapter 4 by Monday" : "And next?", text: $draft)
                     .focused($typing)
                     .submitLabel(.next)
@@ -163,6 +165,7 @@ struct WelcomeView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(lines[i])
                 .accessibilityAddTraits(first == i ? .isSelected : [])
                 Divider().padding(.leading, 48)
             }

@@ -31,7 +31,13 @@ final class Store {
     }
 
     /// One planner per app, shared by the screens and by Siri and Shortcuts.
-    static let shared = Store()
+    static let shared: Store = {
+        #if DEBUG
+        // UI tests start from a known plan (`-plan a1`), in a file of their own.
+        if let plan = UserDefaults.standard.string(forKey: "plan") { return TestPlan.store(plan) }
+        #endif
+        return Store()
+    }()
 
     /// The same file the first, web-based version of the app kept (now in the app group, so the
     /// widgets share it), so nobody loses a plan.
@@ -51,8 +57,12 @@ final class Store {
     }
 
     func change(undo label: String? = nil, _ edit: (inout AppState) -> Void) {
+        // Edit a copy: the closure may read the store (`store.dateOrder`), and reading `state`
+        // while it is being edited in place is an exclusivity violation that stops the app.
         let before = state
-        edit(&state)
+        var next = state
+        edit(&next)
+        state = next
         if let label {
             undoState = before
             toast = Toast(text: label, canUndo: true)

@@ -170,6 +170,7 @@ struct PlanList: View {
             .buttonStyle(.borderedProminent)
             .tint(solid ? Color.white : Color.brand)
             .controlSize(.large)
+            .accessibilityIdentifier("markA1Done")
             .sensoryFeedback(.success, trigger: done) { _, new in new }
             .padding(.top, 6)
             if streak > 0 {

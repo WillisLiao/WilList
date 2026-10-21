@@ -6,7 +6,8 @@ export default [{
     ecmaVersion: 2023, sourceType: 'module',
     globals: g(['window', 'document', 'navigator', 'localStorage', 'location', 'Notification', 'ResizeObserver', 'URL', 'Blob', 'Node', 'TextEncoder',
       'Intl', 'setTimeout', 'setInterval', 'clearTimeout', 'clearInterval', 'structuredClone', 'console', 'self', 'caches', 'fetch',
-      'globalThis', 'process', 'Response', 'Headers', 'getComputedStyle']),
+      'globalThis', 'process', 'Response', 'Headers', 'getComputedStyle', 'TextDecoder', 'CompressionStream',
+      'DecompressionStream', 'btoa', 'createImageBitmap']),
   },
   rules: { 'no-unused-vars': ['error', { args: 'none', caughtErrors: 'none' }], 'no-undef': 'error', 'no-unreachable': 'error', 'no-dupe-keys': 'error' },
 }];

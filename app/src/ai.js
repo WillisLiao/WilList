@@ -5,6 +5,7 @@
 import { fmtLong, diffDays } from './dates.js';
 import { dayRows, missedSessions, isOpen } from './agenda.js';
 import { a1Streak } from './insights.js';
+import { fileBlocks } from './files.js';
 
 const KEY_STORE = 'willist.ai-key';
 export const MODEL = 'claude-opus-5-5';
@@ -35,7 +36,7 @@ export function useFetchForTests(fn) {
 
 async function sdk() {
   const key = getKey();
-  if (!key) throw new CoachError('Add your Anthropic API key first (Tools → Coach).');
+  if (!key) throw new CoachError('Add your Anthropic API key first (More → Coach).');
   if (!cached || cached.key !== key) {
     const { default: Anthropic } = await import('../vendor/anthropic-sdk-0.131.0.mjs');
     const opts = { apiKey: key, dangerouslyAllowBrowser: true, maxRetries: 2 };
@@ -51,7 +52,7 @@ export class CoachError extends Error {}
 function explain(err, Anthropic) {
   if (err instanceof CoachError) return err;
   if (Anthropic) {
-    if (err instanceof Anthropic.AuthenticationError) return new CoachError('Anthropic rejected that API key. Check it in Tools → Coach.');
+    if (err instanceof Anthropic.AuthenticationError) return new CoachError('Anthropic rejected that API key. Check it in More → Coach.');
     if (err instanceof Anthropic.PermissionDeniedError) return new CoachError('This API key is not allowed to use Claude Opus 5.5.');
     if (err instanceof Anthropic.RateLimitError) return new CoachError('Too many requests right now. Wait a minute and try again.');
     if (err instanceof Anthropic.BadRequestError) return new CoachError(`Anthropic could not process that request: ${err.message}`);
@@ -90,15 +91,15 @@ const ITEM_SCHEMA = {
         additionalProperties: false,
         required: ['title', 'type', 'date', 'time', 'course', 'weightPct', 'effortHours', 'repeatDays', 'durationMin'],
         properties: {
-          title: { type: 'string', description: 'Short name in the student’s own words, at most 60 characters.' },
+          title: { type: 'string', description: 'Short name in the source’s own words, at most 60 characters.' },
           type: { type: 'string', enum: ['exam', 'deadline', 'presentation', 'reading', 'event', 'task'] },
           date: { type: 'string', description: 'YYYY-MM-DD, or "" if the text gives none.' },
           time: { type: 'string', description: '24-hour HH:MM, or "" if none.' },
-          course: { type: 'string', description: 'Course code such as MATH201, or "".' },
+          course: { type: 'string', description: 'Short label for the course, project or team, such as MATH201, or "".' },
           weightPct: { type: 'number', description: 'Share of the final grade if stated, else 0.' },
-          effortHours: { type: 'number', description: 'Realistic preparation hours for exams, deadlines, presentations and readings; 0 for classes and small tasks.' },
-          repeatDays: { type: 'array', items: { type: 'integer' }, description: 'For weekly classes or meetings: weekdays 0=Sun … 6=Sat. Otherwise empty.' },
-          durationMin: { type: 'integer', description: 'Length of a class or meeting in minutes, else 0.' },
+          effortHours: { type: 'number', description: 'Realistic preparation hours for exams, deadlines, presentations and readings; 0 for classes, meetings and small tasks.' },
+          repeatDays: { type: 'array', items: { type: 'integer' }, description: 'For weekly classes, meetings or shifts: weekdays 0=Sun … 6=Sat. Otherwise empty.' },
+          durationMin: { type: 'integer', description: 'Length of a class, meeting or shift in minutes, else 0.' },
         },
       },
     },
@@ -107,18 +108,19 @@ const ITEM_SCHEMA = {
 
 function extractSystem(today) {
   return [
-    'You turn what a student pastes (a syllabus, a course schedule, an email from a professor, or a messy brain dump) into planner items.',
+    'You turn what someone shares into planner items. It can be anything with dates in it: a syllabus, a class or work timetable, a project plan, a shift roster, an event programme, an email, a photo of a whiteboard or a printed schedule, or a messy list.',
     `Today is ${fmtLong(today)} (${today}).`,
     'Rules:',
-    '- One item per exam, graded deliverable, presentation, reading assignment, recurring class or meeting, or concrete to-do.',
-    '- Leave out lecture topics, holidays and "no class" days unless something is due.',
+    '- One item per exam or test, deadline or deliverable, presentation, reading, recurring class, meeting or shift, appointment, or concrete to-do.',
+    '- Leave out topics, holidays and "no class" days unless something is due.',
     '- Resolve relative or partial dates against today. Leave out anything that is already in the past.',
-    '- Never invent items, dates or grade weights that the text does not support.',
-    '- Weekly classes and meetings are type "event" with repeatDays, a time and durationMin.',
+    '- Never invent items, dates or grade weights that the source does not support.',
+    '- Recurring classes, meetings and shifts are type "event" with repeatDays, a time and durationMin.',
   ].join('\n');
 }
 
-export async function structureText(text, today) {
+// content is a string or content blocks (a PDF, a photo, a file's text).
+async function extract(content, today) {
   let lib = null;
   try {
     lib = await sdk();
@@ -128,15 +130,25 @@ export async function structureText(text, today) {
       ...FALLBACK,
       output_config: { effort: 'medium', format: { type: 'json_schema', schema: ITEM_SCHEMA } },
       system: extractSystem(today),
-      messages: [{ role: 'user', content: text }],
+      messages: [{ role: 'user', content }],
     });
-    if (res.stop_reason === 'refusal') throw new CoachError('Claude declined to process that text. Try pasting only the schedule part.');
-    if (res.stop_reason === 'max_tokens') throw new CoachError('That was too long to process in one go. Paste it in two parts.');
+    if (res.stop_reason === 'refusal') throw new CoachError('Claude declined to read that. Try just the schedule part.');
+    if (res.stop_reason === 'max_tokens') throw new CoachError('That was too long to read in one go. Split it in two.');
     const data = JSON.parse(visibleText(res.content));
     return { items: data.items.map(toFields).filter(Boolean), cost: costOf(res.usage) };
   } catch (err) {
     throw explain(err, lib?.Anthropic);
   }
+}
+
+export function structureText(text, today) {
+  return extract(text, today);
+}
+
+export async function structureFile(file, today) {
+  if (!getKey()) throw new CoachError('Add your Anthropic API key first (More → Coach).');
+  const blocks = await fileBlocks(file);
+  return extract([...blocks, { type: 'text', text: 'Turn this into planner items.' }], today);
 }
 
 function toFields(x) {

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		57A100000000000000000013 /* WilListCore in Frameworks */ = {isa = PBXBuildFile; productRef = 57A100000000000000000012 /* WilListCore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		57A100000000000000000001 /* WilList.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WilList.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -19,6 +23,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57A100000000000000000013 /* WilListCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,7 +56,6 @@
 				57A100000000000000000008 /* Sources */,
 				57A100000000000000000003 /* Frameworks */,
 				57A100000000000000000009 /* Resources */,
-				57A10000000000000000000A /* Bundle the web app */,
 			);
 			buildRules = (
 			);
@@ -62,6 +66,7 @@
 			);
 			name = WilList;
 			packageProductDependencies = (
+				57A100000000000000000012 /* WilListCore */,
 			);
 			productName = WilList;
 			productReference = 57A100000000000000000001 /* WilList.app */;
@@ -91,6 +96,9 @@
 			);
 			mainGroup = 57A100000000000000000004;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				57A100000000000000000011 /* XCLocalSwiftPackageReference "WilListCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 57A100000000000000000005 /* Products */;
 			projectDirPath = "";
@@ -110,28 +118,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		57A10000000000000000000A /* Bundle the web app */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Bundle the web app";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# The app is the web app in ../app, copied fresh on every build.\nrsync -a --delete --exclude .DS_Store \"$SRCROOT/../app/\" \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/app/\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		57A100000000000000000008 /* Sources */ = {
@@ -155,7 +141,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -173,7 +159,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -184,6 +170,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 45MSS5RXML;
@@ -203,8 +190,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lull.willist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -213,6 +202,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 45MSS5RXML;
@@ -232,8 +222,10 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.lull.willist;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -260,6 +252,21 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		57A100000000000000000011 /* XCLocalSwiftPackageReference "WilListCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = WilListCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		57A100000000000000000012 /* WilListCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 57A100000000000000000011 /* XCLocalSwiftPackageReference "WilListCore" */;
+			productName = WilListCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 57A10000000000000000000B /* Project object */;
 }

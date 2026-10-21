@@ -91,6 +91,26 @@ These aren't from the seminar. They make the ideas above work for a student's ac
 | **Import with de-duplication.** | The semester changes; your list shouldn't fill with copies. | Re-importing adds what's new, updates changed dates and skips the rest. |
 | **The coach stays in Tracy's lane.** | Advice is only useful if it's about your items. | The coach sees a summary of your planner and is told to coach in the spirit of Tracy's methods, never to claim to be him. See [AI.md](AI.md). |
 
+## In the iPhone app
+
+The native app (`ios/`) keeps every idea above and arranges them in four tabs, so each place answers one question.
+
+| Principle | In the iPhone app |
+|---|---|
+| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Goals and Study have **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
+| **Get the whole term onto the list at once.** | Calendar links (Canvas, Moodle, Blackboard, Brightspace, Google, Outlook) are read every time the app opens. **Bring in a schedule** has Claude read any file or photo, for any course, job or project, and shows what it found before anything is added. |
+| **ABCDE and A1 first.** | Goals opens with what to do first as one large card with a Done button, then the rest numbered A1, A2, B1. Items without a letter wait under "Needs a letter", with the five letters one tap away and the suggested one outlined. |
+| **Consider consequences.** | The meaning of each letter is written under the letter buttons, and a share of the grade suggests the letter, as on the web. |
+| **Make tomorrow's list the night before.** | Goals has Today and Tomorrow. From your planning time it suggests planning tomorrow, and an optional notification at that time says so. |
+| **Sub-deadlines and spaced repetition.** | Study lists today's sessions and, for each exam and deadline in the next 45 days, how many sessions are done and whether it is on track, behind or short of time. |
+| **Load-aware planning.** | Study charts the next 7 days of planned study against your daily budget, over-full days in red. |
+| **A new habit takes about 21 days.** | Goals shows 21 dots, filled where the first thing you finished was an A. |
+| **Victim language.** | While you type in **+**, "I'll try", "I wish", "I have to" and "problem" get a one-line nudge. |
+| **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a short haptic, then the row slides away. |
+
+Not in the iPhone app yet: the coach, focus mode, Worry Buster, 20 Ideas and Pre-game.
+Their data is kept untouched in the save file, so nothing is lost while they are missing.
+
 ## Deliberately left out
 
 Some of the seminar doesn't belong in a planner: the law of attraction and "parking-space

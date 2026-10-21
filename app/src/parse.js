@@ -204,7 +204,8 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy', yearMode =
         week: { freq: other ? 'biweekly' : 'weekly', days: [] }, month: { freq: 'monthly' } }[unit];
       if (unitRecur) { out.recur = unitRecur; take(i, j - i + 1); i = j; continue; }
     }
-    const plural = t.endsWith('s') && t.slice(0, -1) in WD;
+    // "tuesdays" repeats; "tues" and "thurs" are just short for the day.
+    const plural = !(t in WD) && t.endsWith('s') && t.slice(0, -1) in WD;
     if (plural) { out.recur = { freq: 'weekly', days: [WD[t.slice(0, -1)]] }; take(i, 1); continue; }
     if (t in SHORT_DAYS) { out.recur = { freq: 'weekly', days: SHORT_DAYS[t] }; take(i, 1); continue; }
 

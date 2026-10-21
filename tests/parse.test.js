@@ -63,6 +63,12 @@ test('every other week and multiple days', () => {
   assert.deepEqual(p('Tutoring tuesdays 5pm').recur, { freq: 'weekly', days: [2] });
 });
 
+test('short day names are not repeats', () => {
+  assert.equal(p('Quiz thurs').recur, null);
+  assert.equal(p('Quiz thurs').date, '2026-10-22');
+  assert.equal(p('Essay due weds').recur, null);
+});
+
 test('"next mon" is Monday of next week', () => {
   assert.equal(p('Read Smith 2019 paper by next mon').date, '2026-10-26');
   assert.equal(p('Read Smith 2019 paper by next mon').type, 'reading');

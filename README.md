@@ -23,11 +23,24 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 ## iPhone and iPad app
 
-`ios/` wraps `app/` in a small native shell, so WilList gets an app icon and runs fully offline.
-`npm run ios` builds it and installs it on every paired iPhone and iPad that is unlocked and on this Mac's Wi-Fi.
-Your data is also kept in a native file, so iOS clearing website data can't lose it.
-Backups and calendar files open the share sheet.
-Reminders aren't in the app version yet.
+`ios/` is a native SwiftUI app for iOS 26, with four tabs:
+
+| | |
+|---|---|
+| **Today** | A plain checklist under today's date. Type a line, press return, type the next. Tick it off and it slides into Done. |
+| **Goals** | The ABCDE list: what to do first as a large card, then the rest by letter, the items still waiting for a letter, 21 days of starting with an A, and your goals. **Bring in a schedule** sits at the bottom. |
+| **Study** | Today's study sessions, the next 7 days against your daily study time, and whether each exam and deadline coming up is on track. |
+| **More** | Calendar links, study settings, your Claude key and backups. |
+
+Ways in, from the least effort:
+
+- **Calendar links** from Canvas, Moodle, Blackboard, Brightspace, Google or Outlook are read again every time the app opens, so new deadlines appear by themselves.
+- **Bring in a schedule** reads any file or photo with Claude (PDF, Word, Excel, PowerPoint, a photo of a printed timetable or whiteboard, pasted text) and lists what it found for you to check before anything is added. It works for any course, job, roster or project. It needs your own Anthropic API key, kept in the iPhone's keychain. Calendar files are read without it.
+- **Typing it the way you'd say it**, as on the web.
+
+The planner, the parser, the importer and the Claude request live in `ios/WilListCore`, a Swift package with its own tests: `swift test` in that folder.
+`npm run ios` builds the app and installs it on every paired iPhone and iPad that is unlocked and on this Mac's Wi-Fi.
+It keeps your plan in the same file the earlier web-based app used, so updating loses nothing.
 
 ## Typing
 
@@ -75,6 +88,7 @@ app/          the website: index.html, styles.css, sw.js, icons/, fonts/, vendor
   src/views/  today, radar (Ahead), goals, tools (More), editor, import, coach
 tests/        unit tests and a Playwright smoke test
 docs/         PRINCIPLES.md (Tracy → app), AI.md (coach)
+ios/          the native app (SwiftUI) and WilListCore, its planner as a tested Swift package
 ```
 
 Fonts: Instrument Sans and Instrument Serif (SIL OFL, `app/fonts/OFL.txt`).

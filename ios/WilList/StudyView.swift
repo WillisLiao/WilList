@@ -5,6 +5,9 @@ import WilListCore
 /// coming up is on track.
 struct StudyView: View {
     @Environment(Store.self) private var store
+    /// At the largest text sizes the numbers on the right join the lines under a title instead,
+    /// so no word breaks in half.
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var adding = false
     @State private var importing = false
     @State private var editing: Item?
@@ -92,6 +95,8 @@ struct StudyView: View {
 
     private func sessionRow(_ row: Row) -> some View {
         let s = row.session!
+        let minutes = Text(Fmt.minutes(s.minutes * (1 + row.extra)))
+            .font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
         return HStack(spacing: 10) {
             CheckButton(done: ticking.contains(row.key)) { complete(row) }
             VStack(alignment: .leading, spacing: 2) {
@@ -102,12 +107,12 @@ struct StudyView: View {
                     Text("Missed \(Fmt.day(s.date, today, inSentence: true)). Do it today.")
                         .font(.footnote).foregroundStyle(.red)
                 }
+                if typeSize.isAccessibilitySize { minutes }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture { editing = row.item }
-            Text(Fmt.minutes(s.minutes * (1 + row.extra)))
-                .font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
+            if !typeSize.isAccessibilitySize { minutes }
         }
         .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 16))
         .swipeActions(edge: .leading) {
@@ -124,9 +129,12 @@ struct StudyView: View {
                     if let status = status(v) {
                         Text(status).font(.subheadline).foregroundStyle(v.status == .short || v.status == .behind ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
                     }
+                    if v.total > 0 && typeSize.isAccessibilitySize {
+                        Text("\(v.done) of \(v.total) sessions").font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                if v.total > 0 {
+                if v.total > 0 && !typeSize.isAccessibilitySize {
                     VStack(alignment: .trailing, spacing: 2) {
                         Text("\(v.done) of \(v.total)").monospacedDigit().foregroundStyle(.primary)
                         Text("sessions").font(.footnote).foregroundStyle(.secondary)
@@ -195,6 +203,9 @@ struct WeekChart: View {
             HStack(spacing: 0) {
                 ForEach(days, id: \.date) { dayLabel($0.date).frame(maxWidth: .infinity) }
             }
+            // Seven columns hold "Today" and "3h35" up to the largest standard size; VoiceOver
+            // reads every day in full.
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: .ignore)

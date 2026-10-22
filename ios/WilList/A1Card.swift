@@ -3,8 +3,8 @@ import WilListCore
 
 /// The day's first thing at the top of Today: its letter, what it is and what it's about, Mark
 /// done, and how many days in a row started with an A. In Meadow it is the poster of the day, its
-/// title set large on the green; the other looks draw it as a card. When it's done, the next one
-/// moves up into its place, and the toast offers Undo.
+/// title set large on its course's colour; the other looks draw it as a card. When it's done, the
+/// next one moves up into its place, and the toast offers Undo.
 struct A1Card: View {
     @Environment(Store.self) private var store
     let row: Row

@@ -13,13 +13,14 @@ Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on th
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience; the colour work below is the first answer.
 
 - **First run:** three short steps, each question in white on the green field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
+  Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
 - **Today:** your A1 as the poster of the day: a field of its course's colour (green without a course) across the top, running up under the status bar, with the date, the title in 44 pt bold serif, **Start** (focus) and **Mark done**.
   Mark done draws a line through the title, its words fade, and the next A rises into its place while the field blends into the next course's colour.
   After the last one the poster stays green and says "Your A’s are done.", with what got done and the streak.
   Below: "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, teal, raspberry, ochre, slate, green), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
-- **Plan** (was Goals): main goal, the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
+- **Plan** (was Goals): main goal (Your goals opens on it, large in white on a green card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
 - **Focus:** the whole screen in the task's course colour, one white ring timer, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
@@ -27,7 +28,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
   A notice says when to take a break, and the real minutes are logged.
 - **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.
 - **Plan tomorrow:** Tracy's evening habit in two steps on a night-indigo field: anything new for tomorrow (one line each, dates read), then which one first.
-  It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour, as Today will look in the morning.
+  It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour, as Today will look in the morning; that page rises over the night like a sunrise.
   Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned, and the evening notification opens it.
 - **Give it a letter:** a to-do that turns out to matter moves into Plan with its steps, dates and note.
 - **Widgets:** Do this first (your A1 with Mark done, on its course colour: small, medium, Lock Screen rectangular and inline) and Today (to-dos with ticks: medium, large, Lock Screen circular), sharing the plan through the app group `group.com.lull.willist`.

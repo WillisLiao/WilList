@@ -88,6 +88,7 @@ struct StreakDots: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
     }
 }
 

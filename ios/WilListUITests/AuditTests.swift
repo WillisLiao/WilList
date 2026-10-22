@@ -1,6 +1,6 @@
 import XCTest
 
-/// The system's accessibility audit on every main screen: tap areas of at least 44 points,
+/// The system's accessibility audit on every screen and sheet: tap areas of at least 44 points,
 /// a description for every control, and the right traits. Contrast and clipped text are
 /// checked by eye in screenshots instead; the audit flags system grey on grouped lists and
 /// rows passing under the floating tab bar.
@@ -8,13 +8,20 @@ import XCTest
 final class AuditTests: XCTestCase {
     func testEveryScreenPassesTheAudit() throws {
         let screens: [(name: String, plan: String, args: [String])] = [
-            ("Today", "a1", ["-tab", "today"]),
-            ("Plan", "a1", ["-tab", "plan"]),
-            ("Study", "a1", ["-tab", "study"]),
-            ("More", "a1", ["-tab", "more"]),
+            ("Today", "busy", ["-tab", "today"]),
+            ("Plan", "busy", ["-tab", "plan"]),
+            ("Study", "busy", ["-tab", "study"]),
+            ("More", "busy", ["-tab", "more"]),
             ("Welcome", "new", []),
-            ("Plan tomorrow", "a1", ["-evening", "2"]),
-            ("Focus", "a1", ["-focus", "YES"]),
+            ("Plan tomorrow", "busy", ["-evening", "2"]),
+            ("Focus", "busy", ["-focus", "YES"]),
+            ("Your goals", "busy", ["-tab", "plan", "-open", "goals"]),
+            ("Search", "busy", ["-tab", "today", "-sheet", "search"]),
+            ("Letter sorter", "busy", ["-tab", "today", "-sheet", "letters"]),
+            ("To-do details", "busy", ["-tab", "today", "-edit", "t1"]),
+            ("Item details", "busy", ["-show", "Read chapter"]),
+            ("New task", "busy", ["-tab", "plan", "-sheet", "add"]),
+            ("Bring in a schedule", "busy", ["-tab", "plan", "-sheet", "import"]),
         ]
         for screen in screens {
             let app = XCUIApplication()

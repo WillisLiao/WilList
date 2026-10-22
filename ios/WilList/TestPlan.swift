@@ -3,8 +3,9 @@ import Foundation
 import WilListCore
 
 /// The plans the UI tests start from, by name: `-plan new` (a first launch), `-plan empty` (the
-/// welcome seen, nothing added), `-plan a1` (two A's for today). Each lives in a fresh temporary
-/// file, so a test never touches a real plan.
+/// welcome seen, nothing added), `-plan a1` (two A's for today), `-plan busy` (those, a to-do `t1`
+/// and an item waiting for a letter, so every screen and sheet has something on it). Each lives
+/// in a fresh temporary file, so a test never touches a real plan.
 enum TestPlan {
     static func store(_ name: String) -> Store {
         let file = URL.temporaryDirectory.appending(path: "willist-uitest.json")
@@ -19,13 +20,19 @@ enum TestPlan {
         var s = AppState()
         guard name != "new" else { return s }
         s.meta.onboarded = true
-        if name == "a1" {
+        if name == "a1" || name == "busy" {
             for (rank, title) in ["Write the essay intro", "Read chapter 4"].enumerated() {
                 var it = makeItem(Item(id: "", title: title), s.settings, today, s.items)
                 it.priority = .A
                 it.order = Double(rank)
                 s.items.append(it)
             }
+        }
+        if name == "busy" {
+            var todo = Todo(id: "t1", title: "Buy stamps")
+            todo.createdAt = today
+            s.todos.append(todo)
+            s.items.append(makeItem(Item(id: "", title: "Apply for the summer program"), s.settings, today, s.items))
         }
         return s
     }

@@ -48,10 +48,12 @@ struct PlanList: View {
                         HStack {
                             Text("Needs a letter")
                             Spacer()
-                            Button("Letter them") { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) }
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(Color.brand)
-                                .buttonStyle(.borderless)
+                            Button { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) } label: {
+                                Text("Letter them").tapArea()
+                            }
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Color.brand)
+                            .buttonStyle(.borderless)
                         }
                     }
                     .id("letters")

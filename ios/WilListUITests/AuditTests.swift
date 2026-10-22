@@ -30,7 +30,11 @@ final class AuditTests: XCTestCase {
             app.launch()
             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
             sleep(1)
+            let keyboard = app.keyboards.firstMatch
             try app.performAccessibilityAudit(for: [.hitRegion, .sufficientElementDescription, .elementDetection, .trait]) { issue in
+                // The system keyboard isn't ours (Search opens with it up): the empty slots of the
+                // 44-point suggestion bar on top of it have no description.
+                if let element = issue.element, keyboard.exists, keyboard.frame.insetBy(dx: 0, dy: -44).intersects(element.frame) { return true }
                 XCTFail("\(screen.name): \(issue.compactDescription), \(issue.element?.debugDescription ?? "")")
                 return true
             }

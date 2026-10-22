@@ -53,6 +53,7 @@ Each screen has one job and one primary action.
 | More | Settings, calendar links, the Claude key, backups | (none) |
 
 Search (magnifying glass) sits on Today, Plan and Study and covers everything.
+It opens ready to type, keyboard up, and the X beside the field closes it.
 
 On a wide screen (iPad) every list keeps to a centred 700 pt column (`readableColumn()`).
 There the highlighted tab names the screen, so a tab's own title steps aside, and a pushed screen's title sits centred above the column.

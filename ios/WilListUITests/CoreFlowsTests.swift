@@ -2,7 +2,7 @@ import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// set a reminder on one, give one a letter, Mark done on the A1 card at the top of Today, a focus
-/// session on it, and the first-run welcome.
+/// session on it, the first-run welcome, Plan tomorrow and Search.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -89,8 +89,6 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(gone(app.buttons["1 waiting for a letter"]))
     }
 
-    // MARK: helpers
-
     func testPlanTomorrowPicksTheA1() {
         let app = launch(plan: "a1", tab: "plan")
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch.tap()
@@ -109,6 +107,25 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["Write the essay intro"].exists, "only the A1 shows on Today")
     }
+
+    func testSearchFindsATodo() {
+        let app = launch(plan: "busy")
+        app.buttons["Search"].tap()
+        // Ready to type as soon as it opens: typing fails unless the field has the keyboard.
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.typeText("stamps")
+        app.buttons["Buy stamps"].tap()
+        let details = app.navigationBars["To-do"]
+        XCTAssertTrue(details.waitForExistence(timeout: 5))
+        details.buttons["Done"].tap()
+        // The X beside the field closes Search.
+        app.buttons["Close"].tap()
+        XCTAssertTrue(gone(field))
+        XCTAssertTrue(app.textFields["Add a to-do"].exists)
+    }
+
+    // MARK: helpers
 
     private func launch(plan: String, tab: String = "today") -> XCUIApplication {
         continueAfterFailure = false

@@ -55,17 +55,20 @@ struct TodayView: View {
 
     var body: some View {
         let first = self.first, fromPlan = planItems(besides: first)
+        // The A1 as the poster of the day: the header and the A1 share one green field.
+        let poster = first != nil && Look.current.hero == .poster
         NavigationStack {
             List {
-                header(first: first, fromPlan: fromPlan)
+                header(first: first, fromPlan: fromPlan, poster: poster)
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
+                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: poster ? 0 : 16, trailing: 12))
+                    // The green reaches up under the status bar, and shows when the list is pulled down.
+                    .listRowBackground(Color.brand.padding(.top, -1000).opacity(poster ? 1 : 0))
                 if let first {
-                    // A new A1 is a new card: its Mark done starts over.
                     A1Card(row: first) { editingItem = $0 }
-                        .id(first.key)
                         .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                        .listRowInsets(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                        .listRowBackground(Color.brand.opacity(poster ? 1 : 0))
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && plannedFor != addDays(today, 1) {
@@ -154,19 +157,35 @@ struct TodayView: View {
 
     // MARK: header
 
-    private func header(first: Row?, fromPlan: [Item]) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(Fmt.long(today))
-                .font(.largeTitle.bold())
-                .fontDesign(Look.current.titles)
-                .accessibilityAddTraits(.isHeader)
+    /// The date, how the day stands, Search and Sort. Above the poster it steps back to the date
+    /// alone, small and white on the green, so the A1's title is the largest thing on the screen
+    /// (the list below already shows what's left and what's overdue).
+    @ViewBuilder
+    private func header(first: Row?, fromPlan: [Item], poster: Bool) -> some View {
+        // A new list has nothing to search or sort yet.
+        let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
+        if poster {
             HStack(spacing: 0) {
-                Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                Text(Fmt.long(today))
+                    .font(.headline)
+                    .foregroundStyle(Color.white)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer(minLength: 8)
-                // A new list has nothing to search or sort yet.
-                if !(store.state.todos.isEmpty && store.state.items.isEmpty) { tools }
+                if hasTools { tools.tint(.white) }
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Fmt.long(today))
+                    .font(.largeTitle.bold())
+                    .fontDesign(Look.current.titles)
+                    .accessibilityAddTraits(.isHeader)
+                HStack(spacing: 0) {
+                    Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 8)
+                    if hasTools { tools }
+                }
             }
         }
     }

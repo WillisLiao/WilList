@@ -183,7 +183,7 @@ struct HeroCard: ViewModifier {
         let hero = empty ? .pale : Look.current.hero
         content
             .padding(18)
-            .background(hero == .solid ? Color.brand : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
+            .background(hero == .solid || hero == .poster ? Color.brand : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
             .overlay { if hero == .outline { shape.strokeBorder(Color.brand, lineWidth: 1.5) } }
     }
 }

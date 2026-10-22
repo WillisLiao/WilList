@@ -6,7 +6,8 @@ import UIKit
 /// `-look frog` on launch, and `npm run ios:shots` shoots them with `LOOK=frog`.
 /// ponytail: four looks behind one switch; delete the ones not chosen.
 enum Look: String, CaseIterable {
-    /// Green that reads on white (4.5:1), New York titles, a pale green A1 card.
+    /// Green that reads on white (4.5:1), New York titles, and the A1 as the poster of the day:
+    /// a green field across the top of Today with its title set large.
     case meadow
     /// Eat that frog: a deeper green, and the A1 card filled solid so it can't be missed.
     case frog
@@ -44,15 +45,19 @@ enum Look: String, CaseIterable {
         self == .notebook ? ("square", "checkmark.square.fill") : ("circle", "checkmark.circle.fill")
     }
 
-    enum Hero { case pale, solid, outline }
+    enum Hero { case poster, pale, solid, outline }
 
     var hero: Hero {
         switch self {
-        case .meadow, .lagoon: .pale
+        case .meadow: .poster
+        case .lagoon: .pale
         case .frog: .solid
         case .notebook: .outline
         }
     }
+
+    /// The A1 sits on the green itself, its words in white: the poster and the solid card.
+    var filled: Bool { hero == .poster || hero == .solid }
 }
 
 extension View {

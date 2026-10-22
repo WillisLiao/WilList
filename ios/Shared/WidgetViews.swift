@@ -11,7 +11,7 @@ struct FirstWidgetView: View {
     let glance: Glance
     let family: WidgetFamily
 
-    private var solid: Bool { Look.current.hero == .solid }
+    private var solid: Bool { Look.current.filled }
     private var ink: Color { solid ? .white : .primary }
     private var grey: Color { solid ? .white.opacity(0.85) : .secondary }
 
@@ -264,7 +264,7 @@ extension Look {
     /// the widget's own edge).
     @ViewBuilder static var heroGround: some View {
         switch current.hero {
-        case .solid: Color.brand
+        case .poster, .solid: Color.brand
         case .outline: Color.white
         case .pale: ZStack { Color.white; Color.brand.opacity(0.09) }
         }

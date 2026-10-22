@@ -1,26 +1,38 @@
 import SwiftUI
 import WilListCore
 
-/// The day's first thing, as one card at the top of Today: its letter, what it is and what it's
-/// about, Mark done, and how many days in a row started with an A. When it's done, the next one
-/// moves up into the card, and the toast offers Undo.
+/// The day's first thing at the top of Today: its letter, what it is and what it's about, Mark
+/// done, and how many days in a row started with an A. In Meadow it is the poster of the day, its
+/// title set large on the green; the other looks draw it as a card. When it's done, the next one
+/// moves up into its place, and the toast offers Undo.
 struct A1Card: View {
     @Environment(Store.self) private var store
     let row: Row
     /// Opens the item's details.
     let open: (Item) -> Void
-    @State private var done = false
+    /// The row marked done, and the row whose words have faded out after it, so they're gone before
+    /// the next A moves up. Kept by row, so the next A arrives fresh.
+    @State private var doneKey: String?
+    @State private var faded: String?
+    /// The streak as shown. It catches up once the card has settled, so a new line doesn't land on
+    /// the buttons while they move.
+    @State private var shownStreak = 0
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The poster's title: headline size on a poster, still growing with the text size setting.
+    @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
 
     private var today: Day { store.today }
-    // On a card filled with the brand colour (the Frog look) the words turn white.
-    private var solid: Bool { Look.current.hero == .solid }
+    private var done: Bool { doneKey == row.key }
+    private var poster: Bool { Look.current.hero == .poster }
+    // On the green (the poster, the Frog look's solid card) the words turn white.
+    private var solid: Bool { Look.current.filled }
     private var ink: Color { solid ? .white : .primary }
     private var grey: Color { solid ? .white.opacity(0.85) : .secondary }
 
     var body: some View {
         let streak = a1Streak(store.state.meta.firstDone, today)
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: poster ? 12 : 10) {
             HStack(spacing: 10) {
                 LetterMark(letter: row.priority, label: row.label, large: true, onBrand: solid)
                 Text("Do this first")
@@ -36,26 +48,47 @@ struct A1Card: View {
                         .background(solid ? Color.white : .clear, in: Capsule())
                 }
             }
-            VStack(alignment: .leading, spacing: 4) {
-                Text(row.item.title)
-                    .font(.title2.weight(.semibold))
-                    .fontDesign(Look.current.titles)
-                    .foregroundStyle(ink)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .background {
-                        // The Notebook look runs a highlighter over the one thing to do.
-                        if Look.current.hero == .outline {
-                            RoundedRectangle(cornerRadius: 4).fill(Color.brand.opacity(0.2)).padding(.horizontal, -4)
+            // The words sit in a frame of their own, so the next A moves up into it without the two
+            // titles crossing.
+            ZStack(alignment: .topLeading) {
+                VStack(alignment: .leading, spacing: 4) {
+                    title(struck: false)
+                        .opacity(done ? 0.75 : 1)
+                        // Mark done crosses it off: a line drawn through the title, left to right.
+                        .overlay(alignment: .leading) {
+                            title(struck: true)
+                                .mask(alignment: .leading) {
+                                    Rectangle().scaleEffect(x: done || reduceMotion ? 1 : 0, anchor: .leading)
+                                }
+                                .opacity(done ? 1 : 0)
+                                .animation(reduceMotion ? .easeOut(duration: 0.2) : .easeInOut(duration: 0.45), value: done)
+                                .accessibilityHidden(true)
                         }
+                        .padding(.bottom, poster ? 2 : 0)
+                        .background {
+                            // The Notebook look runs a highlighter over the one thing to do.
+                            if Look.current.hero == .outline {
+                                RoundedRectangle(cornerRadius: 4).fill(Color.brand.opacity(0.2)).padding(.horizontal, -4)
+                            }
+                        }
+                    if let detail = Fmt.detail(row, today) {
+                        Text(detail).foregroundStyle(grey)
                     }
-                if let detail = Fmt.detail(row, today) {
-                    Text(detail).foregroundStyle(grey)
+                    // A session is part of something bigger: say what it is for and when that is due.
+                    if row.session != nil, let due = Fmt.when(row.item, today) {
+                        Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
+                    }
                 }
-                // A session is part of something bigger: say what it is for and when that is due.
-                if row.session != nil, let due = Fmt.when(row.item, today) {
-                    Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
-                }
+                .opacity(faded == row.key ? 0 : 1)
+                // The next A moves up into its place.
+                .id(row.key)
+                .transition(reduceMotion ? .opacity : .push(from: .bottom))
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Room for the Notebook look's highlighter, which reaches past the words.
+            .padding(.horizontal, 4)
+            .clipped()
+            .padding(.horizontal, -4)
             // Side by side; one above the other at the largest text sizes, so no word breaks.
             (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))) {
                 // Start: a focus session on it, with the timer on the Lock Screen too.
@@ -82,34 +115,69 @@ struct A1Card: View {
             }
             .controlSize(.large)
             .labelStyle(WordsWhenLarge())
-            .padding(.top, 6)
-            if streak > 0 {
-                Text("\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A.")
+            .padding(.top, poster ? 10 : 6)
+            if shownStreak > 0 {
+                Text("\(shownStreak) \(shownStreak == 1 ? "day" : "days") in a row you started with an A.")
                     .font(.footnote)
                     .foregroundStyle(grey)
-                    .frame(maxWidth: .infinity)
+                    .frame(maxWidth: .infinity, alignment: poster ? .leading : .center)
             }
         }
-        .heroCard()
+        .modifier(A1Ground(poster: poster))
         .contentShape(Rectangle())
         .onTapGesture { open(row.item) }
-        // The list can bring a card back with its old state, after Undo, still saying Done.
-        .onAppear { done = false }
+        // After Undo the same A comes back: it starts over rather than still saying Done.
+        .onAppear { doneKey = nil; faded = nil; shownStreak = streak }
+        .task(id: streak) {
+            guard streak != shownStreak else { return }
+            try? await Task.sleep(for: .milliseconds(400))
+            withAnimation(.easeOut(duration: 0.25)) { shownStreak = streak }
+        }
+        .onChange(of: row.key) { doneKey = nil; faded = nil }
     }
 
-    // The button fills first, then the next thing moves up.
+    private func title(struck: Bool) -> some View {
+        Text(row.item.title)
+            .font(poster ? .system(size: posterTitle, weight: .bold) : .title2.weight(.semibold))
+            .fontDesign(Look.current.titles)
+            .tracking(poster ? -0.6 : 0)
+            .strikethrough(struck, color: ink)
+            // The struck copy only draws its line over the title.
+            .foregroundStyle(struck ? Color.clear : ink)
+            // A long title shrinks a little before it runs past three lines.
+            .lineLimit(poster ? 3 : nil)
+            .minimumScaleFactor(poster ? 0.7 : 1)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    // The button fills and the title is crossed off, its words fade, then the next thing moves up.
     private func finish() {
         guard !done else { return }
-        done = true
+        doneKey = row.key
         Chime.play()
         let key = row.key, title = row.item.title, today = today
         Task {
-            try? await Task.sleep(for: .milliseconds(450))
+            try? await Task.sleep(for: .milliseconds(520))
+            withAnimation(.easeIn(duration: 0.14)) { faded = key }
+            try? await Task.sleep(for: .milliseconds(140))
             withAnimation(.snappy) {
                 store.change(undo: "Marked \u{201C}\(title)\u{201D} done") { s in
                     if let r = dayRows(s.items, today, realToday: today).first(where: { $0.key == key }) { s.complete(r, today: today) }
                 }
             }
+        }
+    }
+}
+
+/// The poster sits straight on the green that Today paints behind it; the other looks get a card.
+private struct A1Ground: ViewModifier {
+    let poster: Bool
+
+    func body(content: Content) -> some View {
+        if poster {
+            content.padding(.horizontal, 20).padding(.top, 22).padding(.bottom, 28)
+        } else {
+            content.heroCard()
         }
     }
 }

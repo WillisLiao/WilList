@@ -89,7 +89,7 @@ struct FocusView: View {
             Spacer(minLength: 24)
             ring(f, left: left)
             Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it’s done.")
-                .foregroundStyle(.white.opacity(0.85))
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)

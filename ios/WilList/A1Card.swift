@@ -27,10 +27,11 @@ struct A1Card: View {
     private var today: Day { store.today }
     private var done: Bool { doneKey == row.key }
     private var poster: Bool { Look.current.hero == .poster }
-    // On the green (the poster, the Frog look's solid card) the words turn white.
+    // On a field of colour (the poster, the Frog look's solid card) every word is white: dimmed
+    // white falls below 4.5:1 on the green, so size and weight make the difference instead.
     private var solid: Bool { Look.current.filled }
     private var ink: Color { solid ? .white : .primary }
-    private var grey: Color { solid ? .white.opacity(0.85) : .secondary }
+    private var grey: Color { solid ? .white : .secondary }
 
     var body: some View {
         let streak = a1Streak(store.state.meta.firstDone, today)

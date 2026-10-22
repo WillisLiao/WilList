@@ -14,7 +14,7 @@ struct FirstWidgetView: View {
     private var solid: Bool { Look.current.filled }
     private var field: Color { CourseColor.of(glance.first?.color) }
     private var ink: Color { solid ? .white : .primary }
-    private var grey: Color { solid ? .white.opacity(0.85) : .secondary }
+    private var grey: Color { solid ? .white : .secondary }
 
     var body: some View {
         switch family {

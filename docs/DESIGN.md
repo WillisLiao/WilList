@@ -30,6 +30,8 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 Colour goes on things that mean something, never on decoration.
 The A1 poster on Today, its widget and the Focus screen are drawn on the A1's course colour, or the green when it has no course; course names on rows are written in their colour.
 A course colour never stands for a problem: overdue stays red.
+Words on a field of colour are always pure white: white dimmed even to 85% falls below 4.5:1 on the green, so size and weight make the hierarchy there.
+The guided flows open on a field too: the welcome's questions on the green, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, so it previews the morning's poster.
 
 ## Type
 

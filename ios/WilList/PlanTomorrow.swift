@@ -35,7 +35,7 @@ struct PlanTomorrow: View {
     var body: some View {
         Group {
             if step < 3 {
-                StepPage(step: step, of: 2, about: step == 1 ? recap : nil,
+                StepPage(field: Self.night, step: step, of: 2, about: step == 1 ? recap : nil,
                          title: step == 1 ? "Anything new for tomorrow?" : "Which one first?",
                          subtitle: step == 1 ? "Write down what came up today, one thing per line. Dates are read for you."
                              : "If you could do only one thing tomorrow, which would it be? That’s your A1.",
@@ -80,39 +80,46 @@ struct PlanTomorrow: View {
         }
     }
 
+    /// The evening's colour: planning happens at night.
+    static let night = Color(hex: 0x262C66)
+
+    /// The last page is drawn the way Today will look in the morning: on the A1's course colour.
     private var finished: some View {
-        FinishPage(symbol: "sunrise.fill", bounce: step) {
+        let field = rows.first.map { CourseColor.of(store.state.courseColor($0.item.course)) } ?? Self.night
+        return FinishPage(field: field, symbol: "sunrise.fill", bounce: step) {
             if let a1 = rows.first {
                 Text("Tomorrow starts with")
                     .font(.headline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
                 Text(a1.item.title)
-                    .font(.title.bold())
+                    .font(.largeTitle.bold())
                     .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)
                 Text("It’ll be at the top of Today and on your widgets in the morning.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
             } else {
                 Text("Nothing planned for tomorrow")
                     .font(.title.bold())
                     .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)
                 Text("Add what you need to do in Plan and give the most important an A.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
             }
             if !waiting.isEmpty {
                 Text("\(waiting.count) still \(waiting.count == 1 ? "waits" : "wait") for a letter.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
             }
         } buttons: {
             if !waiting.isEmpty {
                 Button { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) } label: {
-                    Text("Letter them").frame(maxWidth: .infinity)
+                    Text("Letter them").foregroundStyle(.white).frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
+                .tint(.white)
             }
-            Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity) }
+            Button { dismiss() } label: { Text("Done").foregroundStyle(field).frame(maxWidth: .infinity) }
                 .buttonStyle(.borderedProminent)
+                .tint(.white)
         }
     }
 

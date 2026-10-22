@@ -4,8 +4,10 @@ import WilListCore
 // The pieces the short guided flows share: the welcome and Plan tomorrow.
 
 /// One step of a guided flow: where you are and a way out at the top, a big title with a line
-/// under it, the step itself, and one button at the bottom.
+/// under it in white on a field of colour, the step itself on white, and one button at the bottom.
 struct StepPage<Content: View>: View {
+    /// The colour the top of the page sits on, and its button: the green, or night for the evening.
+    var field: Color = .brand
     let step: Int
     let of: Int
     /// A small line above the title, such as how today went.
@@ -31,40 +33,52 @@ struct StepPage<Content: View>: View {
                 }
                 Text("\(step) of \(of)")
                     .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white)
                     .padding(.leading, step > 1 ? 0 : 12)
                 Spacer()
                 Button(action: leave) { Text(exit).tapArea() }
             }
             .font(.body.weight(.medium))
+            .tint(.white)
             .padding(.horizontal, 12)
             .padding(.top, 4)
+            .background(field)
             ScrollView {
+              VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     if let about {
-                        Text(about).font(.subheadline).foregroundStyle(.secondary)
+                        Text(about).font(.subheadline).foregroundStyle(.white)
                     }
                     Text(title)
                         .font(.largeTitle.bold())
                         .fontDesign(Look.current.titles)
+                        .foregroundStyle(.white)
                         .fixedSize(horizontal: false, vertical: true)
                         .accessibilityAddTraits(.isHeader)
                     Text(subtitle)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.white)
                         .fixedSize(horizontal: false, vertical: true)
-                        .padding(.bottom, 20)
-                    content()
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
+                .padding(.bottom, 28)
                 .frame(maxWidth: 560, alignment: .leading)
                 .frame(maxWidth: .infinity)
+                // The field reaches up behind the top bar, also when the page is pulled down.
+                .background(field.padding(.top, -1000))
+                content()
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+                    .frame(maxWidth: 560, alignment: .leading)
+                    .frame(maxWidth: .infinity)
+              }
             }
             .scrollDismissesKeyboard(.interactively)
             Button(action: next) {
                 Text(button).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(field)
             .controlSize(.large)
             .disabled(!enabled)
             .padding(.horizontal, 24)
@@ -173,7 +187,9 @@ struct A1Choice: View {
 
 /// The last page of a flow: a symbol and a few lines in the middle, its buttons at the bottom.
 /// When the lines don't fit (the largest text sizes), the middle scrolls instead of cutting words off.
+/// With a field, the whole page is that colour and its words white.
 struct FinishPage<Middle: View, Buttons: View>: View {
+    var field: Color?
     let symbol: String
     /// The symbol bounces when this changes.
     let bounce: Int
@@ -193,14 +209,15 @@ struct FinishPage<Middle: View, Buttons: View>: View {
         .padding(.bottom, 12)
         .frame(maxWidth: 560)
         .frame(maxWidth: .infinity)
-        .background(Color.white)
+        .foregroundStyle(field == nil ? Color.primary : .white)
+        .background(field ?? .white)
     }
 
     private var lines: some View {
         VStack(spacing: 12) {
             Image(systemName: symbol)
                 .font(.system(size: 56))
-                .foregroundStyle(Color.brand)
+                .foregroundStyle(field == nil ? Color.brand : .white)
                 .symbolEffect(.bounce, options: .nonRepeating, value: bounce)
                 .accessibilityHidden(true)
             middle()

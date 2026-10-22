@@ -44,11 +44,10 @@ final class CoreFlowsTests: XCTestCase {
     func testMarkTheA1Done() {
         let app = launch(plan: "a1")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
-        app.buttons["markA1Done"].tap()
         // Undo first, the moment its message shows: on a slow machine, checking anything else
         // before it can outlast the message.
         let undo = app.buttons["Undo"]
-        XCTAssertTrue(undo.waitForExistence(timeout: 5))
+        XCTAssertTrue(tap(app.buttons["markA1Done"], until: undo), "Mark done offers Undo")
         undo.tap()
         XCTAssertTrue(gone(app.staticTexts["Read chapter 4"]), "the essay intro is back in the card")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].exists)
@@ -153,6 +152,16 @@ final class CoreFlowsTests: XCTestCase {
     private func allowNotifications() {
         let alert = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
         if alert.waitForExistence(timeout: 3) { alert.buttons.element(boundBy: 1).tap() }
+    }
+
+    /// Taps, then waits for what the tap brings up. A CI simulator now and then drops a tap: on
+    /// 2026-10-22 one landed dead centre on Mark done and the app never saw it (no press, nothing
+    /// changed). A tap with nothing to show for it after five seconds is tried once more.
+    private func tap(_ button: XCUIElement, until shown: XCUIElement) -> Bool {
+        button.tap()
+        if shown.waitForExistence(timeout: 5) { return true }
+        button.tap()
+        return shown.waitForExistence(timeout: 5)
     }
 
     private func gone(_ element: XCUIElement) -> Bool {

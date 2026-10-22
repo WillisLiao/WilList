@@ -55,6 +55,9 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["markA1Done"].tap()
         XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
         XCTAssertTrue(gone(app.staticTexts["Write the essay intro"]))
+        // The last A done, the poster says so.
+        app.buttons["markA1Done"].tap()
+        XCTAssertTrue(app.staticTexts["Your A’s are done."].waitForExistence(timeout: 5), "the poster says the A’s are done")
     }
 
     func testFocusOnTheA1() {

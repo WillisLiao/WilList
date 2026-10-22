@@ -57,7 +57,10 @@ struct TodayView: View {
         let first = self.first, fromPlan = planItems(besides: first)
         // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
         // its course.
-        let poster = first != nil && Look.current.hero == .poster
+        // After the day's last A, the poster stays to say the A's are done.
+        let finished = doneOn(store.state.items, today)
+        let won = first == nil && finished.contains { $0.item.priority == .A }
+        let poster = (first != nil || won) && Look.current.hero == .poster
         let field = CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
@@ -70,14 +73,23 @@ struct TodayView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                if let first {
-                    A1Card(row: first) { editingItem = $0 }
-                        .environment(\.field, field)
-                        .padding(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
-                        .background { if poster { field } }
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+                // One row for the A1 and for "Your A's are done", so the field stays solid when the
+                // last A hands over to it.
+                if first != nil || won && poster {
+                    VStack(spacing: 0) {
+                        if let first {
+                            A1Card(row: first) { editingItem = $0 }
+                        } else {
+                            AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
+                                   streak: a1Streak(store.state.meta.firstDone, today))
+                        }
+                    }
+                    .environment(\.field, field)
+                    .padding(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                    .background { if poster { field } }
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && plannedFor != addDays(today, 1) {

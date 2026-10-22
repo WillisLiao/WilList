@@ -78,6 +78,8 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **StarButton:** grey outline, filled green when important.
 - **A1 poster** (`A1Card.swift`, at the top of Today, in Meadow): a field of the A1's course colour across the top of Today, running up under the status bar, with the date, the letter and "Do this first", the title in 44 pt bold serif, at most two lines under it, "Start" (white, bordered) beside a wide white "Mark done", and "3 days in a row you started with an A" when there is a streak.
   Mark done draws a line through the title left to right, its words fade, then the next A rises into the same place and the field blends into its course's colour; the toast offers Undo.
+  After the day's last A (nothing lettered left for today), the poster stays, green, and says "Your A’s are done." with a check, how many things got done today and the streak; the last card fades out whole first, so nothing ghosts through.
+  The A1 and this poster are one list row whose contents swap, so the field stays solid during the hand-over.
   The other looks draw it as a card, corner radius 22.
 - **Focus** (`FocusView.swift`): the whole screen in the session's course colour, a white ring and timer, and white buttons.
 - **Week chart** (`WeekChart` in `StudyView.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.

@@ -14,6 +14,9 @@ struct A1Card: View {
     /// the next A moves up. Kept by row, so the next A arrives fresh.
     @State private var doneKey: String?
     @State private var faded: String?
+    /// The last A of the day, faded out whole, buttons too, before the poster says the A's are done.
+    /// Decided at Mark done: by the time it leaves, the plan no longer has it.
+    @State private var gone: String?
     /// The streak as shown. It catches up once the card has settled, so a new line doesn't land on
     /// the buttons while they move.
     @State private var shownStreak = 0
@@ -126,17 +129,18 @@ struct A1Card: View {
                     .frame(maxWidth: .infinity, alignment: poster ? .leading : .center)
             }
         }
+        .opacity(gone == row.key ? 0 : 1)
         .modifier(A1Ground(poster: poster))
         .contentShape(Rectangle())
         .onTapGesture { open(row.item) }
         // After Undo the same A comes back: it starts over rather than still saying Done.
-        .onAppear { doneKey = nil; faded = nil; shownStreak = streak }
+        .onAppear { doneKey = nil; faded = nil; gone = nil; shownStreak = streak }
         .task(id: streak) {
             guard streak != shownStreak else { return }
             try? await Task.sleep(for: .milliseconds(400))
             withAnimation(.easeOut(duration: 0.25)) { shownStreak = streak }
         }
-        .onChange(of: row.key) { doneKey = nil; faded = nil }
+        .onChange(of: row.key) { doneKey = nil; faded = nil; gone = nil }
     }
 
     private func title(struck: Bool) -> some View {
@@ -159,9 +163,13 @@ struct A1Card: View {
         doneKey = row.key
         Chime.play()
         let key = row.key, title = row.item.title, today = today
+        let last = doRows(store.state.items, today).count == 1
         Task {
             try? await Task.sleep(for: .milliseconds(520))
-            withAnimation(.easeIn(duration: 0.14)) { faded = key }
+            withAnimation(.easeIn(duration: 0.14)) {
+                faded = key
+                if last { gone = key }
+            }
             try? await Task.sleep(for: .milliseconds(140))
             withAnimation(.snappy) {
                 store.change(undo: "Marked \u{201C}\(title)\u{201D} done") { s in
@@ -182,5 +190,39 @@ private struct A1Ground: ViewModifier {
         } else {
             content.heroCard()
         }
+    }
+}
+
+/// After the day's last A, the poster stays to say so: finishing the most important thing is its
+/// own reward. Green, the colour of everything done.
+struct AsDone: View {
+    /// Everything finished today.
+    let done: Int
+    let streak: Int
+    @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
+    @State private var shown = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 40))
+                .symbolEffect(.bounce, value: shown)
+                .accessibilityHidden(true)
+            Text("Your A’s are done.")
+                .font(.system(size: posterTitle, weight: .bold))
+                .fontDesign(Look.current.titles)
+                .tracking(-0.6)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text([done > 0 ? "\(done) done today." : nil,
+                  streak > 0 ? "\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A." : nil]
+                .compactMap { $0 }.joined(separator: " "))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 28)
+        .onAppear { shown = true }
     }
 }

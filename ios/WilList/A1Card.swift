@@ -60,6 +60,10 @@ struct A1Card: View {
                 VStack(alignment: .leading, spacing: 4) {
                     title(struck: false)
                         .opacity(done ? 0.75 : 1)
+                        // A tap on the card opens its details; with VoiceOver, the title does.
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityHint("Opens its details")
+                        .accessibilityAction { open(row.item) }
                         // Mark done crosses it off: a line drawn through the title, left to right.
                         .overlay(alignment: .leading) {
                             title(struck: true)

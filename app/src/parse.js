@@ -325,6 +325,9 @@ export function quickAdd(text, { now = new Date(), dateOrder = 'mdy', yearMode =
     const [h, mi] = out.time.split(':').map(Number);
     out.date = h * 60 + mi >= nowMin ? today : addDays(today, 1);
   }
+  // Something to attend needs a day. Without one it is something to do ("Buy a lab notebook",
+  // "Call mum"); as an event it would show up nowhere.
+  if (out.type === 'event' && !out.date) out.type = 'task';
 
   const low = raw.toLowerCase();
   if (/\b(i'?ll try|try to|trying to|attempt to)\b/.test(low)) out.hints.push('try');

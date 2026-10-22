@@ -1,0 +1,210 @@
+import SwiftUI
+import WilListCore
+
+// The pieces the short guided flows share: the welcome and Plan tomorrow.
+
+/// One step of a guided flow: where you are and a way out at the top, a big title with a line
+/// under it, the step itself, and one button at the bottom.
+struct StepPage<Content: View>: View {
+    let step: Int
+    let of: Int
+    /// A small line above the title, such as how today went.
+    var about: String?
+    let title: String
+    let subtitle: String
+    /// "Skip" or "Close"; either way, what's been written is kept.
+    let exit: String
+    let back: () -> Void
+    let leave: () -> Void
+    let button: String
+    var enabled = true
+    let next: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                if step > 1 {
+                    Button("Back", systemImage: "chevron.left", action: back)
+                        .labelStyle(.iconOnly)
+                        .frame(width: 44, height: 44)
+                }
+                Text("\(step) of \(of)")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, step > 1 ? 0 : 12)
+                Spacer()
+                Button(exit, action: leave)
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .font(.body.weight(.medium))
+            .padding(.horizontal, 12)
+            .padding(.top, 4)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 8) {
+                    if let about {
+                        Text(about).font(.subheadline).foregroundStyle(.secondary)
+                    }
+                    Text(title)
+                        .font(.largeTitle.bold())
+                        .fontDesign(Look.current.titles)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                    Text(subtitle)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.bottom, 20)
+                    content()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
+            }
+            .scrollDismissesKeyboard(.interactively)
+            Button(action: next) {
+                Text(button).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(!enabled)
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
+        }
+        .background(Color.white)
+    }
+}
+
+/// Lines written one under another, the way a list on paper grows: return adds the next.
+struct LinesEntry: View {
+    @Binding var lines: [String]
+    @Binding var draft: String
+    let typing: FocusState<Bool>.Binding
+    let placeholder: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(lines.indices, id: \.self) { i in
+                HStack(spacing: 12) {
+                    Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                        .accessibilityHidden(true)
+                    Text(lines[i]).frame(maxWidth: .infinity, alignment: .leading)
+                    Button("Remove", systemImage: "xmark.circle.fill") {
+                        withAnimation(.snappy) { _ = lines.remove(at: i) }
+                    }
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(Color(.tertiaryLabel))
+                    .frame(width: 44, height: 44)
+                    .accessibilityLabel("Remove \(lines[i])")
+                }
+                .frame(minHeight: 48)
+                Divider().padding(.leading, 36)
+            }
+            HStack(spacing: 12) {
+                Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(Color.brand)
+                    .accessibilityHidden(true)
+                TextField(lines.isEmpty ? placeholder : "And next?", text: $draft)
+                    .focused(typing)
+                    .submitLabel(.next)
+                    .onSubmit {
+                        Self.keep(&draft, in: &lines)
+                        typing.wrappedValue = true
+                    }
+            }
+            .frame(minHeight: 48)
+        }
+    }
+
+    /// Moves the line being typed into the list, if there is one.
+    static func keep(_ draft: inout String, in lines: inout [String]) {
+        let line = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !line.isEmpty else { return }
+        withAnimation(.snappy) { lines.append(line) }
+        draft = ""
+    }
+}
+
+/// A row in a list where one thing becomes the A1: the chosen one gets the A1 mark.
+struct A1Choice: View {
+    let title: String
+    var detail: String?
+    /// Its letter now, on the right while it isn't the chosen one.
+    var letter: Letter?
+    let chosen: Bool
+    let choose: () -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button(action: choose) {
+                HStack(spacing: 12) {
+                    Group {
+                        if chosen {
+                            LetterMark(letter: .A, label: "A1")
+                        } else {
+                            Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                        }
+                    }
+                    .frame(width: 36)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .foregroundStyle(Color.primary)
+                            .fontWeight(chosen ? .semibold : .regular)
+                        if let detail {
+                            Text(detail).font(.subheadline).foregroundStyle(Color.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    if let letter, !chosen { LetterMark(letter: letter) }
+                }
+                .padding(.vertical, 6)
+                .frame(minHeight: 52)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel([title, detail, letter.map { "now \($0.rawValue)" }].compactMap { $0 }.joined(separator: ", "))
+            .accessibilityAddTraits(chosen ? .isSelected : [])
+            Divider().padding(.leading, 48)
+        }
+    }
+}
+
+/// The last page of a flow: a symbol and a few lines in the middle, its buttons at the bottom.
+/// When the lines don't fit (the largest text sizes), the middle scrolls instead of cutting words off.
+struct FinishPage<Middle: View, Buttons: View>: View {
+    let symbol: String
+    /// The symbol bounces when this changes.
+    let bounce: Int
+    @ViewBuilder let middle: () -> Middle
+    @ViewBuilder let buttons: () -> Buttons
+
+    var body: some View {
+        VStack(spacing: 12) {
+            ViewThatFits(in: .vertical) {
+                lines.frame(maxHeight: .infinity)
+                ScrollView { lines.padding(.vertical, 24) }
+            }
+            buttons().controlSize(.large)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 12)
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
+        .background(Color.white)
+    }
+
+    private var lines: some View {
+        VStack(spacing: 12) {
+            Image(systemName: symbol)
+                .font(.system(size: 56))
+                .foregroundStyle(Color.brand)
+                .symbolEffect(.bounce, options: .nonRepeating, value: bounce)
+                .accessibilityHidden(true)
+            middle()
+        }
+        .frame(maxWidth: .infinity)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+}

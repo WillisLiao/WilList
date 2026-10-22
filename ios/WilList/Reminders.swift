@@ -5,6 +5,7 @@ import WilListCore
 /// with a "Remind me" time.
 enum Reminders {
     static let category = "task"
+    nonisolated static let planTomorrow = "plan-tomorrow"
     static let doneAction = "done"
     static let snoozeAction = "snooze"
 
@@ -16,15 +17,15 @@ enum Reminders {
     /// Schedules or clears the nudge. False when notifications are turned off for WilList.
     static func update(_ settings: Settings) async -> Bool {
         let center = UNUserNotificationCenter.current()
-        center.removePendingNotificationRequests(withIdentifiers: ["plan-tomorrow"])
+        center.removePendingNotificationRequests(withIdentifiers: [planTomorrow])
         guard settings.notify else { return true }
         guard await allowed() else { return false }
         let m = timeToMin(settings.planTime) ?? 1230
         let content = UNMutableNotificationContent()
         content.title = "Plan tomorrow"
-        content.body = "Two minutes now: give tomorrow's list its letters and pick your A1."
+        content.body = "Two minutes: write down anything new and pick tomorrow's A1."
         let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: m / 60, minute: m % 60), repeats: true)
-        try? await center.add(UNNotificationRequest(identifier: "plan-tomorrow", content: content, trigger: trigger))
+        try? await center.add(UNNotificationRequest(identifier: planTomorrow, content: content, trigger: trigger))
         return true
     }
 

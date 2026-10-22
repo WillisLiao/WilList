@@ -88,6 +88,15 @@ extension AppState {
         if let today, letter == .D || letter == .E || wasIdle { replan(id, today: today) }
     }
 
+    /// Makes an item the A1: an A, ranked ahead of every other A.
+    public mutating func makeA1(_ id: String, today: Day) {
+        guard let i = index(of: id) else { return }
+        if items[i].priority != .A { setLetter(id, .A, today: today) }
+        if let first = items.filter({ $0.priority == .A && $0.id != id }).map(\.order).min(), items[i].order >= first {
+            items[i].order = first - 1
+        }
+    }
+
     /// Ticks off a row. True when that finished the whole item.
     @discardableResult
     public mutating func complete(_ row: Row, today: Day) -> Bool {

@@ -91,10 +91,29 @@ final class CoreFlowsTests: XCTestCase {
 
     // MARK: helpers
 
+    func testPlanTomorrowPicksTheA1() {
+        let app = launch(plan: "a1", tab: "plan")
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch.tap()
+        let field = app.textFields["Read chapter 5 by Friday"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.typeText("Buy a lab notebook\n")
+        app.buttons["Next"].tap()
+        // Tomorrow's list, its A1 already chosen; the other A becomes the A1 instead.
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch.tap()
+        app.buttons["Make it my A1"].tap()
+        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].exists)
+        XCTAssertTrue(app.staticTexts["1 still waits for a letter."].exists, "the line written waits for a letter")
+        app.buttons["Done"].tap()
+        app.tabBars.buttons["Today"].tap()
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Write the essay intro"].exists, "only the A1 shows on Today")
+    }
+
     private func launch(plan: String, tab: String = "today") -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO"]
+        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", "NO"]
         app.launch()
         return app
     }

@@ -47,7 +47,7 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Your A1 as one large card under today's date, how many items wait for a letter (a tap letters them), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Your A1 as one large card under today's date, how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |
@@ -59,7 +59,7 @@ There the highlighted tab names the screen, so a tab's own title steps aside, an
 
 ## Components
 
-All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.swift`.
+All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swift` and `ios/WilList/Steps.swift` (the guided flows' page, line entry and A1 choice).
 
 - **Row:** check on the left, title, one quiet line under it, and on the right a star (to-dos) or a letter (items). Tap the text to open details. Swipe right to finish, left to delete.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date ("Due tomorrow, 10:00 AM", green when today, red when overdue), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
@@ -69,6 +69,7 @@ All shared pieces live in `ios/WilList/Theme.swift` and `ios/WilList/TaskFields.
 - **A1 card** (`A1Card.swift`, at the top of Today): pale green, corner radius 22, the letter and "Do this first", the serif title, at most two grey lines, "Start" (bordered) beside a wide "Mark done" (bordered prominent, large), and "3 days in a row you started with an A" when there is a streak. Done, it offers Undo and the next A moves up into the card.
 - **Focus** (`FocusView.swift`, from Start on the A1 card): one task, one timer, nothing else. The letter and the serif title, a ring that fills as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Letter sorter** (`LetterSorter.swift`): letters the items waiting for one, one at a time. The item's title large at the top, the five letters as big rows with what each one means, the suggested one outlined and tagged, Skip for now, Back. It ends by naming your A1. Opened from Today's "2 waiting for a letter" and Plan's "Letter them".
+- **Plan tomorrow** (`PlanTomorrow.swift`): the evening habit in two steps on the welcome's pages: "Anything new for tomorrow?" (lines, dates read, with "4 done today, starting with an A." above when something got done), then "Which one first?" (tomorrow's list with its letters, plus the new lines; the current A1 is chosen to start). It ends on a sunrise: "Tomorrow starts with" and the A1's title, with Letter them when anything waits. Opened from Plan's "Plan tomorrow", Today's evening nudge and the evening notification. Close keeps the lines written and changes no letters.
 - **Task details** (`TaskFields.swift`), the same for to-dos and items:
   - Steps: tick, type to add (return adds the next), swipe to delete, drag to reorder.
   - Remind me: Later today (3 hours on, on the hour, until 10 PM), Tomorrow 9:00 AM, Next week (Monday 9:00 AM), Pick a date and time (a calendar sheet with Set). Set, it reads "Remind me at 9:00 AM" over "Tomorrow".

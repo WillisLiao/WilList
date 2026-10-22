@@ -43,8 +43,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         notification.request.identifier == FocusNotice.id ? [] : [.banner, .list, .sound]
     }
 
-    // Mark done, snooze, or open the task the reminder is about.
+    // Mark done, snooze, or open the task the reminder is about. The evening notice opens Plan tomorrow.
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        if response.notification.request.identifier == Reminders.planTomorrow {
+            await MainActor.run { Store.shared.planningTomorrow = true }
+            return
+        }
         guard let id = response.notification.request.content.userInfo["id"] as? String else { return }
         let action = response.actionIdentifier
         await MainActor.run { Store.shared.answerReminder(id, action: action) }
@@ -88,6 +92,9 @@ struct RootView: View {
         .fullScreenCover(isPresented: $welcoming) {
             WelcomeView { tab = .today }.lookTint()
         }
+        .fullScreenCover(isPresented: Binding(get: { store.planningTomorrow }, set: { store.planningTomorrow = $0 })) {
+            PlanTomorrow().lookTint()
+        }
         // A focus session covers everything until Mark done or Stop.
         .fullScreenCover(isPresented: Binding(get: { store.focus != nil }, set: { _ in })) {
             FocusView().lookTint()
@@ -115,8 +122,9 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in store.refreshDay() }
         #if DEBUG
         // `-show <title>` on launch opens that to-do or item, `-focus YES` starts a focus session on
-        // the A1 (screenshots).
+        // the A1, `-evening 1|2|3` opens Plan tomorrow at that step (screenshots).
         .onAppear {
+            store.planningTomorrow = UserDefaults.standard.integer(forKey: "evening") > 0
             if UserDefaults.standard.bool(forKey: "focus"), store.focus == nil, let a1 = doRows(store.state.items, store.today).first {
                 store.startFocus(a1)
             }

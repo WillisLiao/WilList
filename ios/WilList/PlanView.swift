@@ -2,30 +2,25 @@ import SwiftUI
 import WilListCore
 
 /// Plan: your main goal, the day in ABCDE order (A1 first, the same A1 that tops Today), and
-/// anything still waiting for a letter. Tomorrow and the full list of goals are one tap away.
+/// anything still waiting for a letter. Plan tomorrow and the full list of goals are one tap away.
 struct PlanView: View {
-    // `-open tomorrow` or `-open goals` on launch opens that screen (screenshots).
-    @State private var path = UserDefaults.standard.string(forKey: "open").flatMap(PlanPage.init).map { [$0] } ?? []
+    // `-open goals` on launch opens Your goals (screenshots).
+    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [PlanPage.goals] : []
 
     var body: some View {
         NavigationStack(path: $path) {
-            PlanList(tomorrow: false)
-                .navigationDestination(for: PlanPage.self) { page in
-                    switch page {
-                    case .tomorrow: PlanList(tomorrow: true)
-                    case .goals: GoalsList()
-                    }
-                }
+            PlanList()
+                .navigationDestination(for: PlanPage.self) { _ in GoalsList() }
         }
     }
 }
 
-enum PlanPage: String, Hashable { case tomorrow, goals }
+enum PlanPage: Hashable { case goals }
 
-/// One day in ABCDE order, A1 first. Plan shows today; Plan tomorrow shows tomorrow.
+/// The main goal, the day in ABCDE order with the A1 first, what's waiting for a letter, and the
+/// ways to plan ahead.
 struct PlanList: View {
     @Environment(Store.self) private var store
-    let tomorrow: Bool
     @State private var adding = false
     @State private var importing = false
     @State private var editing: Item?
@@ -34,15 +29,13 @@ struct PlanList: View {
     @State private var sorting: LetterSorter.Batch?
 
     private var today: Day { store.today }
-    private var day: Day { tomorrow ? addDays(today, 1) : today }
-    private var rows: [Row] { dayRows(store.state.items, day, realToday: today) }
+    private var rows: [Row] { dayRows(store.state.items, today) }
     private var waiting: [Item] { unsorted(store.state.items, today) }
-    private var evening: Bool { nowMinutes() >= (timeToMin(store.state.settings.planTime) ?? 1230) }
 
     var body: some View {
         ScrollViewReader { proxy in
             List {
-                if !tomorrow { goalRow }
+                goalRow
                 Section {
                     if rows.isEmpty { emptyCard }
                     ForEach(rows) { itemRow($0) }
@@ -63,24 +56,21 @@ struct PlanList: View {
                     }
                     .id("letters")
                 }
-                if !tomorrow {
-                    Section { planningRows }
-                        .id("bottom")
-                }
+                Section { planningRows }
+                    .id("bottom")
             }
             .listStyle(.plain)
             .readableColumn()
             #if DEBUG
             // `-scroll letters` or `-sheet add|import` on launch, for screenshots.
             .onAppear {
-                guard !tomorrow else { return }
                 UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) }
                 adding = UserDefaults.standard.string(forKey: "sheet") == "add"
                 importing = UserDefaults.standard.string(forKey: "sheet") == "import"
             }
             #endif
         }
-        .navigationTitle(tomorrow ? "Tomorrow" : "Plan")
+        .navigationTitle("Plan")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Search", systemImage: "magnifyingglass") { searching = true }
@@ -92,9 +82,9 @@ struct PlanList: View {
         .sheet(isPresented: $searching) { SearchView() }
         .sheet(isPresented: $adding) { AddItemSheet() }
         .sheet(isPresented: $importing) { ImportSheet() }
-        .onChange(of: store.incomingFile, initial: true) { if !tomorrow && store.incomingFile != nil { importing = true } }
+        .onChange(of: store.incomingFile, initial: true) { if store.incomingFile != nil { importing = true } }
         .onChange(of: store.opening, initial: true) {
-            if !tomorrow, let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
+            if let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
                 store.opening = nil
                 editing = it
             }
@@ -130,7 +120,7 @@ struct PlanList: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 LetterMark(letter: nil, label: "A1", large: true)
-                Text(tomorrow ? "First thing tomorrow" : "Do this first")
+                Text("Do this first")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -153,7 +143,6 @@ struct PlanList: View {
 
     private var emptyMessage: String {
         if !waiting.isEmpty { return "Give the items below a letter. Your most important one becomes your A1, at the top of Today." }
-        if tomorrow { return "Nothing planned for tomorrow yet." }
         if let next = nextUp { return "Nothing to do today. Next: \(next.title), \(Fmt.day(next.day, today, inSentence: true))." }
         return "Add what you need to do and give each one a letter. Your A1 goes to the top of Today, so you always know what to do first."
     }
@@ -186,7 +175,7 @@ struct PlanList: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 16))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
-            if !tomorrow { addToToday(row.item) }
+            addToToday(row.item)
         }
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(row.item.id) }
@@ -245,12 +234,12 @@ struct PlanList: View {
 
     private var planningRows: some View {
         Group {
-            NavigationLink(value: PlanPage.tomorrow) {
+            Button { store.planningTomorrow = true } label: {
                 Label {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Plan tomorrow")
-                        if evening {
-                            Text("It's evening. Pick tomorrow's first thing now.").font(.subheadline).foregroundStyle(.secondary)
+                        Text("Plan tomorrow").foregroundStyle(Color.primary)
+                        if store.evening {
+                            Text("It's evening. Pick tomorrow's first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
                         }
                     }
                 } icon: {
@@ -271,7 +260,7 @@ struct PlanList: View {
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.
     private func line(_ row: Row) -> Text? {
         Fmt.meta([Fmt.detail(row, today).map { Text($0).foregroundStyle(row.overdue ? Color.red : Color.secondary) }]
-                 + Fmt.marks(row.item.steps, remind: row.item.remindAt, today: day == today && row.item.myDay == today))
+                 + Fmt.marks(row.item.steps, remind: row.item.remindAt, today: row.item.myDay == today))
     }
 
     private func complete(_ row: Row) {
@@ -294,11 +283,11 @@ struct PlanList: View {
         guard shown.indices.contains(target), shown[target].priority == shown[i].priority else { return }
         withAnimation {
             store.change { s in
-                var current = dayRows(s.items, day, realToday: today)
+                var current = dayRows(s.items, today)
                 let key = shown[i].key
                 for _ in 0..<abs(target - i) {
                     s.move(current, key: key, by: target > i ? 1 : -1)
-                    current = dayRows(s.items, day, realToday: today)
+                    current = dayRows(s.items, today)
                 }
             }
         }

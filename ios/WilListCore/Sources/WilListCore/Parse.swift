@@ -344,6 +344,9 @@ public func quickAdd(_ text: String, today: Day, minute: Int = 0, dateOrder: Str
         if out.type == .task && out.time != nil { out.type = .event }
     }
     if let time = out.time, out.date == nil { out.date = timeToMin(time)! >= minute ? today : addDays(today, 1) }
+    // Something to attend needs a day. Without one it is something to do ("Buy a lab notebook",
+    // "Call mum"); as an event it would show up nowhere.
+    if out.type == .event && out.date == nil { out.type = .task }
 
     let low = raw.lowercased()
     if matches(low, #"\b(i[’']?ll try|try to|trying to|attempt to)\b"#) { out.hints.append(.tryTo) }

@@ -28,6 +28,7 @@ struct TodayView: View {
     @AppStorage("starredOnTop") private var starredOnTop = true
     @AppStorage("confirmDelete") private var confirmDelete = false
     @AppStorage("readDates") private var readDates = true
+    @AppStorage("plannedFor") private var plannedFor = ""
     @State private var draft = ""
     @FocusState private var typing: Bool
     @State private var ticking: Set<String> = []
@@ -66,7 +67,12 @@ struct TodayView: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
                 }
-                if waiting > 0 { lettersRow }
+                // In the evening, until tomorrow is planned, planning comes first: it letters too.
+                if store.evening && plannedFor != addDays(today, 1) {
+                    nudge("Plan tomorrow", systemImage: "moon.fill") { store.planningTomorrow = true }
+                } else if waiting > 0 {
+                    nudge("\(waiting) waiting for a letter", action: letterThem)
+                }
                 Section {
                     addRow
                     // A list with no to-dos yet shows what a line can say.
@@ -165,11 +171,12 @@ struct TodayView: View {
         }
     }
 
-    /// Items waiting for a letter: one tap letters them, one at a time.
-    private var lettersRow: some View {
-        Button(action: letterThem) {
+    /// A one-line nudge under the A1 card: what's waiting for a letter, or planning tomorrow.
+    private func nudge(_ title: String, systemImage: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             HStack(spacing: 6) {
-                Text("\(waiting) waiting for a letter")
+                if let systemImage { Image(systemName: systemImage).font(.footnote) }
+                Text(title)
                 Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
             }
             .font(.subheadline.weight(.medium))
@@ -202,6 +209,10 @@ struct TodayView: View {
             }
         }
         .font(.body.weight(.medium))
+        // Bar buttons stop growing at the largest text sizes, as the system's do; a long press
+        // shows them large instead.
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+        .accessibilityShowsLargeContentViewer()
     }
 
     /// Everything on Today still to do, A1 included; the overdue to-dos; all finished today.

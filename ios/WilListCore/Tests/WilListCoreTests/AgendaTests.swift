@@ -228,6 +228,24 @@ private func state(_ items: Item...) -> AppState {
     #expect(gone == nil)
 }
 
+@Test func theOneThatMattersMostBecomesTheA1() {
+    var s = AppState()
+    for (title, letter) in [("Essay", Letter.A), ("Lab", .A), ("Email", .B)] {
+        var it = makeItem(Item(id: "", title: title), s.settings, monday, s.items)
+        it.priority = letter
+        s.items.append(it)
+    }
+    let email = s.items[2].id, lab = s.items[1].id
+    s.makeA1(email, today: monday)
+    #expect(doRows(s.items, monday).map(\.item.title) == ["Email", "Essay", "Lab"])
+    #expect(doRows(s.items, monday).first?.label == "A1")
+    s.makeA1(lab, today: monday)
+    #expect(doRows(s.items, monday).map(\.label) == ["A1", "A2", "A3"])
+    #expect(doRows(s.items, monday).first?.item.title == "Lab")
+    s.makeA1("gone", today: monday)
+    #expect(doRows(s.items, monday).first?.item.title == "Lab")
+}
+
 @Test func todoDatesAndRepeats() throws {
     var s = AppState()
     let added = s.addTodo("Call mum tomorrow 6pm", today: monday, minute: 600)

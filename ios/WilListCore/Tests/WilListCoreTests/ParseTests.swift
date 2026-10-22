@@ -139,6 +139,13 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
     #expect(detectType("期中exam") == .exam)
 }
 
+@Test func anEventNeedsADay() {
+    #expect(quickAdd("Buy a lab notebook", today: monday).type == .task)
+    #expect(quickAdd("Call mum", today: monday).type == .task)
+    #expect(quickAdd("Chem lab thu 2pm", today: monday).type == .event)
+    #expect(quickAdd("Club meeting every tuesday", today: monday).type == .event)
+}
+
 @Test func hugeNumbersStayInTheTitle() {
     #expect(p("Plan in 99999999999999999999 days").date == nil)
     #expect(p("Read 99999999999999999999h").durationMin == nil)

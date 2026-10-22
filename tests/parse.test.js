@@ -126,6 +126,13 @@ test('victim-language hints', () => {
   assert.deepEqual(p('Problem set 5').hints, []);
 });
 
+test('an event needs a day', () => {
+  assert.equal(p('Buy a lab notebook').type, 'task');
+  assert.equal(p('Call mum').type, 'task');
+  assert.equal(p('Chem lab thu 2pm').type, 'event');
+  assert.equal(p('Club meeting every tuesday').type, 'event');
+});
+
 test('type detection', () => {
   assert.equal(detectType('Final project report'), 'deadline');
   assert.equal(detectType('Final exam'), 'exam');

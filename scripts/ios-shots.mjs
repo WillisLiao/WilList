@@ -1,6 +1,6 @@
 // Screenshots of the iPhone app in the iOS Simulator, with a full sample planner loaded.
 //   npm run ios:shots                          the four tabs, into shots/ios
-//   npm run ios:shots -- plan -open tomorrow   one tab, with debug launch arguments
+//   npm run ios:shots -- plan -open goals      one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
@@ -8,7 +8,9 @@
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
 //   -tab today|plan|study|more       which tab opens
-//   -open tomorrow|goals             Plan: push Tomorrow or Your goals
+//   -open goals                      Plan: push Your goals
+//   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
+//   -night YES                       it's evening: Today and Plan offer Plan tomorrow (NO, the default here)
 //   -scroll letters|bottom           Plan: scroll to Needs a letter or the bottom rows
 //   -sheet add|import|search|letters open that sheet (add and import from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
@@ -98,6 +100,8 @@ const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').re
 if (LOOK) argv.push('-look', LOOK);
 // A focus session left running by an earlier shot would cover the screen.
 if (!argv.includes('-focus')) argv.push('-focus', 'NO');
+// Shots look the same at any hour.
+if (!argv.includes('-night')) argv.push('-night', 'NO');
 
 for (const tab of tabs) {
   const save = path.join(support, 'willist.v1.json');

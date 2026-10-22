@@ -154,13 +154,7 @@ struct LetterSorter: View {
     private var finished: some View {
         let a1 = doRows(store.state.items, today).first
         let left = unsorted(store.state.items, today).filter { ids.contains($0.id) }.count
-        return VStack(spacing: 12) {
-            Spacer()
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(Color.brand)
-                .symbolEffect(.bounce, options: .nonRepeating, value: at)
-                .accessibilityHidden(true)
+        return FinishPage(symbol: "checkmark.circle.fill", bounce: at) {
             Text(left == 0 ? "All lettered" : "Done for now")
                 .font(.title.bold())
                 .fontDesign(Look.current.titles)
@@ -171,16 +165,10 @@ struct LetterSorter: View {
             if left > 0 {
                 Text("\(left) still \(left == 1 ? "waits" : "wait") for a letter in Plan.").foregroundStyle(.secondary)
             }
-            Spacer()
+        } buttons: {
             Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity) }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.large)
         }
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 12)
-        .frame(maxWidth: 560)
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: actions

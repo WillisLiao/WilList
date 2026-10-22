@@ -31,25 +31,12 @@ struct FocusView: View {
             .font(.body.weight(.medium))
             .padding(.horizontal, 12)
             .padding(.top, 8)
-            Spacer(minLength: 8)
-            VStack(spacing: 12) {
-                LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true)
-                Text(f.title)
-                    .font(.title.bold())
-                    .fontDesign(Look.current.titles)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
+            // The middle spreads out when it fits; at the largest text sizes it scrolls instead, so
+            // no words are cut off and Stop stays clear of the status bar.
+            ViewThatFits(in: .vertical) {
+                middle(f, left: left, over: over).frame(maxHeight: .infinity)
+                ScrollView { middle(f, left: left, over: over) }
             }
-            .padding(.horizontal, 24)
-            Spacer(minLength: 24)
-            ring(f, left: left)
-            Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it's done.")
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 24)
-                .padding(.top, 24)
-            Spacer(minLength: 24)
             (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))) {
                 if !over {
                     Button { f.paused ? store.resumeFocus() : store.pauseFocus() } label: {
@@ -73,6 +60,33 @@ struct FocusView: View {
         .background(Color.white)
         .sensoryFeedback(.success, trigger: over) { was, now in !was && now }
         .onChange(of: over) { _, now in if now { Chime.play() } }
+    }
+
+    /// The letter and title, the ring, and a line under it.
+    private func middle(_ f: FocusSession, left: TimeInterval, over: Bool) -> some View {
+        VStack(spacing: 0) {
+            Spacer(minLength: 8)
+            VStack(spacing: 12) {
+                LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true)
+                Text(f.title)
+                    .font(.title.bold())
+                    .fontDesign(Look.current.titles)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            .padding(.horizontal, 24)
+            Spacer(minLength: 24)
+            ring(f, left: left)
+            Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it's done.")
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 24)
+                .padding(.top, 24)
+            Spacer(minLength: 24)
+        }
+        .frame(maxWidth: .infinity)
     }
 
     private func ring(_ f: FocusSession, left: TimeInterval) -> some View {

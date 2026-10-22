@@ -12,7 +12,7 @@ Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on th
 **What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, with a green accent (`#12884A`) and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience; the colour work below is the first answer.
 
-- **First run:** three short steps: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
+- **First run:** three short steps, each question in white on the green field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
 - **Today:** your A1 as the poster of the day: a field of its course's colour (green without a course) across the top, running up under the status bar, with the date, the title in 44 pt bold serif, **Start** (focus) and **Mark done**.
   Mark done draws a line through the title, its words fade, and the next A rises into its place while the field blends into the next course's colour.
   Below: "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
@@ -25,8 +25,8 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
 - **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.
-- **Plan tomorrow:** Tracy's evening habit in two steps: anything new for tomorrow (one line each, dates read), then which one first.
-  It ends on "Tomorrow starts with" and the A1's title.
+- **Plan tomorrow:** Tracy's evening habit in two steps on a night-indigo field: anything new for tomorrow (one line each, dates read), then which one first.
+  It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour, as Today will look in the morning.
   Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned, and the evening notification opens it.
 - **Give it a letter:** a to-do that turns out to matter moves into Plan with its steps, dates and note.
 - **Widgets:** Do this first (your A1 with Mark done, on its course colour: small, medium, Lock Screen rectangular and inline) and Today (to-dos with ticks: medium, large, Lock Screen circular), sharing the plan through the app group `group.com.lull.willist`.

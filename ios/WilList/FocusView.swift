@@ -132,7 +132,7 @@ extension Store {
         let f = FocusSession(key: row.key, itemId: row.item.id, type: row.item.type, title: row.item.title,
                              label: row.label, minutes: row.session?.minutes ?? state.settings.taskMin)
         keepFocus(f)
-        LiveFocus.start(f)
+        LiveFocus.start(f, color: state.courseColor(row.item.course))
     }
 
     func pauseFocus() {
@@ -176,10 +176,10 @@ extension Store {
 
 /// The Live Activity for a focus session: start, update on pause and resume, end.
 enum LiveFocus {
-    static func start(_ f: FocusSession) {
+    static func start(_ f: FocusSession, color: Int?) {
         end() // one at a time
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
-        _ = try? Activity.request(attributes: FocusAttributes(title: f.title, label: f.label, minutes: f.minutes),
+        _ = try? Activity.request(attributes: FocusAttributes(title: f.title, label: f.label, minutes: f.minutes, color: color),
                                   content: content(f))
     }
 

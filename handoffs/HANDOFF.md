@@ -22,7 +22,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Plan** (was Goals): main goal, the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
-- **Focus:** the whole screen in the task's course colour, one white ring timer, with Pause, Mark done and Stop.
+- **Focus:** the whole screen in the task's course colour, one white ring timer, with Pause, Mark done and Stop; the Lock Screen Live Activity takes the same colour.
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
 - **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.

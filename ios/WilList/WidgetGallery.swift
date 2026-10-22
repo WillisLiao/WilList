@@ -18,13 +18,14 @@ struct WidgetGallery: View {
         let tick = UserDefaults.standard.string(forKey: "gallery") == "ticked"
         VStack(spacing: 18) {
             if UserDefaults.standard.string(forKey: "gallery") == "focus" {
-                let a = FocusAttributes(title: "Problem set 5", label: "A1", minutes: 50)
+                // A course's colour (the first, blue), and no course (the green).
+                let a = FocusAttributes(title: "Problem set 5", label: "A1", minutes: 50, color: 0)
+                let b = FocusAttributes(title: "Read chapter 4 for psych and write a one-page summary", label: "B2", minutes: 25)
                 let start = Date.now.addingTimeInterval(-8 * 60)
-                activity { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(3000), left: 2520)) }
-                activity { FocusLockView(attributes: a, state: .init(start: start, end: nil, left: 1234)) }
-                activity { FocusLockView(attributes: FocusAttributes(title: "Read chapter 4 for psych and write a one-page summary", label: "B2", minutes: 25),
-                                         state: .init(start: start, end: start.addingTimeInterval(1500), left: 1020)) }
-                activity { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(480), left: 0), over: true) }
+                activity(a) { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(3000), left: 2520)) }
+                activity(a) { FocusLockView(attributes: a, state: .init(start: start, end: nil, left: 1234)) }
+                activity(b) { FocusLockView(attributes: b, state: .init(start: start, end: start.addingTimeInterval(1500), left: 1020)) }
+                activity(a) { FocusLockView(attributes: a, state: .init(start: start, end: start.addingTimeInterval(480), left: 0), over: true) }
             } else if UserDefaults.standard.string(forKey: "gallery") == "lock" {
                 lock(width: 300) { FirstWidgetView(glance: glance, family: .accessoryInline) }
                 HStack(spacing: 12) {
@@ -60,11 +61,11 @@ struct WidgetGallery: View {
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 
-    /// A Live Activity on the Lock Screen: 16 pt in from each side, its own white ground.
-    private func activity(@ViewBuilder content: () -> some View) -> some View {
+    /// A Live Activity on the Lock Screen: 16 pt in from each side, on its course's colour.
+    private func activity(_ a: FocusAttributes, @ViewBuilder content: () -> some View) -> some View {
         content()
             .frame(width: 370)
-            .background(Color.white)
+            .background(CourseColor.of(a.color))
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 

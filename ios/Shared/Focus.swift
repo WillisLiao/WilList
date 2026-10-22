@@ -48,6 +48,8 @@ struct FocusAttributes: ActivityAttributes {
     var title: String
     var label: String
     var minutes: Int
+    /// Its course's colour (`CourseColor`), which the Lock Screen face is drawn on.
+    var color: Int?
 
     var total: TimeInterval { TimeInterval(minutes) * 60 }
 

@@ -8,8 +8,8 @@ struct FocusActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FocusAttributes.self) { context in
             FocusLockView(attributes: context.attributes, state: context.state, over: context.isStale)
-                .activityBackgroundTint(.white)
-                .activitySystemActionForegroundColor(.brand)
+                .activityBackgroundTint(CourseColor.of(context.attributes.color))
+                .activitySystemActionForegroundColor(.white)
                 .widgetURL(URL(string: "willist://today"))
         } dynamicIsland: { context in
             let a = context.attributes, s = context.state

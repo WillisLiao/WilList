@@ -5,7 +5,8 @@ import WilListCore
 // The focus Live Activity's faces (ios/WilListWidgets/FocusActivity.swift lays them out on the Lock
 // Screen and in the Dynamic Island). Shared so the app's widget gallery can draw them too.
 
-/// The Lock Screen face: the letter and what it is, the time left large, the bar and Mark done.
+/// The Lock Screen face, on its course's colour like the Focus screen: the letter and what it is,
+/// the time left large, the bar and Mark done, all in white.
 struct FocusLockView: View {
     let attributes: FocusAttributes
     let state: FocusAttributes.ContentState
@@ -13,28 +14,32 @@ struct FocusLockView: View {
     var over = false
 
     var body: some View {
+        let field = CourseColor.of(attributes.color)
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 10) {
-                LetterMark(letter: attributes.letter, label: attributes.label, large: true)
+                LetterMark(letter: attributes.letter, label: attributes.label, large: true, onBrand: true)
                 Text(attributes.title)
                     .font(.headline)
-                    .foregroundStyle(.black)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 FocusClock(state: state, over: over)
                     .font(.system(size: 34, weight: .semibold, design: .rounded))
-                    .foregroundStyle(state.end == nil ? Color.secondary : over ? Color.brand : Color.black)
+                    .opacity(state.end == nil ? 0.7 : 1)
                     .frame(maxWidth: 130, alignment: .trailing)
             }
             HStack(spacing: 14) {
-                FocusBar(attributes: attributes, state: state).tint(.brand)
+                FocusBar(attributes: attributes, state: state).tint(.white)
                 Button(intent: FinishFocusIntent()) {
-                    Label("Mark done", systemImage: "checkmark").font(.subheadline.weight(.semibold))
+                    Label("Mark done", systemImage: "checkmark")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(field)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.brand)
+                .tint(.white)
             }
         }
+        .foregroundStyle(.white)
+        .environment(\.field, field)
         .padding(16)
     }
 }

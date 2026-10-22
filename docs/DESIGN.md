@@ -82,6 +82,7 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   The A1 and this poster are one list row whose contents swap, so the field stays solid during the hand-over.
   The other looks draw it as a card, corner radius 22.
 - **Focus** (`FocusView.swift`): the whole screen in the session's course colour, a white ring and timer, and white buttons.
+  Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`); the Dynamic Island stays black with the lifted green.
 - **Week chart** (`WeekChart` in `StudyView.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
 - **Focus** (`FocusView.swift`, from Start on the A1 card): one task, one timer, nothing else. The letter and the serif title, a ring that fills as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.

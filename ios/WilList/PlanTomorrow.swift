@@ -23,8 +23,11 @@ struct PlanTomorrow: View {
     #endif
     @State private var draft = ""
     @State private var pick: Pick?
+    /// Tomorrow's list as it was chosen from, kept still while the last page rises over it.
+    @State private var chosenFrom: [Row]?
     @State private var sorting: LetterSorter.Batch?
     @FocusState private var typing: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var today: Day { store.today }
     private var tomorrow: Day { addDays(today, 1) }
@@ -33,25 +36,26 @@ struct PlanTomorrow: View {
     private var waiting: [Item] { unsorted(store.state.items, today) }
 
     var body: some View {
-        Group {
-            if step < 3 {
-                StepPage(field: Self.night, step: step, of: 2, about: step == 1 ? recap : nil,
-                         title: step == 1 ? "Anything new for tomorrow?" : "Which one first?",
-                         subtitle: step == 1 ? "Write down what came up today, one thing per line. Dates are read for you."
-                             : "If you could do only one thing tomorrow, which would it be? That’s your A1.",
-                         exit: "Close", back: { step = 1 }, leave: close,
-                         button: step == 1 ? "Next" : "Make it my A1", enabled: step == 1 || pick != nil, next: next) {
-                    if step == 1 {
-                        LinesEntry(lines: $lines, draft: $draft, typing: $typing, placeholder: "Read chapter 5 by Friday")
-                    } else {
-                        choices
-                    }
+        // The last page rises over the night like the sun, so the list never shows through it.
+        ZStack {
+            StepPage(field: Self.night, step: min(step, 2), of: 2, about: step == 1 ? recap : nil,
+                     title: step == 1 ? "Anything new for tomorrow?" : "Which one first?",
+                     subtitle: step == 1 ? "Write down what came up today, one thing per line. Dates are read for you."
+                         : "If you could do only one thing tomorrow, which would it be? That’s your A1.",
+                     exit: "Close", back: { step = 1 }, leave: close,
+                     button: step == 1 ? "Next" : "Make it my A1", enabled: step == 1 || pick != nil, next: next) {
+                if step == 1 {
+                    LinesEntry(lines: $lines, draft: $draft, typing: $typing, placeholder: "Read chapter 5 by Friday")
+                } else {
+                    choices
                 }
-            } else {
-                finished
+            }
+            .accessibilityHidden(step == 3)
+            if step == 3 {
+                finished.transition(reduceMotion ? .opacity : .move(edge: .bottom))
             }
         }
-        .animation(.snappy, value: step)
+        .animation(step == 3 ? .smooth(duration: 0.6) : .snappy, value: step)
         .sensoryFeedback(.selection, trigger: pick)
         .onAppear {
             if step == 1 { typing = true }
@@ -70,7 +74,7 @@ struct PlanTomorrow: View {
     /// Tomorrow's list in ABCDE order, then the lines just written.
     private var choices: some View {
         VStack(spacing: 0) {
-            ForEach(rows) { row in
+            ForEach(chosenFrom ?? rows) { row in
                 A1Choice(title: row.item.title, detail: Fmt.detail(row, today), letter: row.priority,
                          chosen: pick == .item(row.item.id)) { pick = .item(row.item.id) }
             }
@@ -86,7 +90,7 @@ struct PlanTomorrow: View {
     /// The last page is drawn the way Today will look in the morning: on the A1's course colour.
     private var finished: some View {
         let field = rows.first.map { CourseColor.of(store.state.courseColor($0.item.course)) } ?? Self.night
-        return FinishPage(field: field, symbol: "sunrise.fill", bounce: step) {
+        return FinishPage(field: field, symbol: "sunrise.fill") {
             if let a1 = rows.first {
                 Text("Tomorrow starts with")
                     .font(.headline)
@@ -134,6 +138,7 @@ struct PlanTomorrow: View {
     }
 
     private func finish() {
+        chosenFrom = rows
         save(pick)
         plannedFor = tomorrow
         step = 3

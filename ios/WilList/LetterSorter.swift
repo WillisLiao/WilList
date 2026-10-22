@@ -49,16 +49,19 @@ struct LetterSorter: View {
                     Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
                 }
             }
-            if item != nil {
-                Text("\(at + 1) of \(ids.count)")
-                    .font(.subheadline.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .padding(.leading, at > 0 ? 0 : 12)
-            }
             Spacer()
             // The last page has its own Done.
             if item != nil {
                 Button { dismiss() } label: { Text("Close").tapArea() }
+            }
+        }
+        // In the middle, where Back coming and going doesn't move it; the number rolls on.
+        .overlay {
+            if item != nil {
+                Text("\(at + 1) of \(ids.count)")
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .contentTransition(.numericText(value: Double(at)))
             }
         }
         .font(.body.weight(.medium))
@@ -169,7 +172,7 @@ struct LetterSorter: View {
     private var finished: some View {
         let a1 = doRows(store.state.items, today).first
         let left = unsorted(store.state.items, today).filter { ids.contains($0.id) }.count
-        return FinishPage(symbol: "checkmark.circle.fill", bounce: at) {
+        return FinishPage(symbol: "checkmark.circle.fill") {
             Text(left == 0 ? "All lettered" : "Done for now")
                 .font(.title.bold())
                 .fontDesign(Look.current.titles)

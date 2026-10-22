@@ -22,6 +22,12 @@ struct StepPage<Content: View>: View {
     var enabled = true
     let next: () -> Void
     @ViewBuilder let content: () -> Content
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// A new step's words appear as the old ones go, rising a little, so the two never cross.
+    private var arrive: AnyTransition {
+        .asymmetric(insertion: reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 10)), removal: .identity)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -31,12 +37,15 @@ struct StepPage<Content: View>: View {
                         Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
                     }
                 }
+                Spacer()
+                Button(action: leave) { Text(exit).tapArea() }
+            }
+            // In the middle, where Back coming and going doesn't move it; the number rolls on.
+            .overlay {
                 Text("\(step) of \(of)")
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.white)
-                    .padding(.leading, step > 1 ? 0 : 12)
-                Spacer()
-                Button(action: leave) { Text(exit).tapArea() }
+                    .contentTransition(.numericText(value: Double(step)))
             }
             .font(.body.weight(.medium))
             .tint(.white)
@@ -45,19 +54,25 @@ struct StepPage<Content: View>: View {
             .background(field)
             ScrollView {
               VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: 8) {
-                    if let about {
-                        Text(about).font(.subheadline).foregroundStyle(.white)
+                // The words change inside a frame that stays, so the band never goes with them.
+                ZStack(alignment: .topLeading) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if let about {
+                            Text(about).font(.subheadline).foregroundStyle(.white)
+                        }
+                        Text(title)
+                            .font(.largeTitle.bold())
+                            .fontDesign(Look.current.titles)
+                            .foregroundStyle(.white)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(subtitle)
+                            .foregroundStyle(.white)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Text(title)
-                        .font(.largeTitle.bold())
-                        .fontDesign(Look.current.titles)
-                        .foregroundStyle(.white)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityAddTraits(.isHeader)
-                    Text(subtitle)
-                        .foregroundStyle(.white)
-                        .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .id(step)
+                    .transition(arrive)
                 }
                 .padding(.horizontal, 24)
                 .padding(.top, 8)
@@ -66,11 +81,15 @@ struct StepPage<Content: View>: View {
                 .frame(maxWidth: .infinity)
                 // The field reaches up behind the top bar, also when the page is pulled down.
                 .background(field.padding(.top, -1000))
-                content()
-                    .padding(.horizontal, 24)
-                    .padding(.top, 12)
-                    .frame(maxWidth: 560, alignment: .leading)
-                    .frame(maxWidth: .infinity)
+                ZStack(alignment: .topLeading) {
+                    content()
+                        .id(step)
+                        .transition(arrive)
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 12)
+                .frame(maxWidth: 560, alignment: .leading)
+                .frame(maxWidth: .infinity)
               }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -191,10 +210,10 @@ struct A1Choice: View {
 struct FinishPage<Middle: View, Buttons: View>: View {
     var field: Color?
     let symbol: String
-    /// The symbol bounces when this changes.
-    let bounce: Int
     @ViewBuilder let middle: () -> Middle
     @ViewBuilder let buttons: () -> Buttons
+    /// The symbol bounces once the page has come in.
+    @State private var arrived = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -211,6 +230,10 @@ struct FinishPage<Middle: View, Buttons: View>: View {
         .frame(maxWidth: .infinity)
         .foregroundStyle(field == nil ? Color.primary : .white)
         .background(field ?? .white)
+        .task {
+            try? await Task.sleep(for: .milliseconds(450))
+            arrived = true
+        }
     }
 
     private var lines: some View {
@@ -218,7 +241,7 @@ struct FinishPage<Middle: View, Buttons: View>: View {
             Image(systemName: symbol)
                 .font(.system(size: 56))
                 .foregroundStyle(field == nil ? Color.brand : .white)
-                .symbolEffect(.bounce, options: .nonRepeating, value: bounce)
+                .symbolEffect(.bounce, options: .nonRepeating, value: arrived)
                 .accessibilityHidden(true)
             middle()
         }

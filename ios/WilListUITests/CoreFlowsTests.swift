@@ -47,7 +47,7 @@ final class CoreFlowsTests: XCTestCase {
         // Undo first, the moment its message shows: on a slow machine, checking anything else
         // before it can outlast the message.
         let undo = app.buttons["Undo"]
-        XCTAssertTrue(tap(app.buttons["markA1Done"], until: undo), "Mark done offers Undo")
+        XCTAssertTrue(tap(app.buttons["markA1Done"]) { undo.waitForExistence(timeout: 5) }, "Mark done offers Undo")
         undo.tap()
         XCTAssertTrue(gone(app.staticTexts["Read chapter 4"]), "the essay intro is back in the card")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].exists)
@@ -125,9 +125,9 @@ final class CoreFlowsTests: XCTestCase {
         let details = app.navigationBars["To-do"]
         XCTAssertTrue(details.waitForExistence(timeout: 5))
         details.buttons["Done"].tap()
+        XCTAssertTrue(gone(details), "the to-do's details close")
         // The X beside the field closes Search.
-        app.buttons["Close"].tap()
-        XCTAssertTrue(gone(field))
+        XCTAssertTrue(tap(app.buttons["Close"]) { gone(field) }, "the X closes Search")
         XCTAssertTrue(app.textFields["Add a to-do"].exists)
     }
 
@@ -157,14 +157,15 @@ final class CoreFlowsTests: XCTestCase {
         if alert.waitForExistence(timeout: 3) { alert.buttons.element(boundBy: 1).tap() }
     }
 
-    /// Taps, then waits for what the tap brings up. A CI simulator now and then drops a tap: on
-    /// 2026-10-22 one landed dead centre on Mark done and the app never saw it (no press, nothing
-    /// changed). A tap with nothing to show for it after five seconds is tried once more.
-    private func tap(_ button: XCUIElement, until shown: XCUIElement) -> Bool {
+    /// Taps, then waits for what the tap should do (`happened` waits up to five seconds). A CI
+    /// simulator now and then loses a tap: on 2026-10-22 one landed dead centre on Mark done and the
+    /// app never saw it, and another hit Search's X while the bar was still sliding it into place.
+    /// A tap with nothing to show for it is tried once more.
+    private func tap(_ button: XCUIElement, until happened: () -> Bool) -> Bool {
         button.tap()
-        if shown.waitForExistence(timeout: 5) { return true }
+        if happened() { return true }
         button.tap()
-        return shown.waitForExistence(timeout: 5)
+        return happened()
     }
 
     private func gone(_ element: XCUIElement) -> Bool {

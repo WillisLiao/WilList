@@ -11,7 +11,7 @@ Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on th
 
 **What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), always light, white with one green (`#12884A`), four tabs.
 
-- **First run:** three short steps: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what's your main goal. Skippable, under a minute.
+- **First run:** three short steps: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
 - **Today:** your A1 as one large card at the top with **Start** (focus) and **Mark done**; "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
 - **Plan** (was Goals): main goal, the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
 - **Study:** today's sessions, this week's load against a dashed daily-budget line (red past it), exams and deadlines coming up.
@@ -28,7 +28,7 @@ Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on th
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
   Undo sits in a toast that stays long enough to read, and VoiceOver reads it out.
   On a widget, the ticked line shows done for a moment (the box fills, the words grey and are struck through), then leaves.
-- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 14 of them), every control is at least 44 points, words stay whole at the largest text sizes, and the green deepens with Increase Contrast.
+- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 14 of them), every control is at least 44 points, words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the green deepens with Increase Contrast.
 - **Search** opens ready to type, keyboard up; its X closes it.
 - **iPad:** every list keeps to a centred readable column.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the green with dark and tinted versions.
@@ -40,7 +40,7 @@ Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 **On the owner's devices:** the iPad (iOS 18.5) has `016ef8b` and the iPhone 15 Pro (iOS 18.7.8) has `a6c1962`; neither has anything from this evening.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 
-**Checked:** 80 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 9 UI tests (add and tick, a reminder, give a letter, Mark done and Undo, focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default and the largest text sizes, on iPhone and iPad.
+**Checked:** 80 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 9 UI tests (add and tick, a reminder, give a letter, Mark done and Undo, focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default and the largest text sizes, on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.
 

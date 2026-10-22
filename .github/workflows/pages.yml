@@ -52,6 +52,15 @@ jobs:
         run: >
           [ ! -d build/ci/tests.xcresult ] ||
           xcrun xcresulttool get test-results summary --path build/ci/tests.xcresult
+      # The full results, with the failing line and a screenshot of the moment, for a week.
+      - name: Keep the UI test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-results
+          path: build/ci/tests.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
 
   deploy:
     needs: test

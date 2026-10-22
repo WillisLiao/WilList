@@ -78,7 +78,7 @@ final class CoreFlowsTests: XCTestCase {
         first.typeText("Write the lab report\n")
         app.textFields["And next?"].typeText("Email Prof. Chen\n")
         app.buttons["Next"].tap()
-        app.buttons["Write the lab report"].tap()
+        choose(app.buttons["Write the lab report"], in: app)
         app.buttons["Make it my A1"].tap()
         app.buttons["Start"].tap()
         XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5), "Today opens on the A1 card")
@@ -97,18 +97,18 @@ final class CoreFlowsTests: XCTestCase {
         let app = launch(plan: "a1", tab: "plan")
         app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch.tap()
         let field = app.textFields["Read chapter 5 by Friday"]
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Plan tomorrow opens on its first step")
         field.typeText("Buy a lab notebook\n")
         app.buttons["Next"].tap()
         // Tomorrow's list, its A1 already chosen; the other A becomes the A1 instead.
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch.tap()
+        choose(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch, in: app)
         app.buttons["Make it my A1"].tap()
-        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Read chapter 4"].exists)
+        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: 5), "it ends on tomorrow's A1")
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].exists, "the chosen one is tomorrow's A1")
         XCTAssertTrue(app.staticTexts["1 still waits for a letter."].exists, "the line written waits for a letter")
         app.buttons["Done"].tap()
         app.tabBars.buttons["Today"].tap()
-        XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5), "Today's card shows the new A1")
         XCTAssertFalse(app.staticTexts["Write the essay intro"].exists, "only the A1 shows on Today")
     }
 
@@ -157,5 +157,15 @@ final class CoreFlowsTests: XCTestCase {
 
     private func gone(_ element: XCUIElement) -> Bool {
         element.waitForNonExistence(timeout: 5)
+    }
+
+    /// Picks a row on a "which one first" page. Next has just swapped the page in and sent the
+    /// keyboard down, so let both settle first: a tap while the rows still move can land on
+    /// another row, and the old A1 stays chosen.
+    private func choose(_ row: XCUIElement, in app: XCUIApplication) {
+        XCTAssertTrue(gone(app.keyboards.firstMatch), "the keyboard goes down")
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "the row is there")
+        row.tap()
+        XCTAssertTrue(row.wait(for: \.isSelected, toEqual: true, timeout: 5), "the row tapped is the one chosen")
     }
 }

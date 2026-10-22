@@ -13,7 +13,7 @@ The bar. Keep going until every one of these is true, then keep raising it:
 3. Ticking something off is instant and satisfying, everywhere: in the app, in widgets, from a notification.
 4. The most important thing to do is visible at a glance: in the app, on the Home Screen and on the Lock Screen.
 5. It is beautiful and distinctive: a clear point of view, not a template. Light, one bright colour, red only for problems. You have full creative freedom beyond that; when you are unsure what the owner would like, build variations and show them side by side.
-6. Pixel perfect: alignment, spacing, type and touch targets checked on every screen and sheet, at the default and the largest Dynamic Type sizes, with VoiceOver labels on every control.
+6. Pixel perfect: alignment, spacing, type and touch targets checked on every screen and sheet at the default text size, with VoiceOver labels on every control. Don't spend time on the largest accessibility text sizes: the owner says nobody uses them.
 7. Engineering is clean: swift test, npm test, npm run lint and npm run test:e2e pass, the build has zero warnings, CI is green, UI tests cover the flows that must never break, and no view is hard to follow.
 8. Every Tracy principle in docs/PRINCIPLES.md still has a home.
 

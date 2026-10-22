@@ -22,7 +22,6 @@ Done since the last version of this file: Plan tomorrow as an evening ritual, th
 - **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.
   In the simulator, `xcrun simctl push <device> com.lull.willist payload.json` with `"category": "task"` and an `"id"` delivers a reminder, and XCUITest on SpringBoard can press its buttons.
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.
-- **Fresh eyes on the rest at the largest text size:** the welcome, Focus and the iPad layouts were last checked before tonight's changes.
 - **iPad:** a sidebar or two columns (Today beside Plan) would use the space far better than a centred column; ask the owner.
 - **The website,** only if the owner says so.
 

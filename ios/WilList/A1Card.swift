@@ -121,6 +121,8 @@ struct A1Card: View {
             }
             .controlSize(.large)
             .labelStyle(WordsWhenLarge())
+            // On an iPad the buttons stop at a phone's width rather than stretching across.
+            .frame(maxWidth: 440, alignment: .leading)
             .padding(.top, poster ? 10 : 6)
             if shownStreak > 0 {
                 Text("\(shownStreak) \(shownStreak == 1 ? "day" : "days") in a row you started with an A.")

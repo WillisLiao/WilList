@@ -68,8 +68,9 @@ struct TodayView: View {
                 // doesn't repaint when the next A comes from another course.
                 header(first: first, fromPlan: fromPlan, poster: poster)
                     .padding(EdgeInsets(top: 12, leading: 20, bottom: poster ? 0 : 16, trailing: 12))
-                    // The field reaches up under the status bar, and shows when the list is pulled down.
-                    .background { if poster { field.padding(.top, -1000) } }
+                    // The field reaches up under the status bar, and shows when the list is pulled down;
+                    // on an iPad it runs past the readable column to the screen's edges.
+                    .background { if poster { field.padding(.top, -1000).padding(.horizontal, -1000) } }
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
@@ -86,7 +87,7 @@ struct TodayView: View {
                     }
                     .environment(\.field, field)
                     .padding(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
-                    .background { if poster { field } }
+                    .background { if poster { field.padding(.horizontal, -1000) } }
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)

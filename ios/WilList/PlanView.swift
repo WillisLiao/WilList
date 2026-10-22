@@ -206,16 +206,11 @@ struct PlanList: View {
             .padding(.vertical, 6)
             .contentShape(Rectangle())
             .onTapGesture { editing = item }
-            letterMenu(item) {
-                Text("Letter")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.brand)
-                    .padding(.horizontal, 14)
-                    .frame(minHeight: 30)
-                    .background(Color.brand.opacity(0.12), in: Capsule())
-            }
+            // The empty mark, in the same column as the letters above.
+            letterMenu(item) { LetterMark(letter: nil) }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 16))
+        // The words line up with the day's rows above, which have a check before them.
+        .listRowInsets(EdgeInsets(top: 0, leading: 60, bottom: 0, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
@@ -239,26 +234,30 @@ struct PlanList: View {
     private var planningRows: some View {
         Group {
             Button { store.planningTomorrow = true } label: {
-                Label {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Plan tomorrow").foregroundStyle(Color.primary)
-                        if store.evening {
-                            Text("It’s evening. Pick tomorrow’s first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
-                        }
+                planningRow("moon") {
+                    Text("Plan tomorrow").foregroundStyle(Color.primary)
+                    if store.evening {
+                        Text("It’s evening. Pick tomorrow’s first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
                     }
-                } icon: {
-                    Image(systemName: "moon").foregroundStyle(.secondary)
                 }
             }
             Button { importing = true } label: {
-                Label {
-                    Text("Bring in a schedule").foregroundStyle(Color.primary)
-                } icon: {
-                    Image(systemName: "square.and.arrow.down").foregroundStyle(.secondary)
-                }
+                planningRow("square.and.arrow.down") { Text("Bring in a schedule").foregroundStyle(Color.primary) }
             }
         }
         .padding(.vertical, 4)
+        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 16))
+    }
+
+    /// An icon where the day's rows have their check, and the words in the same column as theirs.
+    private func planningRow(_ symbol: String, @ViewBuilder words: () -> some View) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: symbol).foregroundStyle(Color.secondary).frame(width: 44)
+            VStack(alignment: .leading, spacing: 2) { words() }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+        }
+        .frame(minHeight: 44)
     }
 
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.

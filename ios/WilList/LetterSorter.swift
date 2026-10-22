@@ -44,9 +44,9 @@ struct LetterSorter: View {
     private var topBar: some View {
         HStack {
             if at > 0 {
-                Button("Back", systemImage: "chevron.left") { go(-1) }
-                    .labelStyle(.iconOnly)
-                    .frame(width: 44, height: 44)
+                Button { go(-1) } label: {
+                    Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
+                }
             }
             if item != nil {
                 Text("\(at + 1) of \(ids.count)")
@@ -57,8 +57,7 @@ struct LetterSorter: View {
             Spacer()
             // The last page has its own Done.
             if item != nil {
-                Button("Close") { dismiss() }
-                    .frame(minWidth: 44, minHeight: 44)
+                Button { dismiss() } label: { Text("Close").tapArea() }
             }
         }
         .font(.body.weight(.medium))
@@ -88,9 +87,10 @@ struct LetterSorter: View {
                 .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, 14)
             ForEach(Letter.allCases, id: \.self) { letterButton($0, item: item, suggested: suggested) }
-            Button("Skip for now") { go(1) }
-                .font(.body.weight(.medium))
-                .frame(maxWidth: .infinity, minHeight: 44)
+            Button { go(1) } label: {
+                Text("Skip for now").frame(maxWidth: .infinity).tapArea()
+            }
+            .font(.body.weight(.medium))
                 .padding(.top, 6)
         }
         .padding(.horizontal, 24)

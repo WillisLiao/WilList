@@ -26,8 +26,7 @@ struct FocusView: View {
         return VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button("Stop") { store.finishFocus(done: false) }
-                    .frame(minWidth: 44, minHeight: 44)
+                Button { store.finishFocus(done: false) } label: { Text("Stop").tapArea() }
             }
             .font(.body.weight(.medium))
             .padding(.horizontal, 12)

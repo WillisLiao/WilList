@@ -197,6 +197,10 @@ extension View {
     /// moves up beside the tabs, out of the column's way.
     func readableColumn() -> some View { modifier(ReadableColumn()) }
 
+    /// A bare button's label answers taps across at least 44 by 44 points. Put it inside the label:
+    /// a frame outside a button looks the same but doesn't widen what it answers to.
+    func tapArea() -> some View { frame(minWidth: 44, minHeight: 44).contentShape(Rectangle()) }
+
     /// A menu's label in a form row answers a tap anywhere on the row, not only on its words.
     func fillsRow() -> some View { frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle()) }
 

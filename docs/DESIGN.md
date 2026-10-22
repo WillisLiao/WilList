@@ -20,7 +20,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 | Paper | system white (plain `List`), system grouped grey in `Form`s | Backgrounds. Main tabs use plain white lists; settings and detail sheets use grouped forms. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
-| Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable) | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
+| Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable); `#0B6B39` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
 | Pale green | green at 9% (the A1 card), 12% (the Letter button), 35% (study bars) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
 
@@ -107,3 +107,7 @@ No decorative or entrance animation.
 9. **Simulator:** a permission prompt from an earlier run keeps reappearing even after reinstalling; `xcrun simctl erase <device>` clears it. The first launch after an install takes a few seconds; `npm run ios:shots` waits five.
 10. **Wide-screen margins:** `.safeAreaPadding` on a `NavigationStack` reaches neither its bar nor its lists, so the column is `.contentMargins(.horizontal, ..., for: .scrollContent)` on each list.
     A margin of 0 there also strips a grouped list's card inset; pass `nil` for the system default.
+11. **Tap areas:** a frame outside a bare button (`Button("Close") { }.frame(minWidth: 44, minHeight: 44)`) looks right but still answers only on its glyphs.
+    Put `.tapArea()` (or a frame and `contentShape`) inside the label. `AuditTests` runs the system's accessibility audit on every main screen and catches this.
+12. **Colours that follow a trait:** a `UIColor` dynamic provider made in the app target is main-actor isolated by default, and SwiftUI resolves colours off the main thread, so the app stops with a breakpoint trap mid-render.
+    Make the initializer that builds it `nonisolated` and the provider `@Sendable` (`Color(hex:highContrast:)`).

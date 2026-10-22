@@ -192,10 +192,13 @@ struct TodayView: View {
 
     private var tools: some View {
         HStack(spacing: 0) {
-            Button("Search", systemImage: "magnifyingglass") { searching = true }
-                .labelStyle(.iconOnly)
-                .frame(width: 44, height: 44)
-                .buttonStyle(.borderless)
+            Button { searching = true } label: {
+                Label("Search", systemImage: "magnifyingglass")
+                    .labelStyle(.iconOnly)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.borderless)
             Menu {
                 Picker("Sort by", selection: $sort) {
                     ForEach(TodoSort.allCases) { Text($0.name).tag($0) }
@@ -209,10 +212,8 @@ struct TodayView: View {
             }
         }
         .font(.body.weight(.medium))
-        // Bar buttons stop growing at the largest text sizes, as the system's do; a long press
-        // shows them large instead.
+        // Bar buttons stop growing at the largest text sizes, as the system's do.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        .accessibilityShowsLargeContentViewer()
     }
 
     /// Everything on Today still to do, A1 included; the overdue to-dos; all finished today.

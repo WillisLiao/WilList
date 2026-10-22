@@ -25,17 +25,16 @@ struct StepPage<Content: View>: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 if step > 1 {
-                    Button("Back", systemImage: "chevron.left", action: back)
-                        .labelStyle(.iconOnly)
-                        .frame(width: 44, height: 44)
+                    Button(action: back) {
+                        Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
+                    }
                 }
                 Text("\(step) of \(of)")
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .padding(.leading, step > 1 ? 0 : 12)
                 Spacer()
-                Button(exit, action: leave)
-                    .frame(minWidth: 44, minHeight: 44)
+                Button(action: leave) { Text(exit).tapArea() }
             }
             .font(.body.weight(.medium))
             .padding(.horizontal, 12)
@@ -91,12 +90,12 @@ struct LinesEntry: View {
                     Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
                         .accessibilityHidden(true)
                     Text(lines[i]).frame(maxWidth: .infinity, alignment: .leading)
-                    Button("Remove", systemImage: "xmark.circle.fill") {
+                    Button {
                         withAnimation(.snappy) { _ = lines.remove(at: i) }
+                    } label: {
+                        Label("Remove", systemImage: "xmark.circle.fill").labelStyle(.iconOnly).tapArea()
                     }
-                    .labelStyle(.iconOnly)
                     .foregroundStyle(Color(.tertiaryLabel))
-                    .frame(width: 44, height: 44)
                     .accessibilityLabel("Remove \(lines[i])")
                 }
                 .frame(minHeight: 48)

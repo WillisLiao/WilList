@@ -49,7 +49,8 @@ struct StudyView: View {
                         } else {
                             WeekChart(days: week, budget: store.state.settings.perDayMin, today: today) { store.state.courseColor($0.course) }
                             VStack(alignment: .leading, spacing: 8) {
-                                courseKey
+                                // The chart reads out each day's courses itself.
+                                courseKey?.accessibilityHidden(true)
                                 Text("The dashed line is your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
                             }
                             .font(.subheadline)
@@ -195,12 +196,18 @@ struct WeekChart: View {
     let color: (Item) -> Int?
     private let height: CGFloat = 110
 
-    /// A day's study by course, in palette order (no course last).
-    private func parts(_ d: Ahead) -> [(color: Color, minutes: Int)] {
+    /// A day's study by course, in palette order (no course last), with the course's name.
+    private func parts(_ d: Ahead) -> [(color: Color, name: String?, minutes: Int)] {
         Dictionary(grouping: d.study) { color($0.item) }
-            .map { (key: $0.key, minutes: $0.value.reduce(0) { $0 + $1.minutes }) }
             .sorted { ($0.key ?? .max) < ($1.key ?? .max) }
-            .map { (CourseColor.of($0.key), $0.minutes) }
+            .map { (CourseColor.of($0.key), $0.value.first?.item.course, $0.value.reduce(0) { $0 + $1.minutes }) }
+    }
+
+    /// What VoiceOver reads for a day: its total, then each course's share when there are courses.
+    private func spoken(_ d: Ahead) -> String {
+        let total = "\(Fmt.day(d.date, today)): \(Fmt.minutes(d.load))\(d.over ? ", past your daily time" : "")"
+        let courses = parts(d).compactMap { p in p.name.map { "\($0) \(Fmt.minutes(p.minutes))" } }
+        return ([total] + courses).joined(separator: ", ")
     }
 
     var body: some View {
@@ -236,7 +243,7 @@ struct WeekChart: View {
         }
         .padding(.vertical, 8)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(days.map { "\(Fmt.day($0.date, today)): \(Fmt.minutes($0.load))" }.joined(separator: ", "))
+        .accessibilityLabel(days.map(spoken).joined(separator: ". "))
     }
 
     private struct Rule: Shape {

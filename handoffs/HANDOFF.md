@@ -3,45 +3,72 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-22)
+## Now (2026-10-22, evening)
 
-**Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed, CI green.
-`main` is 18 commits behind and still holds the older website-only version.
+**Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed, CI green (Swift core tests, the app build with its UI tests, the website tests).
+`main` is about 35 commits behind and still holds the older website-only version.
 Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on the repo yet), so the owner decides when; ask first.
 
-**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), always light, with four tabs.
+**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), always light, white with one green (`#12884A`), four tabs.
 
-- **Today:** a quick checklist. Dates typed in a line are read ("Call mum tomorrow 6pm"). Sort five ways (by due date it groups into Overdue, Today, Tomorrow, This week, Later), hide completed, star important to-dos. Items from Goals and Study added to Today show below the to-dos.
-- **Goals:** main goal at the top, the A1 as one large card with Mark done, the rest of today in ABCDE order with the letter on the right (tap it for a menu of all five with meanings), items needing a letter, then Plan tomorrow and Bring in a schedule (Claude reads any file, photo or text; calendar files and links need no AI).
-- **Study:** today's study sessions, this week's load (red over budget), exams and deadlines coming up, with a status only when something needs attention.
-- **More:** calendar links, to-do settings (new on top, starred on top, recognise dates, completion sound, confirm delete, app icon badge), study settings, planning time and reminder, the Claude API key (keychain), backup and restore.
-- **Every to-do and item** has Microsoft To Do's task details: steps, Remind me (notifications with Mark done and snooze), due date and time, repeat (daily to yearly, or custom), a note, a star (to-dos) or Add to Today (items).
-- Search on Today, Goals and Study. Siri and Shortcuts can add to-dos and items. Files shared to WilList open in Bring in a schedule. Press and hold the app icon for New to-do and Search.
+- **First run:** three short steps: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what's your main goal. Skippable, under a minute.
+- **Today:** your A1 as one large card at the top with **Start** (focus) and **Mark done**; "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
+- **Plan** (was Goals): main goal, the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
+- **Study:** today's sessions, this week's load against a dashed daily-budget line (red past it), exams and deadlines coming up.
+- **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
+- **Focus:** one task and one ring timer, with Pause, Mark done and Stop.
+  The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
+  A notice says when to take a break, and the real minutes are logged.
+- **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.
+- **Give it a letter:** a to-do that turns out to matter moves into Plan with its steps, dates and note.
+- **Widgets:** Do this first (your A1 with Mark done: small, medium, Lock Screen rectangular and inline) and Today (to-dos with ticks: medium, large, Lock Screen circular), sharing the plan through the app group `group.com.lull.willist`.
+- **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
+  Undo sits in a toast that stays long enough to read, and VoiceOver reads it out.
+- **iPad:** every list keeps to a centred readable column.
+- Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the green with dark and tinted versions.
 
-**On the owner's devices:** the iPad (iOS 18.5) has the latest build (`016ef8b`).
-The iPhone 15 Pro (iOS 18.7.8) still has `a6c1962` (before the Microsoft To Do features) because it was locked and unreachable; run `npm run ios -- iphone` with it unlocked on the same Wi-Fi.
+**Four looks to choose from (debug builds only):** `meadow` (the default: serif titles, pale A1 card), `frog` (deeper green, solid A1 card), `notebook` (rounded type, outlined card with a highlighter) and `lagoon` (teal, system type).
+Shoot one with `LOOK=frog npm run ios:shots`.
+Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 
-**Checked:** 77 Swift core tests, website unit tests, lint, zero-warning release build, and every changed screen in the simulator (`npm run ios:shots`).
+**On the owner's devices:** the iPad (iOS 18.5) has `016ef8b` and the iPhone 15 Pro (iOS 18.7.8) has `a6c1962`; neither has anything from this evening.
+The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 
-**Not yet checked on a real device:** a reminder actually arriving, the Mark done and snooze buttons on it, the app icon badge, the home-screen quick actions, the chime's volume.
+**Checked:** 78 Swift core tests, 77 website unit tests, lint, the website end-to-end test, 6 UI tests (add and tick, a reminder, give a letter, Mark done and Undo, focus, the first run), a zero-warning build, and every changed screen in the simulator at the default and the largest text sizes, on iPhone and iPad.
+
+**Not yet checked on a real device:** reminders arriving and their buttons, the badge, quick actions, the chime's volume, the widgets on a real Home and Lock Screen, the Live Activity and its Mark done.
 
 ## Open decisions for the owner
 
 1. Merge into `main` (and switch on GitHub Pages for the website), or keep working on the branch.
-2. Microsoft To Do's custom lists, list themes, sharing, categories, file attachments: wanted? Custom lists would change how the four tabs are organised.
-3. The website: bring it up to the app (light theme, task details) or let it fall behind and say so in the README. Today it keeps the new to-do fields when it loads a backup but cannot show or edit them, and it doesn't understand yearly or every-N repeats.
-4. Sync between the iPhone and the iPad (each device keeps its own plan today).
+2. Which look to keep (above).
+3. Microsoft To Do's custom lists, list themes, sharing, categories, file attachments: wanted? Custom lists would change how the four tabs are organised.
+4. The website: bring it up to the app, or let it fall behind and say so in the README.
+   It is still teal and has none of this evening's features (the A1 on Today, focus with the Live Activity, the sorter, the welcome); it keeps the newer fields when it loads a backup but can't show or edit them.
+5. Sync between the iPhone and the iPad (each device keeps its own plan today).
+
+The owner has said there are no fixed rules on what the app should be or which features it has.
+The one hard limit kept is that saved plans (`willist.v1`) must keep loading.
 
 ## Where things are
 
-- `ios/WilList/`: the app. `TodayView`, `GoalsView` (with `PlanList`, `GoalsList`), `StudyView`, `MoreView`; `TodoEditor` and `ItemEditor` for details; `TaskFields` (steps, reminder, due, repeat, Add to Today rows); `Theme` (shared marks, formatting, chime, toast); `Reminders` (notifications and badge); `Store` (the one source of truth, saves on every change, undo); `ImportSheet`, `AddItemSheet`, `SearchView`, `Intents`.
-- `ios/WilListCore/`: the Swift package with all logic and its tests: models (lenient decoding), parser, planner, agenda, timeline, insights, calendar import, files and the Claude request.
-- `app/`: the website (plain JavaScript). `tests/`: its tests. `scripts/`: lint config, screenshots, device install.
-- `docs/DESIGN.md`: the design system and SwiftUI pitfalls. `docs/PRINCIPLES.md`: Tracy's principles and where each lives.
+- `ios/WilList/`: the app.
+  Tabs: `TodayView` (with `A1Card`), `PlanView` (`PlanList`), `GoalsList`, `StudyView`, `MoreView`.
+  Flows: `Welcome`, `LetterSorter`, `FocusView` (with `LiveFocus` and `FocusNotice`).
+  Details: `TodoEditor`, `ItemEditor`, `TaskFields`.
+  `Theme` holds the shared pieces (the check button and its burst, the toast, the readable column, letter menus); `Store` is the one source of truth (saves on every change, undo).
+  Also `Reminders`, `ImportSheet`, `AddItemSheet`, `SearchView`, `Intents`; `TestPlan` and `WidgetGallery` are debug-only.
+- `ios/Shared/`: code the app and the widgets share: `Look` (the looks), `Fmt`, `Glance` (what the widgets show), `Focus` (the session and the Live Activity's data), `FocusViews`, `WidgetViews`, `WidgetIntents`, `PlanFile` (the save file in the app group), `Letters`.
+- `ios/WilListWidgets/`: the widget extension: the two widgets and the focus Live Activity.
+- `ios/WilListUITests/`: the UI tests. `ios/WilListCore/`: the Swift package with all logic and its tests.
+- `app/`: the website (plain JavaScript). `tests/`: its tests.
+- `scripts/`: lint config, screenshots (`ios-shots.mjs` lists the debug launch arguments that open every screen), device install, the app icon generator (`app-icon.swift`).
+- `docs/DESIGN.md`: the design system and the SwiftUI pitfalls already paid for. `docs/PRINCIPLES.md`: Tracy's principles and where each lives.
 - `.claude/skills/`: the two design skills used for every UI change.
 
 ## History
 
-- 2026-10-22: iOS 18 target, the simplification and always-light green redesign, Microsoft To Do task details, handoff docs. See `devlogs/2026-10-22.md`.
+- 2026-10-22 (evening): the welcome, widgets, CI and UI tests, the A1 on Today, Plan, the letter sorter, focus with a Live Activity, the tick burst, the app icon, the iPad column. See `devlogs/2026-10-22.md`.
+- 2026-10-22: iOS 18 target, the simplification and always-light green redesign, Microsoft To Do task details, handoff docs.
 - 2026-10-21: the native SwiftUI app and the tested Swift core replaced the web wrapper; Siri, Shortcuts and the share sheet.
 - 2026-10-19 to 2026-10-21: the website: ABCDE planner, semester import, coach, redesigns, the Quick tab.

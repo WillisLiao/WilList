@@ -1,40 +1,30 @@
-# Next session: from good to breakthrough
+# Next session: keep raising the bar
 
-The owner's goal for the next stretch: make WilList a breakthrough app that is easy to use, easy to see, easy to act on, and easy to maintain.
-Read `CLAUDE.md`, `handoffs/HANDOFF.md` and `docs/DESIGN.md` first.
+The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
+Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
+Everything the previous next-session file asked for is done: first run, empty states, widgets, CI, UI tests, cleaner views.
 
 ## Start here
 
-1. Check out the branch and prove the baseline on this machine:
-   `git checkout claude/optimistic-ride-55ift9`, `cd ios/WilListCore && swift test`, `npm test`, `npm run lint`, then `npm run ios:shots` and look at all four tabs.
-2. Write down, in a few lines, what a first-time student would find confusing on each screen. Be specific and picky. That list drives the work below.
+1. Check out `claude/optimistic-ride-55ift9` and prove the baseline: `cd ios/WilListCore && swift test`, `npm test`, `npm run lint`, `npm run test:e2e` (needs `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm i --no-save playwright` once; it uses the system Chrome, never `playwright install`), then the UI tests with `xcodebuild test -project ios/WilList.xcodeproj -scheme WilList -destination 'platform=iOS Simulator,name=iPhone 17'`.
+2. `npm run ios:shots` plus the launch arguments at the top of `scripts/ios-shots.mjs`, and look at everything with fresh, picky eyes.
+
+## Ask the owner first
+
+- Which look to keep (`meadow`, `frog`, `notebook`, `lagoon`); then delete the others.
+- Merging into `main`, custom lists, the website catching up, iPhone and iPad sync (see HANDOFF.md).
+- Installing on the devices (`npm run ios`) needs team `45MSS5RXML` signed in to Xcode; this build registers the app group, the widget extension and Live Activities.
 
 ## Work, roughly in order of value
 
-### Easy to see and use
-
-- **First run and empty states.** Launch with no data (delete the app's save file in the simulator) and walk through it as a new student. Every empty screen should say in one line what to do and offer the one button to do it. A short first-run path (main goal, first to-do, first A) may be worth it; keep it skippable and under a minute.
-- **Fresh-eyes audit of every screen and sheet**, using the design skills in `.claude/skills/` and `docs/DESIGN.md`. Fix the top problems, re-shoot, repeat. Include the Add sheet, item and to-do details, Import, Search, Plan tomorrow, Your goals, and More.
-- **Dynamic Type and VoiceOver pass:** largest text sizes must not clip or overlap; every control reads well.
-
-### Easy to act on
-
-- **Home Screen and Lock Screen widgets** (a WidgetKit extension): today's A1 with a tick button, and the Today list, using interactive App Intents. Needs an App Group so the widget reads the same save file.
-- **Sync between the owner's iPhone and iPad** (they already use both). Propose the approach first (CloudKit or iCloud Drive document), because it touches the save format; ask the owner before building.
-
-### Easy to maintain
-
-- **CI for the app:** add a macOS job to `.github/workflows/pages.yml` that runs `swift test` and builds the app for the simulator, so Swift breakage shows on every push. Keep the deploy job gated to `main`.
-- **A UI test** (XCUITest) for the three flows that must never break: add a to-do and tick it off, set a reminder on a to-do, Mark done on the A1 card.
-- **Split the biggest views** (`GoalsView.swift`, `TodayView.swift`) where a piece is reused or hard to follow; keep behaviour identical and prove it with screenshots before and after.
-
-### Needs the owner's answer first
-
-- Merging into `main` and switching on GitHub Pages.
-- Microsoft To Do's custom lists, sharing, categories and attachments.
-- Whether the website should catch up with the app.
+- **Plan tomorrow tonight, as a ritual:** at the planning time, one flow that walks tomorrow's list (letters through the sorter, the A1 picked) and ends with "Tomorrow starts with ...". Tracy's most-repeated habit deserves more than a row at the bottom of Plan.
+- **VoiceOver pass:** every control on every screen and sheet, in reading order, with hints where a gesture isn't obvious. The simulator can't run VoiceOver; use the Accessibility Inspector or a device.
+- **Fresh-eyes audit of the sheets not yet polished this round:** Search, Bring in a schedule, the Add sheet, item and to-do details, Plan tomorrow, Your goals; default and largest text.
+- **Ticking off from a notification:** check Mark done and snooze on a real device and make the result visible when the app opens.
+- **iPad:** a sidebar or two columns (Today beside Plan) would use the space far better than a centred column.
+- **The website,** only if the owner says so.
 
 ## Before you finish
 
-Check on a real device if one is connected (`npm run ios`): a reminder arriving, Mark done from the notification, the badge, the quick actions.
-Update `handoffs/HANDOFF.md`, add `devlogs/<date>.md`, write the next `NEXT-SESSION-*.md` if work remains, commit and push the branch.
+Check on a real device if one is connected: a reminder arriving, Mark done from the notification, the badge, the quick actions, the widgets, the Live Activity.
+Update `handoffs/HANDOFF.md`, append to `devlogs/<date>.md`, rewrite this file, commit and push the branch.

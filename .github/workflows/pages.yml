@@ -28,10 +28,25 @@ jobs:
         working-directory: ios/WilListCore
         run: swift test
       - name: Build the app and run the UI tests
-        run: >
-          xcodebuild test -project ios/WilList.xcodeproj -scheme WilList
-          -destination 'platform=iOS Simulator,name=iPhone 17' -derivedDataPath build/ci
-          -resultBundlePath build/ci/tests.xcresult -quiet
+        run: |
+          # Runner images differ, and now and then a fresh one lists no simulator at all: use an
+          # iPhone 17 if there is one, any iPhone if not, and make one when there is none.
+          iphone() {
+            xcrun simctl list devices available -j | jq -r '[.devices | to_entries | sort_by(.key) | reverse | .[]
+              | select(.key | contains("iOS")) | .value[] | select(.name | startswith("iPhone"))]
+              | (map(select(.name == "iPhone 17")) + .) | first | .udid // empty'
+          }
+          runtime() {
+            xcrun simctl list runtimes available -j | jq -r '[.runtimes[] | select(.identifier | contains("iOS"))] | last | .identifier // empty'
+          }
+          id=$(iphone)
+          if [ -z "$id" ]; then
+            [ -n "$(runtime)" ] || xcodebuild -downloadPlatform iOS
+            id=$(xcrun simctl create "iPhone 17" com.apple.CoreSimulator.SimDeviceType.iPhone-17 "$(runtime)")
+          fi
+          xcodebuild test -project ios/WilList.xcodeproj -scheme WilList \
+            -destination "id=$id" -derivedDataPath build/ci \
+            -resultBundlePath build/ci/tests.xcresult -quiet
       - name: Say why a UI test failed
         if: failure()
         run: >

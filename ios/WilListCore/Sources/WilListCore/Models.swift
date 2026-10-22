@@ -295,6 +295,8 @@ public struct Settings: Codable, Equatable, Sendable {
     public var taskMin = 25
     /// Per type: how long things really take compared with the plan, once you accept it.
     public var calib: [String: Double] = [:]
+    /// Each course's colour, by its key (`AppState.courseKey`), as a number into the app's palette.
+    public var courseColors: [String: Int] = [:]
 
     public init() {}
 
@@ -312,6 +314,7 @@ public struct Settings: Codable, Equatable, Sendable {
         dayEnd = c.get(.dayEnd, "22:00")
         taskMin = c.int(.taskMin) ?? 25
         calib = c.get(.calib, [:])
+        courseColors = c.get(.courseColors, [:])
     }
 }
 
@@ -367,6 +370,7 @@ public struct AppState: Codable, Equatable, Sendable {
         feeds = c.list(.feeds)
         settings = c.get(.settings, Settings())
         meta = c.get(.meta, Meta())
+        colorCourses() // a plan saved before courses had colours, or by the website
     }
 }
 

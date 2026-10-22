@@ -98,6 +98,21 @@ enum Fmt {
         [when(it, today), it.course].compactMap { $0 }.joined(separator: ", ")
     }
 
+    /// The line under an item's title, its course in the course's colour.
+    static func subline(_ it: Item, _ today: Day, in s: AppState) -> Text? {
+        let course = it.course.map { Text($0).foregroundStyle(CourseColor.of(s.courseColor($0))) }
+        switch (when(it, today).map { Text($0) }, course) {
+        case let (when?, course?): return Text("\(when), \(course)")
+        case let (when, course): return when ?? course
+        }
+    }
+
+    /// `detail`, its course in the course's colour.
+    static func detail(_ row: Row, _ today: Day, in s: AppState) -> Text? {
+        row.session == nil && !(row.item.priority == .D && !row.item.delegateTo.isEmpty)
+            ? subline(row.item, today, in: s) : detail(row, today).map { Text($0) }
+    }
+
     /// What a row of the day's list is about: the study session that is due, who has it, or when it is.
     static func detail(_ row: Row, _ today: Day) -> String? {
         if let s = row.session {

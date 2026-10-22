@@ -7,9 +7,10 @@ struct LetterMark: View {
     let letter: Letter?
     var label: String?
     var large = false
-    /// On a card filled with the brand colour, the A turns white with a green letter and the
-    /// other letters are drawn in white.
+    /// On a card filled with colour, the A turns white with its letter in that colour (`field`)
+    /// and the other letters are drawn in white.
     var onBrand = false
+    @Environment(\.field) private var field
 
     var body: some View {
         let text = label ?? letter?.rawValue ?? "–"
@@ -37,7 +38,7 @@ struct LetterMark: View {
     // letters must read the same everywhere.
     private var ink: Color {
         switch letter {
-        case .A: onBrand ? .brand : .white
+        case .A: onBrand ? field : .white
         case .B: onBrand ? .white : .primary
         default: onBrand ? .white.opacity(0.75) : .secondary
         }

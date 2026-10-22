@@ -125,7 +125,7 @@ struct StudyView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(v.item.title).foregroundStyle(.primary)
-                    Text(Fmt.subline(v.item, today)).font(.subheadline).foregroundStyle(.secondary)
+                    Fmt.subline(v.item, today, in: store.state)?.font(.subheadline).foregroundStyle(.secondary)
                     if let status = status(v) {
                         Text(status).font(.subheadline).foregroundStyle(v.status == .short || v.status == .behind ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
                     }

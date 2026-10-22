@@ -3,8 +3,9 @@ import SwiftUI
 import UserNotifications
 import WilListCore
 
-/// Focus: one task, one timer, nothing else. The ring fills as the planned minutes pass, then it
-/// says to take a break. The same timer runs on the Lock Screen and in the Dynamic Island.
+/// Focus: one task, one timer, nothing else, on a field of its course's colour. The ring fills as
+/// the planned minutes pass, then it says to take a break. The same timer runs on the Lock Screen
+/// and in the Dynamic Island.
 struct FocusView: View {
     @Environment(Store.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -23,10 +24,12 @@ struct FocusView: View {
 
     private func page(_ f: FocusSession, left: TimeInterval) -> some View {
         let over = left == 0
+        let field = CourseColor.of(store.state.courseColor(store.state.items.first { $0.id == f.itemId }?.course))
         return VStack(spacing: 0) {
             HStack {
                 Spacer()
                 Button { store.finishFocus(done: false) } label: { Text("Stop").tapArea() }
+                    .foregroundStyle(.white)
             }
             .font(.body.weight(.medium))
             .padding(.horizontal, 12)
@@ -41,24 +44,29 @@ struct FocusView: View {
                 if !over {
                     Button { f.paused ? store.resumeFocus() : store.pauseFocus() } label: {
                         Label(f.paused ? "Resume" : "Pause", systemImage: f.paused ? "play.fill" : "pause.fill")
+                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
                 }
                 Button { store.finishFocus(done: true) } label: {
-                    Label("Mark done", systemImage: "checkmark").frame(maxWidth: .infinity)
+                    Label("Mark done", systemImage: "checkmark")
+                        .foregroundStyle(field)
+                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("focusDone")
             }
             .controlSize(.large)
             .labelStyle(WordsWhenLarge())
+            .tint(.white)
             .padding(.horizontal, 24)
             .padding(.bottom, 12)
             .frame(maxWidth: 560)
         }
         .frame(maxWidth: .infinity)
-        .background(Color.white)
+        .background(field)
+        .environment(\.field, field)
         .sensoryFeedback(.success, trigger: over) { was, now in !was && now }
         .onChange(of: over) { _, now in if now { Chime.play() } }
     }
@@ -68,10 +76,11 @@ struct FocusView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 8)
             VStack(spacing: 12) {
-                LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true)
+                LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true, onBrand: true)
                 Text(f.title)
                     .font(.title.bold())
                     .fontDesign(Look.current.titles)
+                    .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
@@ -80,7 +89,7 @@ struct FocusView: View {
             Spacer(minLength: 24)
             ring(f, left: left)
             Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it’s done.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.85))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 24)
@@ -93,16 +102,16 @@ struct FocusView: View {
     private func ring(_ f: FocusSession, left: TimeInterval) -> some View {
         let progress = 1 - left / f.total
         return ZStack {
-            Circle().stroke(Color.brand.opacity(0.12), lineWidth: 16)
+            Circle().stroke(.white.opacity(0.22), lineWidth: 16)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(Color.brand, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                .stroke(.white, style: StrokeStyle(lineWidth: 16, lineCap: .round))
                 .rotationEffect(.degrees(-90))
                 .animation(reduceMotion ? nil : .linear(duration: 1), value: progress)
             Text(left == 0 ? "Break" : Self.clock(left))
                 .font(.system(size: 60, weight: .semibold, design: .rounded))
                 .monospacedDigit()
-                .foregroundStyle(f.paused ? Color.secondary : Color.primary)
+                .foregroundStyle(.white.opacity(f.paused ? 0.6 : 1))
         }
         .frame(width: 260, height: 260)
         .accessibilityElement(children: .ignore)

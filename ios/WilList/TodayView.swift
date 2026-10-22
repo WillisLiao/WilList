@@ -55,20 +55,29 @@ struct TodayView: View {
 
     var body: some View {
         let first = self.first, fromPlan = planItems(besides: first)
-        // The A1 as the poster of the day: the header and the A1 share one green field.
+        // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
+        // its course.
         let poster = first != nil && Look.current.hero == .poster
+        let field = CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
+                // The field is painted in the rows, not as their list backgrounds, which the list
+                // doesn't repaint when the next A comes from another course.
                 header(first: first, fromPlan: fromPlan, poster: poster)
+                    .padding(EdgeInsets(top: 12, leading: 20, bottom: poster ? 0 : 16, trailing: 12))
+                    // The field reaches up under the status bar, and shows when the list is pulled down.
+                    .background { if poster { field.padding(.top, -1000) } }
                     .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 12, leading: 20, bottom: poster ? 0 : 16, trailing: 12))
-                    // The green reaches up under the status bar, and shows when the list is pulled down.
-                    .listRowBackground(Color.brand.padding(.top, -1000).opacity(poster ? 1 : 0))
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 if let first {
                     A1Card(row: first) { editingItem = $0 }
+                        .environment(\.field, field)
+                        .padding(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                        .background { if poster { field } }
                         .listRowSeparator(.hidden)
-                        .listRowInsets(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
-                        .listRowBackground(Color.brand.opacity(poster ? 1 : 0))
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && plannedFor != addDays(today, 1) {
@@ -348,8 +357,7 @@ ForEach(list) { todo in
             CheckButton(done: checked) { finish(item) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title).strikethrough(checked, color: .secondary)
-                let sub = Fmt.subline(item, today)
-                if let line = Fmt.meta([sub.isEmpty ? nil : Text(sub).foregroundStyle(Color.secondary)]
+                if let line = Fmt.meta([Fmt.subline(item, today, in: store.state)?.foregroundStyle(Color.secondary)]
                                        + Fmt.marks(item.steps, remind: item.remindAt, today: false)) {
                     line.font(.subheadline)
                 }

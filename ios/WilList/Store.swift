@@ -72,6 +72,7 @@ final class Store {
         let before = state
         var next = state
         edit(&next)
+        next.colorCourses()
         state = next
         if let label {
             undoState = before

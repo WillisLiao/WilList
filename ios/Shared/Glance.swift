@@ -14,6 +14,8 @@ struct Glance: Equatable, Codable {
         var overdue = false
         /// Just ticked off on a widget: shown done for a moment before it goes (`TickMark`).
         var done = false
+        /// Its course's colour (`CourseColor`).
+        var color: Int?
     }
 
     var today: Day
@@ -27,7 +29,8 @@ struct Glance: Equatable, Codable {
         self.today = today
         let rows = doRows(s.items, today)
         let line = { (r: Row) in
-            Line(id: r.key, title: r.item.title, detail: Fmt.detail(r, today), label: r.label, letter: r.priority, overdue: r.overdue)
+            Line(id: r.key, title: r.item.title, detail: Fmt.detail(r, today), label: r.label, letter: r.priority, overdue: r.overdue,
+                 color: s.courseColor(r.item.course))
         }
         first = rows.first.map(line)
         next = rows.dropFirst().map(line)

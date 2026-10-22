@@ -19,6 +19,8 @@ struct A1Card: View {
     @State private var shownStreak = 0
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The colour it sits on when filled: its course's.
+    @Environment(\.field) private var field
     /// The poster's title: headline size on a poster, still growing with the text size setting.
     @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
 
@@ -105,7 +107,7 @@ struct A1Card: View {
                 Button(action: finish) {
                     Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
                         .contentTransition(.symbolEffect(.replace))
-                        .foregroundStyle(solid ? Color.brand : Color.white)
+                        .foregroundStyle(solid ? field : Color.white)
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)

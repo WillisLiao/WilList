@@ -199,8 +199,7 @@ struct PlanList: View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
-                let sub = Fmt.subline(item, today)
-                if !sub.isEmpty { Text(sub).font(.subheadline).foregroundStyle(.secondary) }
+                if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 6)
@@ -262,7 +261,7 @@ struct PlanList: View {
 
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.
     private func line(_ row: Row) -> Text? {
-        Fmt.meta([Fmt.detail(row, today).map { Text($0).foregroundStyle(row.overdue ? Color.red : Color.secondary) }]
+        Fmt.meta([Fmt.detail(row, today, in: store.state)?.foregroundStyle(row.overdue ? Color.red : Color.secondary)]
                  + Fmt.marks(row.item.steps, remind: row.item.remindAt, today: row.item.myDay == today))
     }
 

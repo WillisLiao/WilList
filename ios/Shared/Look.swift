@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import WilListCore
 
 /// How WilList looks: its one bright colour, the face of its titles, and how the A1 card is drawn.
 /// Meadow ships. The others are variations for the owner to compare; debug builds open one with
@@ -81,4 +82,28 @@ extension Color {
         let normal = UIColor(Color(hex: hex)), high = UIColor(Color(hex: highContrast))
         self.init(uiColor: UIColor { @Sendable traits in traits.accessibilityContrast == .high ? high : normal })
     }
+}
+
+/// The colours courses are drawn in, by the number the plan keeps for each course
+/// (`AppState.colorCourses`): the most different first, the look's green last, as it is already
+/// the colour of everything without a course. Each holds white text at 4.5:1 or better.
+enum CourseColor {
+    static let all: [Color] = [
+        Color(hex: 0x2563D8, highContrast: 0x1C4FB0), // blue
+        Color(hex: 0xC44A12, highContrast: 0x9E3A0C), // tangerine
+        Color(hex: 0x7E3FB3, highContrast: 0x66308F), // plum
+        Color(hex: 0x0B7A75, highContrast: 0x08615D), // teal
+        Color(hex: 0xC0245E, highContrast: 0x9C1C4B), // raspberry
+        Color(hex: 0x9A5800, highContrast: 0x7A4600), // ochre
+        Color(hex: 0x3D4F6B, highContrast: 0x2F3E55), // slate
+        .brand,
+    ]
+
+    /// A course's colour, or the look's own for none.
+    static func of(_ number: Int?) -> Color { number.map { all[$0 % all.count] } ?? .brand }
+}
+
+extension EnvironmentValues {
+    /// The colour the A1 sits on: its course's, or the look's own. The letter on it takes it too.
+    @Entry var field: Color = .brand
 }

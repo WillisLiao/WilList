@@ -177,13 +177,14 @@ struct ReadableColumn: ViewModifier {
 /// (nothing to do first yet) stays pale in every look.
 struct HeroCard: ViewModifier {
     var empty = false
+    @Environment(\.field) private var field
 
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         let hero = empty ? .pale : Look.current.hero
         content
             .padding(18)
-            .background(hero == .solid || hero == .poster ? Color.brand : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
+            .background(hero == .solid || hero == .poster ? field : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
             .overlay { if hero == .outline { shape.strokeBorder(Color.brand, lineWidth: 1.5) } }
     }
 }

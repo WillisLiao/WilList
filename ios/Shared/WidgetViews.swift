@@ -12,6 +12,7 @@ struct FirstWidgetView: View {
     let family: WidgetFamily
 
     private var solid: Bool { Look.current.filled }
+    private var field: Color { CourseColor.of(glance.first?.color) }
     private var ink: Color { solid ? .white : .primary }
     private var grey: Color { solid ? .white.opacity(0.85) : .secondary }
 
@@ -22,9 +23,9 @@ struct FirstWidgetView: View {
         case .accessoryRectangular:
             rectangular
         case .systemMedium:
-            medium.environment(\.colorScheme, .light)
+            medium.environment(\.colorScheme, .light).environment(\.field, field)
         default:
-            small.environment(\.colorScheme, .light)
+            small.environment(\.colorScheme, .light).environment(\.field, field)
         }
     }
 
@@ -110,7 +111,7 @@ struct FirstWidgetView: View {
                 .contentTransition(.symbolEffect(.replace))
                 .font(.subheadline.weight(.semibold))
                 .labelStyle(.titleAndIcon)
-                .foregroundStyle(solid ? Color.brand : Color.white)
+                .foregroundStyle(solid ? field : Color.white)
                 .padding(.horizontal, wide ? 0 : 14)
                 .frame(maxWidth: wide ? .infinity : nil, minHeight: 34)
                 .background(solid ? Color.white : Color.brand, in: Capsule())
@@ -148,7 +149,7 @@ struct FirstWidgetView: View {
             Spacer(minLength: 0)
             Image(systemName: glance.doneToday > 0 ? "checkmark.circle.fill" : "circle.dashed")
                 .font(.title2)
-                .foregroundStyle(solid ? Color.white : Color.brand)
+                .foregroundStyle(solid ? Color.white : field)
                 .widgetAccentable()
             Text(glance.doneToday > 0 ? "All done for today" : "Nothing to do first")
                 .font(.headline)
@@ -260,11 +261,11 @@ struct TodayWidgetView: View {
 }
 
 extension Look {
-    /// The A1 card's ground, filling a widget: pale, solid or plain white (Notebook's outline is
-    /// the widget's own edge).
-    @ViewBuilder static var heroGround: some View {
+    /// The A1 card's ground, filling a widget: its course's colour, pale, or plain white
+    /// (Notebook's outline is the widget's own edge).
+    @ViewBuilder static func heroGround(_ glance: Glance) -> some View {
         switch current.hero {
-        case .poster, .solid: Color.brand
+        case .poster, .solid: CourseColor.of(glance.first?.color)
         case .outline: Color.white
         case .pale: ZStack { Color.white; Color.brand.opacity(0.09) }
         }

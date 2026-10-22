@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import WilListCore
 
@@ -110,4 +111,30 @@ private func plan(_ type: ItemType, _ date: Day, _ effort: Int, sessions: [Sessi
     #expect(makeDay(2026, 2, 30) == nil)
     #expect(isValidDay("2026-02-28") && !isValidDay("2026-2-28"))
     #expect(minToTime(-30) == "23:30")
+}
+
+@Test func coursesKeepTheirOwnColours() throws {
+    var s = AppState()
+    for (title, course) in [("Problem set", "MATH201"), ("Quiz", "CHEM110"), ("Lab", "chem110 "), ("Essay", "HIST150"), ("Call home", nil)] {
+        var it = Item(id: title, title: title)
+        it.course = course
+        s.items.append(it)
+    }
+    s.colorCourses()
+    #expect(s.settings.courseColors == ["math201": 0, "chem110": 1, "hist150": 2])
+    #expect(s.courseColor("CHEM110") == 1)
+    #expect(s.courseColor(nil) == nil)
+
+    // A course that goes gives its colour back; the others keep theirs.
+    s.items.removeAll { $0.course == "MATH201" }
+    var read = Item(id: "Read", title: "Read")
+    read.course = "BIO100"
+    s.items.append(read)
+    s.colorCourses()
+    #expect(s.settings.courseColors == ["bio100": 0, "chem110": 1, "hist150": 2])
+
+    // An older save has none: they're given on loading, and a broken map doesn't stop it loading.
+    let old = #"{"v":1,"items":[{"id":"a","title":"Essay","course":"ENG101"}],"settings":{"courseColors":{"eng101":99}}}"#
+    let loaded = try JSONDecoder().decode(AppState.self, from: Data(old.utf8))
+    #expect(loaded.settings.courseColors == ["eng101": 0])
 }

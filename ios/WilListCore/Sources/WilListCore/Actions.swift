@@ -78,6 +78,30 @@ public func applyPlan(_ it: inout Item, _ settings: Settings, _ today: Day, _ it
 }
 
 extension AppState {
+    /// How many colours the app has for courses.
+    public static let courseColorCount = 8
+
+    /// The key a course is known by: "MATH201" and "math201 " are one course.
+    public static func courseKey(_ course: String) -> String { course.trimmingCharacters(in: .whitespaces).lowercased() }
+
+    /// Each course keeps the colour it got when it first appeared. A new course takes the colour
+    /// the fewest courses have; a course no item names any more gives its colour back.
+    public mutating func colorCourses() {
+        let courses = items.compactMap(\.course).map(Self.courseKey).filter { !$0.isEmpty }
+        let named = Set(courses)
+        var colors = settings.courseColors.filter { named.contains($0.key) && (0..<Self.courseColorCount).contains($0.value) }
+        for course in courses where colors[course] == nil {
+            let uses = (0..<Self.courseColorCount).map { i in colors.values.count { $0 == i } }
+            colors[course] = uses.firstIndex(of: uses.min()!)
+        }
+        if colors != settings.courseColors { settings.courseColors = colors }
+    }
+
+    /// The colour a course is drawn in; nil for no course.
+    public func courseColor(_ course: String?) -> Int? {
+        course.flatMap { settings.courseColors[Self.courseKey($0)] }
+    }
+
     public func index(of id: String) -> Int? { items.firstIndex { $0.id == id } }
 
     public mutating func setLetter(_ id: String, _ letter: Letter?, today: Day? = nil) {

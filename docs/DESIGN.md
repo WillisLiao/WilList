@@ -2,6 +2,8 @@
 
 This is how the iPhone app looks, reads and behaves, and why.
 Change it deliberately: if a new screen needs something this file doesn't cover, add the rule here in the same change.
+These are the app's current choices, not limits: on 2026-10-23 the owner said there are no rules for anything, and asked for a visually captivating experience.
+Bold changes are welcome when they serve the student; show them side by side when it's a taste call.
 
 ## The idea
 
@@ -23,8 +25,11 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 | Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable); `#0B6B39` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
 | Pale green | green at 9% (the A1 card), 12% (the Letter button), 35% (study bars) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
+| Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, teal, raspberry, ochre, slate, then the green; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
 
-Never add another hue. Never colour decoration.
+Colour goes on things that mean something, never on decoration.
+The A1 poster on Today, its widget and the Focus screen are drawn on the A1's course colour, or the green when it has no course; course names on rows are written in their colour.
+A course colour never stands for a problem: overdue stays red.
 
 ## Type
 
@@ -69,7 +74,10 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **CheckButton:** 44 pt, an empty grey circle that fills green with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in More). The row waits 450 ms filled, then glides away.
 - **LetterMark:** letters differ by intensity, not hue. A is filled green with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
 - **StarButton:** grey outline, filled green when important.
-- **A1 card** (`A1Card.swift`, at the top of Today): pale green, corner radius 22, the letter and "Do this first", the serif title, at most two grey lines, "Start" (bordered) beside a wide "Mark done" (bordered prominent, large), and "3 days in a row you started with an A" when there is a streak. Done, it offers Undo and the next A moves up into the card.
+- **A1 poster** (`A1Card.swift`, at the top of Today, in Meadow): a field of the A1's course colour across the top of Today, running up under the status bar, with the date, the letter and "Do this first", the title in 44 pt bold serif, at most two lines under it, "Start" (white, bordered) beside a wide white "Mark done", and "3 days in a row you started with an A" when there is a streak.
+  Mark done draws a line through the title left to right, its words fade, then the next A rises into the same place and the field blends into its course's colour; the toast offers Undo.
+  The other looks draw it as a card, corner radius 22.
+- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, a white ring and timer, and white buttons.
 - **Focus** (`FocusView.swift`, from Start on the A1 card): one task, one timer, nothing else. The letter and the serif title, a ring that fills as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Letter sorter** (`LetterSorter.swift`): letters the items waiting for one, one at a time. The item's title large at the top, the five letters as big rows with what each one means, the suggested one outlined and tagged, Skip for now, Back. It ends by naming your A1. Opened from Today's "2 waiting for a letter" and Plan's "Letter them".
 - **Plan tomorrow** (`PlanTomorrow.swift`): the evening habit in two steps on the welcome's pages: "Anything new for tomorrow?" (lines, dates read, with "4 done today, starting with an A." above when something got done), then "Which one first?" (tomorrow's list with its letters, plus the new lines; the current A1 is chosen to start). It ends on a sunrise: "Tomorrow starts with" and the A1's title, with Letter them when anything waits. Opened from Plan's "Plan tomorrow", Today's evening nudge and the evening notification. Close keeps the lines written and changes no letters.

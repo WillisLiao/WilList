@@ -2,7 +2,7 @@
 
 The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
-Done since the last version of this file: the A1 as the poster of the day, a colour for each course (the poster, Focus, the widget, course names, the week chart), and the owner's word that there are no fixed rules.
+Done since the last version of this file: the A1 as the poster of the day, a colour for each course (the poster, Focus and its Live Activity, the widget, course names, the week chart), the welcome and Plan tomorrow on fields of colour, "Your A’s are done." after the last A, the field reaching the edges on an iPad, and the owner's word that there are no fixed rules.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
 ## Start here
@@ -20,7 +20,7 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Work, roughly in order of value
 
-- **Keep the colour going where it means something:** the Live Activity and Lock Screen widget could carry the course colour; Plan's A rows could show their course colour; the welcome could end on a first poster.
+- **Ask the owner how the colour lands** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: the Dynamic Island could carry the course colour (it needs lifted versions of each colour for black), Plan's rows could show their course colour.
   Shoot every change and look at it; show the owner side by side when it's a taste call.
 - **The colour change between courses** blends through a muddy middle for a tenth of a second (the colours mix in RGB); a quicker hand-over or a different blend may look cleaner.
 
@@ -31,6 +31,9 @@ Work at the default text size; the owner asked not to spend time on the largest 
 - **The website,** only if the owner says so.
 
 ## Notes
+
+- Simulators: the iPhone SE and iPad made on 2026-10-22 were gone the next morning; an iPad Pro 11-inch (M4) was made again for the iPad check. An unfamiliar "Under Question Small Phone" simulator was left alone.
+- Course colours are stored in the plan (`settings.courseColors`); `AppState.colorCourses` runs on every change and when a plan is loaded, so a plan from the website gets colours on its first load.
 
 - The simulator used here is in Chinese (Taiwan), so SpringBoard's buttons have Chinese labels; `WidgetTests` accepts both.
 - The Claude Code iOS Simulator tool reported Xcode as not selected although `xcode-select -p` was right; XCUITest and `simctl` worked instead.

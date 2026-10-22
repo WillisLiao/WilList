@@ -101,6 +101,9 @@ enum CourseColor {
 
     /// A course's colour, or the look's own for none.
     static func of(_ number: Int?) -> Color { number.map { all[$0 % all.count] } ?? .brand }
+
+    /// A course's colour lifted to read on the black of the Dynamic Island (5.5:1 or better).
+    static func onDark(_ number: Int?) -> Color { number == nil ? .brandOnDark : of(number).mix(with: .white, by: 0.35) }
 }
 
 extension EnvironmentValues {

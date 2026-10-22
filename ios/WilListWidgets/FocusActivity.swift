@@ -13,15 +13,18 @@ struct FocusActivity: Widget {
                 .widgetURL(URL(string: "willist://today"))
         } dynamicIsland: { context in
             let a = context.attributes, s = context.state
+            // On the island's black: the letter white in the course's colour, the rest lifted to read.
+            let field = CourseColor.of(a.color), lifted = CourseColor.onDark(a.color)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    LetterMark(letter: a.letter, label: a.label, large: true)
+                    LetterMark(letter: a.letter, label: a.label, large: true, onBrand: true)
+                        .environment(\.field, field)
                         .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     FocusClock(state: s, over: context.isStale)
                         .font(.system(size: 28, weight: .semibold, design: .rounded))
-                        .foregroundStyle(Color.brandOnDark)
+                        .foregroundStyle(lifted)
                         .frame(maxWidth: 110, alignment: .trailing)
                         .padding(.trailing, 4)
                 }
@@ -33,30 +36,31 @@ struct FocusActivity: Widget {
                 }
                 DynamicIslandExpandedRegion(.bottom) {
                     HStack(spacing: 12) {
-                        FocusBar(attributes: a, state: s).tint(.brandOnDark)
+                        FocusBar(attributes: a, state: s).tint(lifted)
                         Button(intent: FinishFocusIntent()) {
                             Label("Mark done", systemImage: "checkmark").font(.subheadline.weight(.semibold))
                         }
                         .buttonStyle(.borderedProminent)
-                        .tint(.brand)
+                        .tint(field)
                     }
                     .padding(.horizontal, 4)
                     .padding(.top, 6)
                 }
             } compactLeading: {
-                LetterMark(letter: a.letter, label: a.label)
+                LetterMark(letter: a.letter, label: a.label, onBrand: true)
+                    .environment(\.field, field)
             } compactTrailing: {
                 Group {
                     if s.end == nil { Image(systemName: "pause.fill") } else { FocusClock(state: s, over: context.isStale) }
                 }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.brandOnDark)
+                .foregroundStyle(lifted)
                 .frame(maxWidth: 48)
             } minimal: {
                 FocusRing(attributes: a, state: s)
             }
             .widgetURL(URL(string: "willist://today"))
-            .keylineTint(.brand)
+            .keylineTint(lifted)
         }
     }
 }

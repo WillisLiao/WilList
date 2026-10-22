@@ -106,7 +106,7 @@ struct FocusRing: View {
             }
         }
         .progressViewStyle(.circular)
-        .tint(.brandOnDark)
+        .tint(CourseColor.onDark(attributes.color))
     }
 }
 

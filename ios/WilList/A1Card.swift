@@ -92,6 +92,8 @@ struct A1Card: View {
         .heroCard()
         .contentShape(Rectangle())
         .onTapGesture { open(row.item) }
+        // The list can bring a card back with its old state, after Undo, still saying Done.
+        .onAppear { done = false }
     }
 
     // The button fills first, then the next thing moves up.

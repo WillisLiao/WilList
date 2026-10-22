@@ -45,13 +45,17 @@ final class CoreFlowsTests: XCTestCase {
         let app = launch(plan: "a1")
         XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
         app.buttons["markA1Done"].tap()
-        // The next A moves up into the card and the finished one leaves Today.
+        // Undo first, the moment its message shows: on a slow machine, checking anything else
+        // before it can outlast the message.
+        let undo = app.buttons["Undo"]
+        XCTAssertTrue(undo.waitForExistence(timeout: 5))
+        undo.tap()
+        XCTAssertTrue(gone(app.staticTexts["Read chapter 4"]), "the essay intro is back in the card")
+        XCTAssertTrue(app.staticTexts["Write the essay intro"].exists)
+        // Done again: the next A moves up into the card and the finished one leaves Today.
+        app.buttons["markA1Done"].tap()
         XCTAssertTrue(app.staticTexts["Read chapter 4"].waitForExistence(timeout: 5))
         XCTAssertTrue(gone(app.staticTexts["Write the essay intro"]))
-        // Undo, straight away while its message shows, brings it back.
-        app.buttons["Undo"].tap()
-        XCTAssertTrue(app.staticTexts["Write the essay intro"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["markA1Done"].exists)
     }
 
     func testFocusOnTheA1() {
@@ -152,7 +156,6 @@ final class CoreFlowsTests: XCTestCase {
     }
 
     private func gone(_ element: XCUIElement) -> Bool {
-        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: element)
-        return XCTWaiter().wait(for: [expectation], timeout: 5) == .completed
+        element.waitForNonExistence(timeout: 5)
     }
 }

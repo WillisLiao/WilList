@@ -31,7 +31,7 @@ final class AuditTests: XCTestCase {
             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
             sleep(1)
             let keyboard = app.keyboards.firstMatch
-            try app.performAccessibilityAudit(for: [.hitRegion, .sufficientElementDescription, .elementDetection, .trait]) { issue in
+            try audit(app) { issue in
                 // The system keyboard isn't ours (Search opens with it up): the empty slots of the
                 // 44-point suggestion bar on top of it have no description.
                 if let element = issue.element, keyboard.exists, keyboard.frame.insetBy(dx: 0, dy: -44).intersects(element.frame) { return true }
@@ -39,6 +39,18 @@ final class AuditTests: XCTestCase {
                 return true
             }
             app.terminate()
+        }
+    }
+
+    /// On a busy CI machine the audit itself now and then runs out of time before it has looked at
+    /// anything (on 2026-10-22: "Audit failed to complete in time"). That says nothing about the
+    /// screen, so it runs once more.
+    private func audit(_ app: XCUIApplication, _ handle: @escaping (XCUIAccessibilityAuditIssue) throws -> Bool) throws {
+        let checks: XCUIAccessibilityAuditType = [.hitRegion, .sufficientElementDescription, .elementDetection, .trait]
+        do {
+            try app.performAccessibilityAudit(for: checks, handle)
+        } catch let error as NSError where error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56 {
+            try app.performAccessibilityAudit(for: checks, handle)
         }
     }
 }

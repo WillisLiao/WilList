@@ -18,7 +18,7 @@
 //   -show "Email TA"                 open the to-do or item whose title starts with this
 //   -todoSort due                    Today's sort: manual, importance, due, alphabetical, created
 //   -welcome 2                       the first-run welcome at step 2 or 3, with sample lines (use FIRST=1)
-//   -gallery YES|lock|focus          every widget at its real size, or the focus Live Activity
+//   -gallery YES|lock|focus|ticked   every widget at its real size, the focus Live Activity, or a tick on each
 //   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
 //   -look frog                       a look from ios/Shared/Look.swift (or LOOK=frog)
 //

@@ -13,7 +13,9 @@ struct WidgetGallery: View {
         let glance = Glance(store.state, today: store.today)
         let empty = Glance(AppState(), today: store.today)
         // `-gallery lock` shows the Lock Screen and the large size, `-gallery focus` the focus Live
-        // Activity running and paused; anything else the rest.
+        // Activity running and paused, `-gallery ticked` the rest a moment after a tick on each
+        // (the A1, the row after it, a to-do); anything else the rest.
+        let tick = UserDefaults.standard.string(forKey: "gallery") == "ticked"
         VStack(spacing: 18) {
             if UserDefaults.standard.string(forKey: "gallery") == "focus" {
                 let a = FocusAttributes(title: "Problem set 5", label: "A1", minutes: 50)
@@ -33,11 +35,11 @@ struct WidgetGallery: View {
                 home(.systemMedium, hero: false) { TodayWidgetView(glance: empty, family: .systemMedium) }
             } else {
                 HStack(spacing: 22) {
-                    home(.systemSmall, hero: true) { FirstWidgetView(glance: glance, family: .systemSmall) }
+                    home(.systemSmall, hero: true) { FirstWidgetView(glance: glance.markingDone(tick ? glance.first?.id : nil), family: .systemSmall) }
                     home(.systemSmall, hero: true) { FirstWidgetView(glance: empty, family: .systemSmall) }
                 }
-                home(.systemMedium, hero: true) { FirstWidgetView(glance: glance, family: .systemMedium) }
-                home(.systemMedium, hero: false) { TodayWidgetView(glance: glance, family: .systemMedium) }
+                home(.systemMedium, hero: true) { FirstWidgetView(glance: glance.markingDone(tick ? glance.next.first?.id : nil), family: .systemMedium) }
+                home(.systemMedium, hero: false) { TodayWidgetView(glance: glance.markingDone(tick ? glance.todos.first?.id : nil), family: .systemMedium) }
             }
         }
         .padding(.top, 64)

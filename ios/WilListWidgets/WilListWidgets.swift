@@ -21,7 +21,8 @@ struct GlanceEntry: TimelineEntry {
 }
 
 /// One entry for now, and a fresh one at midnight when the day turns over. The app asks for a
-/// redraw whenever the plan changes, and a tick on a widget redraws it by itself.
+/// redraw whenever the plan changes, and a tick on a widget redraws it by itself: first with the
+/// line shown done, then a moment later without it.
 struct GlanceProvider: TimelineProvider {
     func placeholder(in context: Context) -> GlanceEntry {
         GlanceEntry(date: .now, glance: .sample)
@@ -33,7 +34,9 @@ struct GlanceProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<GlanceEntry>) -> Void) {
         let midnight = Calendar.current.startOfDay(for: .now.addingTimeInterval(86_400))
-        completion(Timeline(entries: [GlanceEntry(date: .now, glance: Self.current(preview: false))], policy: .after(midnight)))
+        let now = GlanceEntry(date: .now, glance: Self.current(preview: false))
+        let entries = TickMark.fresh.map { [GlanceEntry(date: .now, glance: $0.glance), GlanceEntry(date: .now.addingTimeInterval(1), glance: now.glance)] }
+        completion(Timeline(entries: entries ?? [now], policy: .after(midnight)))
     }
 
     /// The saved plan; in the widget picker, the sample when the plan is still empty.

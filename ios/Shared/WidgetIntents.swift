@@ -18,6 +18,7 @@ struct FinishRowIntent: AppIntent {
     @MainActor func perform() async throws -> some IntentResult {
         let today = WilListCore.today()
         var finished: String?
+        TickMark.note(key)
         PlanFile.update { s in
             guard let row = dayRows(s.items, today).first(where: { $0.key == key }) else { return }
             if s.complete(row, today: today) { finished = row.item.id }
@@ -39,6 +40,7 @@ struct TickTodoIntent: AppIntent {
 
     @MainActor func perform() async throws -> some IntentResult {
         let today = WilListCore.today()
+        TickMark.note(todo)
         PlanFile.update { s in
             if s.todos.contains(where: { $0.id == todo && !$0.done }) { s.toggleTodo(todo, today: today) }
         }

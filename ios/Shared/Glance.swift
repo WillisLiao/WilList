@@ -3,8 +3,8 @@ import WilListCore
 
 /// What the widgets show: the day's A1 and what follows it (as on Today and Plan), and the open
 /// to-dos (as on Today). Built from the saved plan with the same functions the screens use.
-struct Glance: Equatable {
-    struct Line: Equatable, Identifiable {
+struct Glance: Equatable, Codable {
+    struct Line: Equatable, Identifiable, Codable {
         /// The row's key for items (what `FinishRowIntent` ticks), the to-do's id for to-dos.
         var id: String
         var title: String
@@ -12,6 +12,8 @@ struct Glance: Equatable {
         var label: String?
         var letter: Letter?
         var overdue = false
+        /// Just ticked off on a widget: shown done for a moment before it goes (`TickMark`).
+        var done = false
     }
 
     var today: Day
@@ -44,6 +46,15 @@ struct Glance: Equatable {
         Glance(PlanFile.read() ?? AppState(), today: WilListCore.today())
     }
 
+    /// The same, with the line with this id shown done.
+    func markingDone(_ id: String?) -> Glance {
+        var g = self
+        if g.first?.id == id { g.first?.done = true }
+        for i in g.next.indices where g.next[i].id == id { g.next[i].done = true }
+        for i in g.todos.indices where g.todos[i].id == id { g.todos[i].done = true }
+        return g
+    }
+
     /// For the widget gallery and the system's previews.
     static let sample: Glance = {
         var g = Glance(AppState(), today: WilListCore.today())
@@ -64,4 +75,26 @@ struct Glance: Equatable {
         g.doneToday = 2
         return g
     }()
+}
+
+/// A tick on a widget, kept for a moment so the widgets can show the line done before it goes:
+/// the box fills, then the row leaves (`GlanceProvider`).
+struct TickMark: Codable {
+    /// What the widgets showed just before the tick, with the ticked line done.
+    var glance: Glance
+    var at = Date.now
+
+    private static var defaults: UserDefaults { UserDefaults(suiteName: PlanFile.group) ?? .standard }
+
+    /// Called by a tick just before it changes the plan.
+    static func note(_ id: String) {
+        defaults.set(try? JSONEncoder().encode(TickMark(glance: Glance.now().markingDone(id))), forKey: "ticked")
+    }
+
+    /// The last tick, while it is still news (three seconds).
+    static var fresh: TickMark? {
+        guard let data = defaults.data(forKey: "ticked"), let mark = try? JSONDecoder().decode(TickMark.self, from: data),
+              Date.now.timeIntervalSince(mark.at) < 3 else { return nil }
+        return mark
+    }
 }

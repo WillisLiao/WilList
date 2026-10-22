@@ -106,7 +106,8 @@ struct FirstWidgetView: View {
 
     private func doneButton(_ first: Glance.Line, wide: Bool) -> some View {
         Button(intent: FinishRowIntent(key: first.id)) {
-            Label("Mark done", systemImage: "checkmark")
+            Label(first.done ? "Done" : "Mark done", systemImage: first.done ? "checkmark.circle.fill" : "checkmark")
+                .contentTransition(.symbolEffect(.replace))
                 .font(.subheadline.weight(.semibold))
                 .labelStyle(.titleAndIcon)
                 .foregroundStyle(solid ? Color.brand : Color.white)
@@ -121,16 +122,20 @@ struct FirstWidgetView: View {
     private func nextRow(_ line: Glance.Line) -> some View {
         HStack(spacing: 8) {
             Button(intent: FinishRowIntent(key: line.id)) {
-                Image(systemName: Look.current.box.empty)
+                Image(systemName: line.done ? Look.current.box.done : Look.current.box.empty)
                     .font(.body)
-                    .foregroundStyle(solid ? Color.white.opacity(0.7) : Color(.tertiaryLabel))
+                    .foregroundStyle(line.done ? (solid ? Color.white : Color.brand) : (solid ? Color.white.opacity(0.7) : Color(.tertiaryLabel)))
+                    .contentTransition(.symbolEffect(.replace))
+                    .widgetAccentable(line.done)
                     .frame(width: 24, height: 26)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Mark \(line.title) done")
+            .accessibilityLabel(line.done ? "\(line.title), done" : "Mark \(line.title) done")
+            // A widget drops a strikethrough given its own colour, so the words turn grey instead.
             Text(line.title)
                 .font(.subheadline)
-                .foregroundStyle(ink)
+                .foregroundStyle(line.done ? grey : ink)
+                .strikethrough(line.done)
                 .lineLimit(1)
             Spacer(minLength: 4)
             LetterMark(letter: line.letter, label: line.label, onBrand: solid)
@@ -173,13 +178,15 @@ struct TodayWidgetView: View {
     }
 
     private var list: some View {
-        VStack(alignment: .leading, spacing: large ? 8 : 4) {
+        // A line just ticked off stays a moment, done, but no longer counts.
+        let left = glance.todos.filter { !$0.done }.count
+        return VStack(alignment: .leading, spacing: large ? 8 : 4) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(Fmt.date(glance.today).formatted(.dateTime.weekday(.wide)))
                     .font(.headline)
                     .fontDesign(Look.current.titles)
-                if !glance.todos.isEmpty {
-                    Text("\(glance.todos.count) to do").font(.footnote).foregroundStyle(.secondary)
+                if left > 0 {
+                    Text("\(left) to do").font(.footnote).foregroundStyle(.secondary).contentTransition(.numericText(value: Double(left)))
                 }
                 Spacer(minLength: 0)
                 Link(destination: URL(string: "willist://add")!) {
@@ -203,15 +210,17 @@ struct TodayWidgetView: View {
     private func row(_ todo: Glance.Line) -> some View {
         HStack(spacing: 10) {
             Button(intent: TickTodoIntent(todo: todo.id)) {
-                Image(systemName: Look.current.box.empty)
+                Image(systemName: todo.done ? Look.current.box.done : Look.current.box.empty)
                     .font(.title3)
-                    .foregroundStyle(Color(.tertiaryLabel))
+                    .foregroundStyle(todo.done ? Color.brand : Color(.tertiaryLabel))
+                    .contentTransition(.symbolEffect(.replace))
+                    .widgetAccentable(todo.done)
                     .frame(width: 26, height: large ? 36 : 28)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Mark \(todo.title) done")
+            .accessibilityLabel(todo.done ? "\(todo.title), done" : "Mark \(todo.title) done")
             VStack(alignment: .leading, spacing: 1) {
-                Text(todo.title).font(.subheadline).lineLimit(1)
+                Text(todo.title).font(.subheadline).foregroundStyle(todo.done ? .secondary : .primary).strikethrough(todo.done).lineLimit(1)
                 if large, let detail = todo.detail {
                     Text(detail).font(.caption).foregroundStyle(todo.overdue ? Color.red : Color.secondary).lineLimit(1)
                 }

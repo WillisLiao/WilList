@@ -20,7 +20,7 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Work, roughly in order of value
 
-- **Ask the owner how the colour lands** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: the Dynamic Island could carry the course colour (it needs lifted versions of each colour for black), Plan's rows could show their course colour.
+- **Ask the owner how the colour lands** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: Plan's and Study's session rows don't name their course yet (a coloured mark could tie them to the chart and the poster), and the field could change colour with a wipe instead of a blend.
   Shoot every change and look at it; show the owner side by side when it's a taste call.
 - **The colour change between courses** blends through a muddy middle for a tenth of a second (the colours mix in RGB); a quicker hand-over or a different blend may look cleaner.
 

@@ -14,6 +14,7 @@ struct LetterSorter: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
     let ids: [String]
     @State private var at = 0
     @State private var forward = true
@@ -110,20 +111,34 @@ struct LetterSorter: View {
     private func letterButton(_ letter: Letter, item: Item, suggested: Letter?) -> some View {
         let current = item.priority == letter
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
+        let words = VStack(alignment: .leading, spacing: 2) {
+            // The tag goes under the name when both don't fit on a line.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 8) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
+                VStack(alignment: .leading, spacing: 4) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
+            }
+            Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
+        }
+        let check = Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.brand)
         return Button { choose(letter, for: item) } label: {
-            HStack(spacing: 14) {
-                LetterMark(letter: letter, large: true)
-                VStack(alignment: .leading, spacing: 2) {
-                    // The tag goes under the name when both don't fit on a line.
-                    ViewThatFits(in: .horizontal) {
-                        HStack(spacing: 8) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
-                        VStack(alignment: .leading, spacing: 4) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
+            Group {
+                if typeSize.isAccessibilitySize {
+                    // At the largest text sizes the letter sits above the words, so none breaks in half.
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            LetterMark(letter: letter, large: true)
+                            Spacer()
+                            if current { check }
+                        }
+                        words
                     }
-                    Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
-                }
-                Spacer(minLength: 8)
-                if current {
-                    Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.brand)
+                } else {
+                    HStack(spacing: 14) {
+                        LetterMark(letter: letter, large: true)
+                        words
+                        Spacer(minLength: 8)
+                        if current { check }
+                    }
                 }
             }
             .foregroundStyle(Color.primary)

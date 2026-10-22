@@ -20,6 +20,8 @@ struct LetterMark: View {
             .foregroundStyle(ink)
             .padding(.horizontal, text.count > 1 ? 6 : 0)
             .frame(minWidth: large ? 40 : 30, minHeight: large ? 32 : 26)
+            // Past the largest standard size a letter would outgrow its round mark.
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             .background(letter == .A ? (onBrand ? Color.white : Color.brand) : Color.clear, in: Capsule())
             .overlay {
                 if letter != .A {

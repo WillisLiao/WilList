@@ -96,7 +96,7 @@ No decorative or entrance animation.
 
 - Every icon-only control has an accessibility label ("Mark done", "Mark as important", "Remove reminder").
 - Touch targets are at least 44 pt.
-- Text uses Dynamic Type styles; nothing is fixed-size except the letter marks.
+- Text uses Dynamic Type styles. Only the letter marks and Today's tool icons stop growing at the largest standard size, so they keep their shape.
 
 ## SwiftUI pitfalls already paid for
 

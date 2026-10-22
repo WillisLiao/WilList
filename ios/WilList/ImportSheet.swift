@@ -206,16 +206,22 @@ struct ImportSheet: View {
 
 private struct ImportOption: View {
     let title: String, detail: String, symbol: String
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
-        Label {
+        // Not a Label: at the largest text sizes a list wraps a label's lines around its icon.
+        // There the icon goes above the words instead.
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(spacing: 16))
+        layout {
+            Image(systemName: symbol)
+                .foregroundStyle(Color.brand)
+                .frame(minWidth: 28)
             VStack(alignment: .leading, spacing: 2) {
                 // Fixed colours: inside a button, hierarchical styles take on the tint.
                 Text(title).foregroundStyle(Color.primary)
                 Text(detail).font(.subheadline).foregroundStyle(Color.secondary)
             }
-        } icon: {
-            Image(systemName: symbol)
+            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
         }
     }
 }

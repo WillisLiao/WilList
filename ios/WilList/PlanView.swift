@@ -21,6 +21,7 @@ enum PlanPage: Hashable { case goals }
 /// ways to plan ahead.
 struct PlanList: View {
     @Environment(Store.self) private var store
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var adding = false
     @State private var importing = false
     @State private var editing: Item?
@@ -106,7 +107,8 @@ struct PlanList: View {
                     .font(.headline)
                     .fontDesign(Look.current.titles)
                     .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
-                    .lineLimit(2)
+                    // Two lines hold even a long goal, except at the largest text sizes.
+                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                 Text(goal.isEmpty ? "The one goal that would change the most for you"
                      : others == 0 ? "Your main goal" : "Your main goal and \(others) more")
                     .font(.subheadline)

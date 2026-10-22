@@ -28,7 +28,8 @@ Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on th
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
   Undo sits in a toast that stays long enough to read, and VoiceOver reads it out.
   On a widget, the ticked line shows done for a moment (the box fills, the words grey and are struck through), then leaves.
-- **Accessibility:** every main screen passes Apple's accessibility audit (`AuditTests`), every control is at least 44 points, and the green deepens with Increase Contrast.
+- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 14 of them), every control is at least 44 points, words stay whole at the largest text sizes, and the green deepens with Increase Contrast.
+- **Search** opens ready to type, keyboard up; its X closes it.
 - **iPad:** every list keeps to a centred readable column.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the green with dark and tinted versions.
 
@@ -39,8 +40,9 @@ Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 **On the owner's devices:** the iPad (iOS 18.5) has `016ef8b` and the iPhone 15 Pro (iOS 18.7.8) has `a6c1962`; neither has anything from this evening.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 
-**Checked:** 80 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 8 UI tests (add and tick, a reminder, give a letter, Mark done and Undo, focus, the first run, Plan tomorrow, the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default and the largest text sizes, on iPhone and iPad.
+**Checked:** 80 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 9 UI tests (add and tick, a reminder, give a letter, Mark done and Undo, focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default and the largest text sizes, on iPhone and iPad.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
+Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.
 
 **Not yet checked on a real device:** reminders arriving and their buttons, the badge, quick actions, the chime's volume, the widgets on a real Home and Lock Screen (the simulator holds a ticked line one to two seconds; a device may differ), the Live Activity and its Mark done.
 

@@ -2,7 +2,7 @@
 
 The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
-Done since the last version of this file: Plan tomorrow as an evening ritual, the accessibility audit on every main screen, the green with Increase Contrast, and the tick moment on widgets.
+Done since the last version of this file: Plan tomorrow as an evening ritual, the accessibility audit on every screen and sheet, the green with Increase Contrast, the tick moment on widgets, Search ready to type, and a pass at the largest text size.
 
 ## Start here
 
@@ -19,11 +19,10 @@ Done since the last version of this file: Plan tomorrow as an evening ritual, th
 
 ## Work, roughly in order of value
 
-- **Ticking off from a notification:** Mark done and snooze on a reminder, and the result visible when the app opens.
-  The approach in `WidgetTests` (XCUITest driving SpringBoard) can reach a notification's buttons too: a reminder a minute away, then pull down and press the notification.
-- **Audit the sheets too:** extend `AuditTests` to the Add sheet, Search, Bring in a schedule, and item and to-do details (`-sheet`, `-show` and `-edit` open them).
-- **Fresh-eyes pass** over Search (it has no empty state yet), Bring in a schedule and Your goals, at the default and the largest text sizes.
+- **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.
+  In the simulator, `xcrun simctl push <device> com.lull.willist payload.json` with `"category": "task"` and an `"id"` delivers a reminder, and XCUITest on SpringBoard can press its buttons.
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.
+- **Fresh eyes on the rest at the largest text size:** the welcome, Focus and the iPad layouts were last checked before tonight's changes.
 - **iPad:** a sidebar or two columns (Today beside Plan) would use the space far better than a centred column; ask the owner.
 - **The website,** only if the owner says so.
 

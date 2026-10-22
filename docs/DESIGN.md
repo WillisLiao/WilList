@@ -118,3 +118,7 @@ No decorative or entrance animation.
 13. **Strikethrough on a widget:** WidgetKit drops `strikethrough(_:color:)` when it is given a colour, though the app's widget gallery still draws it.
     Use plain `strikethrough(_:)` and colour the words instead, and check widget changes on a real Home Screen, not only in the gallery.
     `WidgetTests` does that for a tick on the Today widget; it only runs with `TEST_RUNNER_WIDGETS=1`, as it ticks a real to-do on the simulator.
+14. **A list row's state can come back:** after Undo, a `List` brought the A1 card back with its old `@State`, still saying Done, even though the card is keyed with `.id`.
+    Reset a row's passing state when it appears (`A1Card`), or keep it in the screen above the list, as the `ticking` sets do.
+15. **Labels at the largest text sizes:** in a list, a `Label` with two lines of text wraps them around its icon.
+    Where that reads badly, lay the row out by hand and put the icon above the words at accessibility sizes (`ImportOption`), as the A1 card and the letter sorter do with their buttons and letters.

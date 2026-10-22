@@ -250,6 +250,8 @@ struct TodayView: View {
                     Text(reads).font(.footnote).foregroundStyle(Color.brand)
                 }
             }
+            // The line under it starts at the words, like every row's below.
+            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 20))
     }

@@ -32,6 +32,8 @@ The A1 poster on Today, its widget and the Focus screen are drawn on the A1's co
 A course colour never stands for a problem: overdue stays red.
 Words on a field of colour are always pure white: white dimmed even to 85% falls below 4.5:1 on the green, so size and weight make the hierarchy there.
 The guided flows open on a field too: the welcome's questions on the green, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, so it previews the morning's poster.
+That last page rises over the night like a sunrise, the list held still beneath it; between steps the band stays put while the new question rises in, and the step count sits in the middle and rolls on.
+Your goals leads with the main goal set large in white on a green card (or the question that asks for one); a tap writes it, keyboard up.
 
 ## Type
 

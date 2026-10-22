@@ -9,21 +9,12 @@ struct GoalsList: View {
 
     var body: some View {
         List {
-            Section {
-                Button { editingPurpose = true } label: {
-                    Text(store.state.mdp.isEmpty ? "What one goal would change the most for you?" : store.state.mdp)
-                        .font(.title3)
-                        .fontDesign(Look.current.titles)
-                        .foregroundStyle(store.state.mdp.isEmpty ? .secondary : .primary)
-                        .multilineTextAlignment(.leading)
-                        .padding(.vertical, 4)
-                }
-                .tint(.primary)
-            } header: {
-                Text("Main goal")
-            } footer: {
-                Text("The goal that would help you most if you reached it.")
-            }
+            // The main goal leads the page, as the A1 leads Today: set large on the green.
+            Button { editingPurpose = true } label: { MainGoal(goal: store.state.mdp) }
+                .buttonStyle(.plain)
+                .accessibilityHint("Changes your main goal")
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.brand)
 
             Section {
                 ForEach(store.state.goals) { goal in
@@ -58,6 +49,36 @@ struct GoalsList: View {
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
         .sheet(isPresented: $editingPurpose) { PurposeEditor() }
         .toastHost()
+    }
+}
+
+/// The main goal in white on the green, or the question that asks for one.
+private struct MainGoal: View {
+    let goal: String
+    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Your main goal").font(.subheadline.weight(.medium))
+                Spacer()
+                Image(systemName: "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
+            }
+            Text(goal.isEmpty ? "What one goal would change the most for you?" : goal)
+                .font(.system(size: size, weight: .bold))
+                .fontDesign(Look.current.titles)
+                .tracking(-0.5)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("The goal that would help you most if you reached it.")
+                .font(.subheadline)
+        }
+        .foregroundStyle(.white)
+        .multilineTextAlignment(.leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 22)
+        .contentShape(Rectangle())
     }
 }
 
@@ -96,13 +117,17 @@ struct PurposeEditor: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     @State private var text = ""
+    @FocusState private var writing: Bool
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Graduate with honours and land a design internship", text: $text, axis: .vertical)
+                        .font(.title3)
+                        .fontDesign(Look.current.titles)
                         .lineLimit(3...8)
+                        .focused($writing)
                 } footer: {
                     Text("Your one major definite purpose: the goal that would help you most if you reached it.")
                 }
@@ -118,7 +143,8 @@ struct PurposeEditor: View {
                     }
                 }
             }
-            .onAppear { text = store.state.mdp }
+            // Ready to write: the keyboard is up as the sheet opens.
+            .onAppear { text = store.state.mdp; writing = true }
         }
         .presentationDetents([.medium])
     }

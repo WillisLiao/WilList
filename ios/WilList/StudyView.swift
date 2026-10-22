@@ -18,6 +18,17 @@ struct StudyView: View {
     private var sessions: [Row] { studyRows(store.state.items, today) }
     private var ahead: [Vital] { readiness(store.state.items, today) }
     private var week: [Ahead] { radar(store.state.items, today, days: 7, perDayMin: store.state.settings.perDayMin) }
+    /// The courses in this week's bars, each by its colour; none when no study has a course.
+    private var courseKey: Text? {
+        var names: [Int?: String] = [:]
+        for it in week.flatMap(\.study).map(\.item) where names[store.state.courseColor(it.course)] == nil {
+            names[store.state.courseColor(it.course)] = it.course ?? "No course"
+        }
+        guard names.keys.contains(where: { $0 != nil }) else { return nil }
+        return Fmt.meta(names.sorted { ($0.key ?? .max) < ($1.key ?? .max) }.map { color, name in
+            Text("\(Text(Image(systemName: "circle.fill")).font(.system(size: 9)).baselineOffset(1).foregroundStyle(CourseColor.of(color))) \(name)")
+        })
+    }
 
     var body: some View {
         NavigationStack {
@@ -36,11 +47,14 @@ struct StudyView: View {
                         if week.allSatisfy({ $0.load == 0 }) {
                             Text("No study planned this week.").foregroundStyle(.secondary)
                         } else {
-                            WeekChart(days: week, budget: store.state.settings.perDayMin, today: today)
-                            Text("The dashed line is your \(Fmt.minutes(store.state.settings.perDayMin)) a day.\(week.contains(where: \.over) ? " Red is past it." : "")")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .listRowSeparator(.hidden, edges: .top)
+                            WeekChart(days: week, budget: store.state.settings.perDayMin, today: today) { store.state.courseColor($0.course) }
+                            VStack(alignment: .leading, spacing: 8) {
+                                courseKey
+                                Text("The dashed line is your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .listRowSeparator(.hidden, edges: .top)
                         }
                     }
 
@@ -170,13 +184,24 @@ struct StudyView: View {
     }
 }
 
-/// Planned study per day for the next week: each bar is green up to your daily study time (the
-/// dashed line) and red past it, so a heavy day shows how much is too much.
+/// Planned study per day for the next week: each bar stacks its courses in their colours, against
+/// your daily study time (the dashed line); a day past it has its time in red. A heavy day shows
+/// how much is too much and which course makes it so.
 struct WeekChart: View {
     let days: [Ahead]
     let budget: Int
     let today: Day
+    /// The colour number of an item's course (`CourseColor`).
+    let color: (Item) -> Int?
     private let height: CGFloat = 110
+
+    /// A day's study by course, in palette order (no course last).
+    private func parts(_ d: Ahead) -> [(color: Color, minutes: Int)] {
+        Dictionary(grouping: d.study) { color($0.item) }
+            .map { (key: $0.key, minutes: $0.value.reduce(0) { $0 + $1.minutes }) }
+            .sorted { ($0.key ?? .max) < ($1.key ?? .max) }
+            .map { (CourseColor.of($0.key), $0.minutes) }
+    }
 
     var body: some View {
         let top = Double(max(budget, days.map(\.load).max() ?? 0)) * 1.1
@@ -185,9 +210,11 @@ struct WeekChart: View {
             ZStack(alignment: .bottom) {
                 HStack(alignment: .bottom, spacing: 0) {
                     ForEach(days, id: \.date) { d in
-                        VStack(spacing: 0) {
-                            Color.red.frame(height: y(max(d.load - budget, 0)))
-                            Color.brand.opacity(0.35).frame(height: y(min(d.load, budget)))
+                        // Bottom up: the first course sits on the floor, red on top.
+                        VStack(spacing: 1.5) {
+                            ForEach(Array(parts(d).reversed().enumerated()), id: \.offset) { _, p in
+                                p.color.frame(height: max(y(p.minutes) - 1.5, 1.5))
+                            }
                         }
                         .frame(width: 24)
                         .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))

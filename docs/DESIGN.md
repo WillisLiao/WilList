@@ -23,7 +23,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
 | Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable); `#0B6B39` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
-| Pale green | green at 9% (the A1 card), 12% (the Letter button), 35% (study bars) | Emphasis that must stay quiet. |
+| Pale green | green at 9% (the A1 card in the Lagoon look), 12% (the Letter button) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
 | Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, teal, raspberry, ochre, slate, then the green; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
 
@@ -78,6 +78,8 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   Mark done draws a line through the title left to right, its words fade, then the next A rises into the same place and the field blends into its course's colour; the toast offers Undo.
   The other looks draw it as a card, corner radius 22.
 - **Focus** (`FocusView.swift`): the whole screen in the session's course colour, a white ring and timer, and white buttons.
+- **Week chart** (`WeekChart` in `StudyView.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
+  A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
 - **Focus** (`FocusView.swift`, from Start on the A1 card): one task, one timer, nothing else. The letter and the serif title, a ring that fills as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Letter sorter** (`LetterSorter.swift`): letters the items waiting for one, one at a time. The item's title large at the top, the five letters as big rows with what each one means, the suggested one outlined and tagged, Skip for now, Back. It ends by naming your A1. Opened from Today's "2 waiting for a letter" and Plan's "Letter them".
 - **Plan tomorrow** (`PlanTomorrow.swift`): the evening habit in two steps on the welcome's pages: "Anything new for tomorrow?" (lines, dates read, with "4 done today, starting with an A." above when something got done), then "Which one first?" (tomorrow's list with its letters, plus the new lines; the current A1 is chosen to start). It ends on a sunrise: "Tomorrow starts with" and the A1's title, with Letter them when anything waits. Opened from Plan's "Plan tomorrow", Today's evening nudge and the evening notification. Close keeps the lines written and changes no letters.

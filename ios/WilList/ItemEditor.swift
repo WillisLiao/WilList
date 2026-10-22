@@ -55,7 +55,9 @@ struct ItemEditor: View {
                     Label {
                         TextField("Course or project", text: Binding(get: { item.course ?? "" }, set: { item.course = $0.isEmpty ? nil : $0 }))
                     } icon: {
-                        Image(systemName: "graduationcap").foregroundStyle(Color.brand)
+                        // In the course's colour, once it has one: a course already in the plan shows
+                        // its colour as it's typed.
+                        Image(systemName: "graduationcap").foregroundStyle(CourseColor.of(store.state.courseColor(item.course)))
                     }
                 }
 

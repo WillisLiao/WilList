@@ -56,8 +56,7 @@ struct TodayView: View {
     var body: some View {
         let first = self.first, fromPlan = planItems(besides: first)
         // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
-        // its course.
-        // After the day's last A, the poster stays to say the A's are done.
+        // its course. After the day's last A, the poster stays, green, to say the A's are done.
         let finished = doneOn(store.state.items, today)
         let won = first == nil && finished.contains { $0.item.priority == .A }
         let poster = (first != nil || won) && Look.current.hero == .poster

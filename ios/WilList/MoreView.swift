@@ -61,12 +61,12 @@ struct MoreView: View {
                     Button("Plan everything again") {
                         let n = store.state.items.count
                         store.change { $0.replanAll(today: store.today) }
-                        store.say(n == 0 ? "Nothing to plan yet." : "Planned again, A's first.")
+                        store.say(n == 0 ? "Nothing to plan yet." : "Planned again, A’s first.")
                     }
                 } header: {
                     Text("Study plan")
                 } footer: {
-                    Text("Plan everything again to use these for what's already planned.")
+                    Text("Plan everything again to use these for what’s already planned.")
                 }
 
                 Section {
@@ -107,7 +107,7 @@ struct MoreView: View {
                 }
 
                 Section {
-                    LabeledContent("Method", value: "Brian Tracy's ABCDE")
+                    LabeledContent("Method", value: "Brian Tracy’s ABCDE")
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
                 }
             }
@@ -156,7 +156,7 @@ struct MoreView: View {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         guard let data = try? Data(contentsOf: url), let state = try? JSONDecoder().decode(AppState.self, from: data),
               !(state.items.isEmpty && state.todos.isEmpty && state.goals.isEmpty) else {
-            restoreError = "That file isn't a WilList backup."
+            restoreError = "That file isn’t a WilList backup."
             return
         }
         restoreError = nil
@@ -183,7 +183,7 @@ struct AddFeedSheet: View {
                         Button("Paste \(pasted.host() ?? "link")") { link = pasted.absoluteString }
                     }
                 } footer: {
-                    Text("WilList only reads the calendar. You can reset the link in your school's system at any time.")
+                    Text("WilList only reads the calendar. You can reset the link in your school’s system at any time.")
                 }
                 Section("Where to find it") {
                     DisclosureGroup("Canvas") { Text("Calendar, then Calendar Feed at the bottom right. Copy the link.") }

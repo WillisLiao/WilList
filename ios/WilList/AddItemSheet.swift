@@ -33,7 +33,7 @@ struct AddItemSheet: View {
                         .onSubmit(add)
                 } footer: {
                     if empty {
-                        Text("Type it the way you'd say it: \u{201C}Calc midterm fri 2pm #math\u{201D}, \u{201C}Essay due 11/24 4h\u{201D}, \u{201C}Gym every mon and wed 7am\u{201D}.")
+                        Text("Type it the way you’d say it: \u{201C}Calc midterm fri 2pm #math\u{201D}, \u{201C}Essay due 11/24 4h\u{201D}, \u{201C}Gym every mon and wed 7am\u{201D}.")
                     } else if let hint = parsed.hints.first {
                         Text(advice(hint))
                     }

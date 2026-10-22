@@ -53,7 +53,7 @@ struct ImportSheet: View {
             Task {
                 let ext = photo.supportedContentTypes.first?.preferredFilenameExtension ?? "jpg"
                 if let data = try? await photo.loadTransferable(type: Data.self) { read(data, name: "Photo.\(ext)") }
-                else { phase = .failed("Couldn't open that photo.") }
+                else { phase = .failed("Couldn’t open that photo.") }
                 self.photo = nil
             }
         }
@@ -79,7 +79,7 @@ struct ImportSheet: View {
                 }
             } footer: {
                 Text(Keychain.apiKey == nil
-                     ? "Files, photos and text are read by Claude. Add your Anthropic API key in More first. Calendar files don't need it."
+                     ? "Files, photos and text are read by Claude. Add your Anthropic API key in More first. Calendar files don’t need it."
                      : "Claude reads it and finds every exam, deadline, class and shift, for any kind of course, job or project. You check the list before anything is added.")
             }
             Section {
@@ -161,7 +161,7 @@ struct ImportSheet: View {
     private func open(_ url: URL) {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-        guard let data = try? Data(contentsOf: url) else { phase = .failed("Couldn't open that file."); return }
+        guard let data = try? Data(contentsOf: url) else { phase = .failed("Couldn’t open that file."); return }
         read(data, name: url.lastPathComponent)
     }
 
@@ -175,7 +175,7 @@ struct ImportSheet: View {
             let content = try Claude.fileContent(data, name: name)
             ask(content, what: name.hasPrefix("Photo.") ? "your photo" : name)
         } catch {
-            phase = .failed((error as? LocalizedError)?.errorDescription ?? "Couldn't read that file.")
+            phase = .failed((error as? LocalizedError)?.errorDescription ?? "Couldn’t read that file.")
         }
     }
 

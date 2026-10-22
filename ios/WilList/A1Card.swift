@@ -81,6 +81,7 @@ struct A1Card: View {
                 .sensoryFeedback(.success, trigger: done) { _, new in new }
             }
             .controlSize(.large)
+            .labelStyle(WordsWhenLarge())
             .padding(.top, 6)
             if streak > 0 {
                 Text("\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A.")

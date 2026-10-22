@@ -146,6 +146,8 @@ struct A1Choice: View {
                         }
                     }
                     .frame(width: 36)
+                    // The circle stops growing where the letter marks do, so every row's words line up.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .foregroundStyle(Color.primary)

@@ -181,6 +181,7 @@ struct TodayView: View {
             }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(Color.brand)
+            .multilineTextAlignment(.leading)
             // The whole row answers a tap, not just the words.
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())

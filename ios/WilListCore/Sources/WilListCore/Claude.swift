@@ -18,7 +18,7 @@ public enum AIError: LocalizedError, Equatable {
         case .offline: "Could not reach Anthropic. Check your connection."
         case .declined: "Claude declined to read that. Try just the schedule part."
         case .tooLong: "That was too long to read in one go. Split it in two."
-        case .unreadable: "Claude's answer could not be read. Try again."
+        case .unreadable: "Claude’s answer could not be read. Try again."
         case .rejected(let why): "Anthropic could not process that: \(why)"
         case .server(let status): "Anthropic returned an error (\(status)). Try again shortly."
         }

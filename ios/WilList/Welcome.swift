@@ -52,15 +52,15 @@ struct WelcomeView: View {
         switch step {
         case 1: "What do you have to do?"
         case 2: "Which one matters most?"
-        default: "What's your main goal?"
+        default: "What is your main goal?"
         }
     }
 
     private var subtitle: String {
         switch step {
         case 1: "Get it out of your head, one thing per line. Dates are read for you, like \u{201C}Essay due fri\u{201D}."
-        case 2: "If you could do only one of these, which would it be? That's your A1. You do it first."
-        default: "The one goal that would change the most for you this term. Written down, it's far more likely to happen."
+        case 2: "If you could do only one of these, which would it be? That’s your A1. You do it first."
+        default: "The one goal that would change the most for you this term. Written down, it’s far more likely to happen."
         }
     }
 

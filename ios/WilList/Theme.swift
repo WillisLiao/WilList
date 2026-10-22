@@ -188,6 +188,16 @@ struct HeroCard: ViewModifier {
     }
 }
 
+/// A big button's icon and words; at the largest text sizes only the words, which the icon and
+/// the round ends would otherwise squeeze until a word breaks.
+struct WordsWhenLarge: LabelStyle {
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    func makeBody(configuration: Configuration) -> some View {
+        if typeSize.isAccessibilitySize { configuration.title } else { Label(configuration) }
+    }
+}
+
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
 

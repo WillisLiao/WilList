@@ -38,7 +38,7 @@ struct PlanTomorrow: View {
                 StepPage(step: step, of: 2, about: step == 1 ? recap : nil,
                          title: step == 1 ? "Anything new for tomorrow?" : "Which one first?",
                          subtitle: step == 1 ? "Write down what came up today, one thing per line. Dates are read for you."
-                             : "If you could do only one thing tomorrow, which would it be? That's your A1.",
+                             : "If you could do only one thing tomorrow, which would it be? That’s your A1.",
                          exit: "Close", back: { step = 1 }, leave: close,
                          button: step == 1 ? "Next" : "Make it my A1", enabled: step == 1 || pick != nil, next: next) {
                     if step == 1 {
@@ -90,7 +90,7 @@ struct PlanTomorrow: View {
                     .font(.title.bold())
                     .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)
-                Text("It'll be at the top of Today and on your widgets in the morning.")
+                Text("It’ll be at the top of Today and on your widgets in the morning.")
                     .foregroundStyle(.secondary)
             } else {
                 Text("Nothing planned for tomorrow")

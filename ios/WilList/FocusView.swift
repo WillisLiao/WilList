@@ -52,6 +52,7 @@ struct FocusView: View {
                 .accessibilityIdentifier("focusDone")
             }
             .controlSize(.large)
+            .labelStyle(WordsWhenLarge())
             .padding(.horizontal, 24)
             .padding(.bottom, 12)
             .frame(maxWidth: 560)
@@ -78,7 +79,7 @@ struct FocusView: View {
             .padding(.horizontal, 24)
             Spacer(minLength: 24)
             ring(f, left: left)
-            Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it's done.")
+            Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it’s done.")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)

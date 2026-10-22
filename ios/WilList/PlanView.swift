@@ -243,7 +243,7 @@ struct PlanList: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Plan tomorrow").foregroundStyle(Color.primary)
                         if store.evening {
-                            Text("It's evening. Pick tomorrow's first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
+                            Text("It’s evening. Pick tomorrow’s first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
                         }
                     }
                 } icon: {

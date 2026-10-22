@@ -23,7 +23,7 @@ enum Reminders {
         let m = timeToMin(settings.planTime) ?? 1230
         let content = UNMutableNotificationContent()
         content.title = "Plan tomorrow"
-        content.body = "Two minutes: write down anything new and pick tomorrow's A1."
+        content.body = "Two minutes: write down anything new and pick tomorrow’s A1."
         let trigger = UNCalendarNotificationTrigger(dateMatching: DateComponents(hour: m / 60, minute: m % 60), repeats: true)
         try? await center.add(UNNotificationRequest(identifier: planTomorrow, content: content, trigger: trigger))
         return true

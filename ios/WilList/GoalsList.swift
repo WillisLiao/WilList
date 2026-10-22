@@ -146,9 +146,9 @@ struct GoalEditor: View {
                 }
                 Section("Why you want it") { TextField("The reasons that will keep you going", text: $goal.why, axis: .vertical) }
                 Section("The biggest obstacle") { TextField("The one thing most in the way", text: $goal.rock, axis: .vertical) }
-                Section("What you'll need to learn") { TextField("Skills and knowledge", text: $goal.knowledge, axis: .vertical) }
+                Section("What you’ll need to learn") { TextField("Skills and knowledge", text: $goal.knowledge, axis: .vertical) }
                 Section("Who can help") { TextField("People to ask", text: $goal.people, axis: .vertical) }
-                Section("Your reward") { TextField("How you'll celebrate", text: $goal.reward, axis: .vertical) }
+                Section("Your reward") { TextField("How you’ll celebrate", text: $goal.reward, axis: .vertical) }
             }
             .navigationTitle(goal.id.isEmpty ? "New goal" : "Goal")
             .navigationBarTitleDisplayMode(.inline)

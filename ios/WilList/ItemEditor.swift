@@ -78,7 +78,7 @@ struct ItemEditor: View {
                         Text("Study plan")
                     } footer: {
                         if item.shortfallMin > 0 {
-                            Text("There isn't enough time before it for all of this: \(Fmt.minutes(item.shortfallMin)) short. Start now, or raise your daily study time in More.")
+                            Text("There isn’t enough time before it for all of this: \(Fmt.minutes(item.shortfallMin)) short. Start now, or raise your daily study time in More.")
                         } else if item.sessions.isEmpty && item.effortMin > 0 {
                             Text("Save to plan the study sessions.")
                         } else if !item.sessions.isEmpty {

@@ -40,6 +40,7 @@ Never add another hue. Never colour decoration.
 - No explanatory footers unless they help the user decide or act. Say a status only when it needs attention (no "On track").
 - Errors say what happened and what to do: "Notifications are off for WilList. Turn them on in the Settings app to get reminders."
 - Never the em dash.
+- Typographic apostrophes and quotes in everything the app says: "What’s", “this”, never the typewriter ' and ".
 
 ## Layout and screens
 
@@ -96,7 +97,8 @@ No decorative or entrance animation.
 
 - Every icon-only control has an accessibility label ("Mark done", "Mark as important", "Remove reminder").
 - Touch targets are at least 44 pt.
-- Text uses Dynamic Type styles. Only the letter marks and Today's tool icons stop growing at the largest standard size, so they keep their shape.
+- Text uses Dynamic Type styles. Only the letter marks, Today's tool icons and the circles beside the welcome's choices stop growing at the largest standard size, so they keep their shape and the words beside them line up.
+- At the accessibility sizes, big buttons show only their words (`WordsWhenLarge` in `Theme.swift`), and buttons side by side stack.
 
 ## SwiftUI pitfalls already paid for
 
@@ -122,3 +124,8 @@ No decorative or entrance animation.
     Reset a row's passing state when it appears (`A1Card`), or keep it in the screen above the list, as the `ticking` sets do.
 15. **Labels at the largest text sizes:** in a list, a `Label` with two lines of text wraps them around its icon.
     Where that reads badly, lay the row out by hand and put the icon above the words at accessibility sizes (`ImportOption`), as the A1 card and the letter sorter do with their buttons and letters.
+16. **Big buttons at the largest text sizes:** the round ends of a large button and its icon left "Mark done" so little room that it broke mid-word, "Ma / rk do…".
+    `.labelStyle(WordsWhenLarge())` drops the icon at the accessibility sizes; the A1 card and Focus use it.
+17. **A button centres the lines it wraps:** a row-like borderless button whose words wrap at a large size centres the second line under the first. Add `.multilineTextAlignment(.leading)` (Today's nudge).
+18. **Line breaks after an apostrophe:** at the largest size on a 375 pt phone, iOS evened out a title's lines by breaking "What’s" after its apostrophe, curly or straight.
+    Big titles avoid contractions ("What is your main goal?"). Check titles on the iPhone SE simulator at the largest size.

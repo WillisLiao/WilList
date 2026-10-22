@@ -16,7 +16,7 @@ public enum FileError: LocalizedError, Equatable {
         case .damaged: "That file looks damaged."
         case .empty: "That file has no text in it."
         case .picture: "Could not open that picture. Save it as JPEG or PDF and try again."
-        case .unsupported(let ext): "WilList can't read \(ext.isEmpty ? "this kind of" : ".\(ext)") files. Save it as PDF and try again."
+        case .unsupported(let ext): "WilList can’t read \(ext.isEmpty ? "this kind of" : ".\(ext)") files. Save it as PDF and try again."
         }
     }
 }

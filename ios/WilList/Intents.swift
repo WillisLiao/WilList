@@ -22,7 +22,7 @@ struct AddToDoIntent: AppIntent {
 
 struct AddToPlanIntent: AppIntent {
     static let title: LocalizedStringResource = "Add to the plan"
-    static let description = IntentDescription("Adds an exam, deadline, class or task to WilList, said the way you'd say it: \u{201C}Chem quiz Thursday 9am\u{201D}.")
+    static let description = IntentDescription("Adds an exam, deadline, class or task to WilList, said the way you’d say it: \u{201C}Chem quiz Thursday 9am\u{201D}.")
 
     @Parameter(title: "What and when", requestValueDialog: "What is it, and when?")
     var text: String

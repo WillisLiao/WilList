@@ -215,7 +215,7 @@ final class Store {
                 let found = importICS(text, today: today)
                 change { s in s.applyImport(planImport(s.items, found.items), today: today) }
             } catch {
-                problem = (error as? LocalizedError)?.errorDescription ?? "Couldn't read this calendar."
+                problem = (error as? LocalizedError)?.errorDescription ?? "Couldn’t read this calendar."
             }
             change { s in
                 guard let i = s.feeds.firstIndex(where: { $0.url == url }) else { return }
@@ -233,16 +233,16 @@ final class Store {
         var link = link
         if link.lowercased().hasPrefix("webcal://") { link = "https://" + link.dropFirst(9) }
         guard let url = URL(string: link), url.scheme?.hasPrefix("http") == true else {
-            throw FeedError(errorDescription: "That isn't a web link.")
+            throw FeedError(errorDescription: "That isn’t a web link.")
         }
         let (data, response): (Data, URLResponse)
         do { (data, response) = try await URLSession.shared.data(from: url) } catch {
-            throw FeedError(errorDescription: "Couldn't reach it. Check your connection.")
+            throw FeedError(errorDescription: "Couldn’t reach it. Check your connection.")
         }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         guard status == 200 else { throw FeedError(errorDescription: "The calendar answered with an error (\(status)). The link may have been reset.") }
         let text = String(decoding: data, as: UTF8.self)
-        guard text.contains("BEGIN:VCALENDAR") else { throw FeedError(errorDescription: "That link isn't a calendar feed.") }
+        guard text.contains("BEGIN:VCALENDAR") else { throw FeedError(errorDescription: "That link isn’t a calendar feed.") }
         return text
     }
 }

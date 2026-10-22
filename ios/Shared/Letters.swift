@@ -17,6 +17,8 @@ struct LetterMark: View {
             .font(large ? .headline : .footnote.weight(.semibold))
             .monospacedDigit()
             .strikethrough(letter == .E)
+            // A mark never wraps, however narrow the space it's offered: "A1" stays on one line.
+            .fixedSize()
             .foregroundStyle(ink)
             .padding(.horizontal, text.count > 1 ? 6 : 0)
             .frame(minWidth: large ? 40 : 30, minHeight: large ? 32 : 26)

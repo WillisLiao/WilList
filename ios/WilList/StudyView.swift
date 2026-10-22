@@ -114,7 +114,7 @@ struct StudyView: View {
             .onTapGesture { editing = row.item }
             if !typeSize.isAccessibilitySize { minutes }
         }
-        .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 16))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
         }

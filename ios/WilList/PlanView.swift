@@ -162,7 +162,7 @@ struct PlanList: View {
 
     private func itemRow(_ row: Row) -> some View {
         let done = ticking.contains(row.key)
-        return HStack(spacing: 8) {
+        return HStack(spacing: 10) {
             CheckButton(done: done) { complete(row) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(row.item.title)
@@ -176,7 +176,7 @@ struct PlanList: View {
             .onTapGesture { editing = row.item }
             letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
             addToToday(row.item)
@@ -210,7 +210,7 @@ struct PlanList: View {
             letterMenu(item) { LetterMark(letter: nil) }
         }
         // The words line up with the day's rows above, which have a check before them.
-        .listRowInsets(EdgeInsets(top: 0, leading: 60, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 66, bottom: 0, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
@@ -246,12 +246,12 @@ struct PlanList: View {
             }
         }
         .padding(.vertical, 4)
-        .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
     }
 
     /// An icon where the day's rows have their check, and the words in the same column as theirs.
     private func planningRow(_ symbol: String, @ViewBuilder words: () -> some View) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 10) {
             Image(systemName: symbol).foregroundStyle(Color.secondary).frame(width: 44)
             VStack(alignment: .leading, spacing: 2) { words() }
                 .frame(maxWidth: .infinity, alignment: .leading)

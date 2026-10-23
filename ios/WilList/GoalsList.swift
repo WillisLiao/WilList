@@ -35,13 +35,15 @@ struct GoalsList: View {
                 }
                 Button("Add a goal", systemImage: "plus") { editingGoal = Goal(id: "", title: "") }
             } header: {
-                Text("Other goals")
+                Text("Other goals").onGround()
             } footer: {
-                Text("Give each goal a deadline, then break it into items with a letter.")
+                Text("Give each goal a deadline, then break it into items with a letter.").onGround()
             }
 
-            Section("Last 21 days") {
+            Section {
                 StreakDots(firstDone: store.state.meta.firstDone, today: store.today)
+            } header: {
+                Text("Last 21 days").onGround()
             }
         }
         .ground()
@@ -131,7 +133,7 @@ struct PurposeEditor: View {
                     Text("Your one major definite purpose: the goal that would help you most if you reached it.")
                 }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle("Main goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -176,7 +178,7 @@ struct GoalEditor: View {
                 Section("Who can help") { TextField("People to ask", text: $goal.people, axis: .vertical) }
                 Section("Your reward") { TextField("How you’ll celebrate", text: $goal.reward, axis: .vertical) }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle(goal.id.isEmpty ? "New goal" : "Goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

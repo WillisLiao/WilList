@@ -37,14 +37,16 @@ struct StudyView: View {
                 if sessions.isEmpty && ahead.isEmpty && week.allSatisfy({ $0.load == 0 }) {
                     firstRun
                 } else {
-                    Section("Study today") {
+                    Section {
                         if sessions.isEmpty {
                             Text("Nothing to study today.").foregroundStyle(.secondary)
                         }
                         ForEach(sessions) { sessionRow($0) }
+                    } header: {
+                        Text("Study today").onGround()
                     }
 
-                    Section("This week") {
+                    Section {
                         if week.allSatisfy({ $0.load == 0 }) {
                             Text("No study planned this week.").foregroundStyle(.secondary)
                         } else {
@@ -58,13 +60,17 @@ struct StudyView: View {
                             .foregroundStyle(.secondary)
                             .listRowSeparator(.hidden, edges: .top)
                         }
+                    } header: {
+                        Text("This week").onGround()
                     }
 
-                    Section("Coming up") {
+                    Section {
                         if ahead.isEmpty {
                             Text("No exams or deadlines in the next 45 days.").foregroundStyle(.secondary)
                         }
                         ForEach(ahead, id: \.item.id) { readinessRow($0) }
+                    } header: {
+                        Text("Coming up").onGround()
                     }
                 }
             }

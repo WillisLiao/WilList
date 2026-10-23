@@ -108,12 +108,14 @@ struct TodayView: View {
                 }
                 if sort == .due {
                     ForEach(dueGroups, id: \.name) { group in
-                        Section(group.name) { rows(group.todos, movable: false) }
+                        Section { rows(group.todos, movable: false) } header: { Text(group.name).onGround() }
                     }
                 }
                 if !fromPlan.isEmpty {
-                    Section("From Plan and Study") {
+                    Section {
                         ForEach(fromPlan) { planRow($0) }
+                    } header: {
+                        Text("From Plan and Study").onGround()
                     }
                 }
                 if showCompleted && !completed.isEmpty {
@@ -123,12 +125,12 @@ struct TodayView: View {
                         Button { withAnimation(.snappy) { completedOpen.toggle() } } label: {
                             HStack(spacing: 6) {
                                 Text("Completed")
-                                Text("\(completed.count)").foregroundStyle(Color.secondary)
+                                Text("\(completed.count)")
                                 Image(systemName: "chevron.right")
                                     .font(.caption.weight(.semibold))
                                     .rotationEffect(.degrees(completedOpen ? 90 : 0))
                             }
-                            .foregroundStyle(Color.primary)
+                            .onGround()
                         }
                         .buttonStyle(.borderless)
                     }
@@ -136,7 +138,7 @@ struct TodayView: View {
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
-            .ground()
+            .ground(barless: true)
             .readableColumn()
             .scrollDismissesKeyboard(.interactively)
             .toolbar(.hidden, for: .navigationBar)
@@ -188,11 +190,12 @@ struct TodayView: View {
             HStack(spacing: 0) {
                 Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
                 Spacer(minLength: 8)
                 if hasTools { tools }
             }
         }
+        .onGround()
+        .tint(.white)
     }
 
     /// A one-line nudge under the A1 card: what's waiting for a letter, or planning tomorrow.

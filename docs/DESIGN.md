@@ -12,7 +12,8 @@ The owner's two strongest pieces of feedback were "I'm lost when I look at the a
 Everything below serves calm, obvious screens and a satisfying tick.
 
 The look is Lagoon, the owner's pick of four on 2026-10-23 (Meadow, Frog, Notebook and Lagoon, shown side by side): one teal, the system's own type, and the A1 on a pale teal card.
-Later that day the owner said they liked the widget gallery better than the app, so the app is laid out like its widgets: every part on a white card of its own with rounded corners, floating on a soft blue-grey ground, in the softer teal from that picture.
+Later that day the owner said they liked the widget gallery better than the app, so the app is laid out like its widgets: every part on a white card of its own with rounded corners, in the softer teal from that picture.
+Then they asked for every tab to have the gallery's dark background, so the tabs lie on its deep slate and sheets on a light blue-grey; and for the letters to take the usual colours of urgency, red for A through orange, yellow and green to blue for E.
 
 ## Colour
 
@@ -20,14 +21,17 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 
 | Token | Value | Used for, and only for |
 |---|---|---|
-| Ground | `Color.ground`, `#DAE2E7`, through `.ground()` in `Theme.swift` | What every list, form and sheet is laid on, as the widgets lie on a Home Screen. The guided flows and Focus keep their fields of colour. |
+| Ground | `LinearGradient.ground`, `#5F768A` at the top to `#3D4E5F` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Study, More, Your goals): the widget gallery's slate, a shade deeper so white words hold 4.5:1 from top to bottom. The guided flows and Focus keep their fields of colour. |
+| Words on the ground | white, through `.onGround()` | Today's date and summary and its tools, large titles, section titles and footers, "Letter them". Never grey or teal there. |
+| Sheet | `Color.sheet`, `#DAE2E7`, through `.sheetGround()` | What every sheet's cards lie on, so a sheet stands apart from the tab under it. |
 | Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card, and the A1 card and the question cards are opaque cards of their own. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
 | Teal | `AccentColor` asset and `Color.brand` in `ios/Shared/Look.swift`, `#347583`, the softer teal the owner picked from the widget gallery (5.2:1 with white either way round, 4.6:1 on the A1's pale card); `#285E69` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links, tappable rows and toolbar buttons. |
-| Teal on the ground | `Color.brandOnGround`, `#285E69` (`#1F4B54` with Increase Contrast) | Words straight on the ground, where the teal falls to 4.0:1 and this holds 5.5:1: "Letter them" beside a section's title, the letter sorter's Close and Skip for now. |
+| Teal on a sheet | `Color.brandOnSheet`, `#285E69` (`#1F4B54` with Increase Contrast) | Words straight on a sheet's ground, where the teal falls to 4.0:1 and this holds 5.5:1: the letter sorter's Close and Skip for now. |
+| Letters | `Letter.color` and `Letter.ink` in `ios/Shared/Letters.swift`: A red `#D92D20`, B orange `#FF9500`, C yellow `#FFCC00`, D green `#34C759`, E blue `#2563EB` | Each letter's chip. The words on it are white on the red and the blue and a deep shade of the colour on the three light ones (`#4A2500`, `#4A3B00`, `#0A3316`), 4.8:1 or better. |
 | Pale teal | teal at 9% over white (the A1 card, the A1 widgets, the chosen letter), 6% (an empty card), 12% (the Letter button) | Emphasis that must stay quiet. |
-| Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
+| Red | `Color.red` | Problems: overdue, a day over the study budget, behind or short of time. The A's chip is red too, at the owner's ask; it is always a filled chip, never words, so it doesn't read as a problem. |
 | Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, green, raspberry, ochre, slate, then the teal; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
 
 Colour goes on things that mean something, never on decoration.
@@ -86,7 +90,8 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check (Needs a letter, Plan tomorrow) keep the words in that column.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date ("Due tomorrow, 10:00 AM", teal when today, red when overdue), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
 - **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in More). The row waits 450 ms filled, then glides away.
-- **LetterMark:** letters differ by intensity, not hue. A is filled teal with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
+- **LetterMark:** a chip filled in the letter's colour (red, orange, yellow, green, blue from A to E), with E struck through as well; an item with no letter yet has a dashed grey outline. On a field of colour (Focus, the Live Activity) the A is white with its letter in the field's colour and the others are white outlines. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
+  New task's letter row shows each letter as a pale wash of its colour with dark words, and in full once chosen; yellow and green words can't be read on white.
 - **StarButton:** grey outline, filled teal when important.
 - **A1 card** (`A1Card.swift`, at the top of Today under the date): pale teal over white (`heroCard()`), corner radius 22, with the letter and "Do this first", the title in `.title2` semibold, at most two lines under it, "Start" (bordered) beside a wide "Mark done", and "3 days in a row you started with an A" when there is a streak.
   Mark done fills the button's check and says Done at once, draws a line through the title left to right, and fades its words.

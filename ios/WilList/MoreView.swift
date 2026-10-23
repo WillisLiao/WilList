@@ -34,9 +34,9 @@ struct MoreView: View {
                     Button("Add a calendar link", systemImage: "link") { addingFeed = true }
                     Button("Bring in a schedule", systemImage: "square.and.arrow.down") { importing = true }
                 } header: {
-                    Text("Calendars and schedules")
+                    Text("Calendars and schedules").onGround()
                 } footer: {
-                    Text("A link from Canvas, Moodle, Google or Outlook keeps your deadlines and exams up to date.")
+                    Text("A link from Canvas, Moodle, Google or Outlook keeps your deadlines and exams up to date.").onGround()
                 }
 
                 Section {
@@ -49,9 +49,9 @@ struct MoreView: View {
                         ForEach(Badge.allCases) { Text($0.name).tag($0) }
                     }
                 } header: {
-                    Text("To-dos")
+                    Text("To-dos").onGround()
                 } footer: {
-                    Text("Reminders you set on a to-do or an item arrive as notifications, with Mark done right on them.")
+                    Text("Reminders you set on a to-do or an item arrive as notifications, with Mark done right on them.").onGround()
                 }
 
                 Section {
@@ -64,9 +64,9 @@ struct MoreView: View {
                         store.say(n == 0 ? "Nothing to plan yet." : "Planned again, A’s first.")
                     }
                 } header: {
-                    Text("Study plan")
+                    Text("Study plan").onGround()
                 } footer: {
-                    Text("Plan everything again to use these for what’s already planned.")
+                    Text("Plan everything again to use these for what’s already planned.").onGround()
                 }
 
                 Section {
@@ -76,9 +76,9 @@ struct MoreView: View {
                     Toggle("Remind me to plan", isOn: Binding(get: { store.state.settings.notify }, set: { on in store.change { $0.settings.notify = on } }))
                         .tint(.brand)
                 } header: {
-                    Text("Your day")
+                    Text("Your day").onGround()
                 } footer: {
-                    Text("Planning the night before saves time the next day.")
+                    Text("Planning the night before saves time the next day.").onGround()
                 }
 
                 Section {
@@ -90,9 +90,9 @@ struct MoreView: View {
                         .onChange(of: key) { Keychain.apiKey = key }
                     Link("Get a key at console.anthropic.com", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                 } header: {
-                    Text("Claude")
+                    Text("Claude").onGround()
                 } footer: {
-                    Text("Claude reads the files and photos you bring in. Your key stays on this iPhone.")
+                    Text("Claude reads the files and photos you bring in. Your key stays on this iPhone.").onGround()
                 }
 
                 Section {
@@ -101,11 +101,12 @@ struct MoreView: View {
                     }
                     Button("Restore from a backup", systemImage: "arrow.counterclockwise") { restoring = true }
                 } header: {
-                    Text("Your data")
+                    Text("Your data").onGround()
                 } footer: {
                     Text(restoreError ?? (CloudSync.shared.available
                         ? "Your plan is the same on every iPhone and iPad signed in to your iCloud."
                         : "Everything stays on this device. Sign in to iCloud in the Settings app to have your plan on your iPhone and iPad."))
+                        .onGround()
                 }
 
                 Section {
@@ -197,7 +198,7 @@ struct AddFeedSheet: View {
                     DisclosureGroup("Outlook") { Text("Settings, Calendar, Shared calendars, Publish a calendar. Copy the ICS link.") }
                 }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle("Calendar link")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

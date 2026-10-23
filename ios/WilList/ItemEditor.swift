@@ -97,7 +97,7 @@ struct ItemEditor: View {
                     Button("Delete", role: .destructive) { confirmDelete = true }
                 }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle(item.type.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

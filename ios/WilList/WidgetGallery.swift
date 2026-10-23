@@ -45,7 +45,7 @@ struct WidgetGallery: View {
         }
         .padding(.top, 64)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(LinearGradient(colors: [Color(hex: 0x8FA7B8), Color(hex: 0x5D7183)], startPoint: .top, endPoint: .bottom))
+        .background(LinearGradient.ground)
     }
 
     private func home(_ family: WidgetFamily, a1: Bool = false, @ViewBuilder content: () -> some View) -> some View {

@@ -180,6 +180,13 @@ struct ReadableColumn: ViewModifier {
     }
 }
 
+/// Cards scrolled under a tab's title are hidden behind a solid edge, not blurred under it.
+struct HardTopEdge: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26, *) { content.scrollEdgeEffectStyle(.hard, for: .top) } else { content }
+    }
+}
+
 /// The A1 card's ground: a pale wash of its colour (the teal, or the night for the evening's
 /// question) on white, paler still for an empty card, so it floats on the ground like the A1 widget.
 struct HeroCard: ViewModifier {
@@ -208,8 +215,28 @@ struct WordsWhenLarge: LabelStyle {
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
 
-    /// A list's cards on the soft ground (`Color.ground`), as the widgets sit on a Home Screen.
-    func ground() -> some View { scrollContentBackground(.hidden).background(Color.ground) }
+    /// A tab's cards on the slate ground (`LinearGradient.ground`), as the widgets sit on a Home Screen.
+    /// `barless` for a screen without a navigation bar (Today): nothing scrolls under the clock.
+    func ground(barless: Bool = false) -> some View {
+        scrollContentBackground(.hidden)
+            .mask {
+                VStack(spacing: 0) {
+                    // A short fade, so a card slides away under the clock rather than being cut.
+                    if barless { LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom).frame(height: 10) }
+                    Rectangle()
+                }
+                .ignoresSafeArea(edges: barless ? .bottom : .all)
+            }
+            .background(LinearGradient.ground)
+            .modifier(HardTopEdge())
+    }
+
+    /// A sheet's cards on its light ground (`Color.sheet`).
+    func sheetGround() -> some View { scrollContentBackground(.hidden).background(Color.sheet) }
+
+    /// Words straight on a tab's slate ground (a section's title, its footer): white, as words on
+    /// a field of colour always are.
+    func onGround() -> some View { foregroundStyle(.white) }
 
     func heroCard(_ color: Color = .brand, empty: Bool = false) -> some View { modifier(HeroCard(color: color, empty: empty)) }
 

@@ -11,8 +11,9 @@ Everything after `5bd0878` (Lagoon, iCloud sync, the widget-style cards) is on t
 
 **The owner's answers (2026-10-23):** merge into `main` with the website as it is; keep the Lagoon look; no custom lists for now; sync the iPhone and iPad through iCloud.
 Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.
+Then: "ABCDE can have different colors", and shown three palettes, "just the typical red most important, then orange yellow greeen blue"; and "every tab should have the same dark background like this tab" (the widget gallery).
 
-**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, floating on a soft blue-grey ground (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, and a colour for each course.
+**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, every tab on the widget gallery's deep slate (`#5F768A` to `#3D4E5F`, words on it white) and every sheet on a light blue-grey (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, the letters in red, orange, yellow, green and blue from A to E, and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience.
 
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
@@ -70,7 +71,7 @@ Answered on 2026-10-23: `main` merged with the website as it is (done), Lagoon k
 Still open:
 
 1. Merging the work since `5bd0878` (Lagoon, iCloud sync, the widget-style cards) into `main`: ask first, as it publishes the website.
-2. The website stays the older version for now; bringing it up to the app (the A1 card, focus, the sorter, the welcome, sync) is a later call.
+2. The website stays the older version for now; bringing it up to the app (the A1 card, focus, the sorter, the welcome, sync, the cards on slate, the letter colours) is a later call.
 3. iPad: a sidebar or two columns (Today beside Plan) would use the space better than a centred column.
 
 The owner has said there are no fixed rules on what the app should be or which features it has.

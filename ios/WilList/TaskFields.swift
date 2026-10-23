@@ -154,7 +154,7 @@ private struct DateTimePicker: View {
                 DatePicker("Remind me", selection: $date, in: Date.now..., displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(.graphical)
             }
-            .ground()
+            .sheetGround()
             .navigationTitle("Remind me")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -305,7 +305,7 @@ private struct CustomRepeat: View {
                     }
                 }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle("Repeat")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

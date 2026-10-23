@@ -49,9 +49,12 @@ struct AddItemSheet: View {
                             Button { chosenLetter = .some(l == letter ? nil : l) } label: {
                                 Text(l.rawValue)
                                     .font(.headline)
-                                    .foregroundStyle(letter == l ? Color.white : Color.primary)
+                                    .strikethrough(l == .E)
+                                    // Its colour in full once chosen, a pale wash of it until then (yellow
+                                    // and green words can't be read on white).
+                                    .foregroundStyle(letter == l ? l.ink : Color.primary)
                                     .frame(maxWidth: .infinity, minHeight: 40)
-                                    .background(letter == l ? Color.brand : Color(.secondarySystemFill), in: Capsule())
+                                    .background(letter == l ? l.color : l.color.opacity(0.22), in: Capsule())
                             }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("\(l.rawValue): \(l.meaning)")
@@ -71,7 +74,7 @@ struct AddItemSheet: View {
                     }
                 }
             }
-            .ground()
+            .sheetGround()
             .navigationTitle("New \(type.name.lowercased())")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

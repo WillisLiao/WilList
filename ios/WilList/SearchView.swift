@@ -50,7 +50,7 @@ struct SearchView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .ground()
+            .sheetGround()
             .background(CloseWhenCancelled())
             .overlay {
                 if !words.isEmpty && todos.isEmpty && items.isEmpty {

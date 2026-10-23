@@ -15,11 +15,13 @@ struct WilListApp: App {
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // Screen titles in bold, like the date on Today. Set once the app has launched: touching UIKit
-    // appearance any earlier (in App.init) loses the accent colour.
+    // Screen titles in bold, like the date on Today. Large titles are only on the tabs, so they
+    // are white on the tabs' slate ground; sheets' titles stay small and dark on their light ground.
+    // Set once the app has launched: touching UIKit appearance any earlier (in App.init) loses the
+    // accent colour.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let bar = UINavigationBar.appearance()
-        bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle)]
+        bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle), .foregroundColor: UIColor.white]
         bar.titleTextAttributes = [.font: Self.titleFont(.headline)]
         UNUserNotificationCenter.current().delegate = self
         // Mark done on the focus Live Activity runs here, with the app in the background if need be.

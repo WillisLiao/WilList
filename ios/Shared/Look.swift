@@ -3,9 +3,9 @@ import UIKit
 import WilListCore
 
 // How WilList looks: Lagoon, the owner's pick of four on 2026-10-23, laid out like its widgets
-// (the owner liked those best): every part on a card of its own, floating on a soft blue-grey
-// ground. One soft teal for everything that acts or is done, the system's own type, and the A1
-// on a pale teal card.
+// (the owner liked those best): every part on a card of its own, floating on the deep slate of
+// the widget gallery, and sheets on a light blue-grey. One soft teal for everything that acts or
+// is done, the system's own type, and the A1 on a pale teal card.
 
 extension Color {
     /// The one colour: ticks, the A, the primary button, set values, links. The softer teal the
@@ -13,11 +13,11 @@ extension Color {
     /// carrying white words; darker with Increase Contrast.
     static let brand = Color(hex: 0x347583, highContrast: 0x285E69)
 
-    /// What every screen's cards float on, as the widgets float on a Home Screen.
-    static let ground = Color(hex: 0xDAE2E7)
+    /// What a sheet's cards lie on: a light blue-grey, so a sheet stands apart from the tab under it.
+    static let sheet = Color(hex: 0xDAE2E7)
 
-    /// The teal for words straight on the ground, deeper so they still read at 4.5:1 there.
-    static let brandOnGround = Color(hex: 0x285E69, highContrast: 0x1F4B54)
+    /// The teal for words straight on a sheet's ground, deeper so they still read at 4.5:1 there.
+    static let brandOnSheet = Color(hex: 0x285E69, highContrast: 0x1F4B54)
 
     nonisolated init(hex: UInt32) {
         self.init(red: Double(hex >> 16 & 0xFF) / 255, green: Double(hex >> 8 & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
@@ -51,6 +51,12 @@ enum CourseColor {
 
     /// A course's colour lifted to read on the black of the Dynamic Island (5.5:1 or better).
     static func onDark(_ number: Int?) -> Color { number == nil ? .brandOnDark : of(number).mix(with: .white, by: 0.35) }
+}
+
+extension LinearGradient {
+    /// What every tab is laid on, as the widgets lie on a Home Screen: the slate of the widget
+    /// gallery, a shade deeper so white words straight on it read at 4.5:1 or better all the way down.
+    static let ground = LinearGradient(colors: [Color(hex: 0x5F768A), Color(hex: 0x3D4E5F)], startPoint: .top, endPoint: .bottom)
 }
 
 extension EnvironmentValues {

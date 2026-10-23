@@ -36,10 +36,10 @@ struct LetterSorter: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
-        // The letters are cards on the ground, as everywhere else; words straight on it take the
-        // deeper teal.
-        .background(Color.ground)
-        .tint(Color.brandOnGround)
+        // The letters are cards on the sheet's ground, as everywhere else; words straight on it
+        // take the deeper teal.
+        .background(Color.sheet)
+        .tint(Color.brandOnSheet)
         .sensoryFeedback(.selection, trigger: at)
     }
 
@@ -124,7 +124,7 @@ struct LetterSorter: View {
             }
             Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
         }
-        let check = Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.brand)
+        let check = Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(letter.color)
         return Button { choose(letter, for: item) } label: {
             Group {
                 if typeSize.isAccessibilitySize {
@@ -150,7 +150,7 @@ struct LetterSorter: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-            .background(Color.brand.opacity(current ? 0.09 : 0), in: shape)
+            .background(letter.color.opacity(current ? 0.09 : 0), in: shape)
             .background(Color.white, in: shape)
             .overlay { if letter == suggested && !current { shape.strokeBorder(Color.brand.opacity(0.45), lineWidth: 1.5) } }
             .contentShape(shape)

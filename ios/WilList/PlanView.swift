@@ -53,9 +53,9 @@ struct PlanList: View {
                                 Text("Letter them").tapArea()
                             }
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color.brandOnGround)
                             .buttonStyle(.borderless)
                         }
+                        .onGround()
                     }
                     .id("letters")
                 }

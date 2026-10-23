@@ -83,3 +83,69 @@ extension AppState {
         return w
     }
 }
+
+/// What got done on one day, by letter; to-dos and unlettered items count under nil.
+public struct DayDone: Equatable, Sendable {
+    public var date: Day
+    public var counts: [Letter?: Int] = [:]
+    public var total: Int { counts.values.reduce(0, +) }
+}
+
+extension AppState {
+    /// What got done on each of the `days` days up to and including `today`, oldest first: whole
+    /// items, study sessions, a repeat's times and to-dos, as `weekStats` counts them.
+    public func doneByDay(_ today: Day, days: Int) -> [DayDone] {
+        var out = (0..<days).map { DayDone(date: addDays(today, $0 - days + 1)) }
+        let index = Dictionary(uniqueKeysWithValues: out.indices.map { (out[$0].date, $0) })
+        func add(_ d: Day?, _ letter: Letter?) {
+            if let d, let i = index[d] { out[i].counts[letter, default: 0] += 1 }
+        }
+        for it in items {
+            if it.done { add(it.doneAt, it.priority) }
+            for s in it.sessions where s.done && !(it.done && s.doneAt == it.doneAt) { add(s.doneAt, it.priority) }
+            for d in it.doneDates { add(d, it.priority) }
+        }
+        for t in todos where t.done { add(t.doneAt, nil) }
+        return out
+    }
+}
+
+/// One thing Progress suggests, with what to do about it.
+public enum Suggestion: Equatable, Sendable {
+    /// Study sessions that were missed: replan them.
+    case replan(missed: Int)
+    /// A day ahead with more study than the daily time.
+    case overloaded(day: Day, minutes: Int, budget: Int)
+    /// An A due in four to thirty days with nothing done yet: start it today.
+    case startEarly(Item)
+    /// Items still waiting for a letter.
+    case letter(count: Int)
+    /// C, D and E items over two weeks old: still worth it?
+    case review(ids: [String])
+    /// Things of a type take longer (or shorter) than planned.
+    case calibrate(Calibration)
+}
+
+/// What Progress suggests today, most pressing first, each at most once.
+public func suggestions(_ s: AppState, _ today: Day) -> [Suggestion] {
+    var out: [Suggestion] = []
+    let missed = missedSessions(s.items, today).reduce(0) { $0 + $1.count }
+    if missed > 0 { out.append(.replan(missed: missed)) }
+    if let heavy = radar(s.items, today, days: 7, perDayMin: s.settings.perDayMin).first(where: \.over) {
+        out.append(.overloaded(day: heavy.date, minutes: heavy.load, budget: s.settings.perDayMin))
+    }
+    if let early = importantNotUrgent(s.items, today).first(where: { it in
+        !it.sessions.contains(where: \.done) && it.myDay != today
+    }) {
+        out.append(.startEarly(early))
+    }
+    let waiting = unsorted(s.items, today).count
+    if waiting > 0 { out.append(.letter(count: waiting)) }
+    let old = s.items.filter { it in
+        guard let p = it.priority, p >= .C, isOpen(it, today), let made = it.createdAt else { return false }
+        return diffDays(made, today) > 14
+    }
+    if !old.isEmpty { out.append(.review(ids: old.map(\.id))) }
+    if let c = calibrations(s.log, current: s.settings.calib).first { out.append(.calibrate(c)) }
+    return out
+}

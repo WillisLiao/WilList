@@ -97,19 +97,20 @@ The native app (`ios/`) keeps every idea above and arranges them in four tabs, s
 
 | Principle | In the iPhone app |
 |---|---|
-| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Plan and Study have **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
-| **Get the whole term onto the list at once.** | Calendar links (Canvas, Moodle, Blackboard, Brightspace, Google, Outlook) are read every time the app opens. **Bring in a schedule** has Claude read any file or photo, for any course, job or project, and shows what it found before anything is added. |
+| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Plan has **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
+| **Get the whole term onto the list at once.** | The **Agent** tab reads any file, photo or words (a syllabus, a timetable, a roster, for any course, job or project) and proposes everything in it on one card to tick and Add; nothing goes in before that tap. A calendar file is read on the phone itself, and a calendar link the student types (Canvas, Moodle, Blackboard, Brightspace, Google, Outlook) can be followed, read again every half hour. |
 | **ABCDE and A1 first.** | Today opens with the A1 as its first row, and the widgets show the same A1. Plan numbers the day A1, A2, B1, each letter on the right of its row. Items without a letter wait under "Needs a letter" with a **Letter** button. Today says how many are waiting, and one tap letters them one at a time, each letter shown with what it means. |
 | **Single handling: one thing until it's done.** | **Start** beside the A1 on Today opens focus: the task and a ring timer, nothing else. The timer also sits on the Lock Screen and in the Dynamic Island with Mark done on it, and says Break when the planned minutes are up. The real minutes are kept, as on the website. |
 | **Consider consequences.** | Tapping a letter lists all five with what each one means, and the suggested one is marked. A share of the grade suggests the letter, as on the web. |
 | **Make tomorrow's list the night before.** | **Plan tomorrow** takes two short steps: write down anything new, then pick the one thing that matters most. It ends with "Tomorrow starts with" and that A1. From your planning time Today offers it at the top, and the optional evening notification opens it; Plan's calendar shows any other day too. |
-| **Sub-deadlines and spaced repetition.** | Study lists today's sessions and, for each exam and deadline in the next 45 days (or with no date yet), how many sessions are done and whether it is on track, behind or short of time. Its calendar puts every exam and deadline on its day. |
-| **Load-aware planning.** | Study charts this week's planned study per day, with days over your daily study time in red. |
-| **A new habit takes about 21 days.** | Your goals (first in More) shows 21 dots, filled where the first thing you finished was an A, and the days in a row. |
+| **Sub-deadlines and spaced repetition.** | Today and Plan carry today's study sessions. Progress lists each exam and deadline in the next 45 days (or with no date yet), how many sessions are done and whether it is on track, behind or short of time, and suggests replanning missed sessions or starting important work early. |
+| **Load-aware planning.** | Progress charts the next 7 days' planned study per day, with days over your daily study time in red, and suggests what to move. |
+| **Review your progress.** | Progress shows the last 7 days (done, A's, days started with an A, focus time) and a chart of the last 14 by letter; the Agent answers questions about your plan and progress in words. |
+| **A new habit takes about 21 days.** | Your goals (first in Settings, from the profile picture) shows 21 dots, filled where the first thing you finished was an A, and the days in a row. |
 | **Victim language.** | While you type in **+**, "I'll try", "I wish", "I have to" and "problem" get a one-line nudge. |
 | **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a ring and a burst of sparks, a short chime and a haptic, then the row slides away. The widgets and the Live Activity tick off too, and a widget shows the line done for a moment before it goes. |
 | **Slice and dice the task.** | Every to-do and item can hold steps, ticked off one by one, with "1 of 3" in the list. |
-| **Written goals, a major definite purpose.** | Your main goal is the first thing in More, and leads Your goals. |
+| **Written goals, a major definite purpose.** | Your main goal is the first thing in Settings, from the profile picture on every tab, and leads Your goals. |
 | **Plan every day in advance.** | Plan's calendar shows what's planned on every day of the month. Any to-do or item can have a reminder at a date and time, a due date and time, and a repeat; the reminder can be marked done from the notification. |
 
 Not in the iPhone app yet: the coach, Worry Buster, 20 Ideas and Pre-game.

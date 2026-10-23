@@ -21,6 +21,8 @@
          <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "57A100000000000000000006" BuildableName = "WilList.app" BlueprintName = "WilList" ReferencedContainer = "container:WilList.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference identifier = "../../Agent.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ArchiveAction buildConfiguration = "Release" revealArchiveInOrganizer = "YES">
    </ArchiveAction>

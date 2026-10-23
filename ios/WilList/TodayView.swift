@@ -43,7 +43,7 @@ struct TodayView: View {
     private var completed: [Todo] {
         store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
     }
-    /// The day's A1, first on Today, then the items from Plan and Study added to Today, still to
+    /// The day's A1, first on Today, then the items from Plan added to Today, still to
     /// do today.
     private var planItems: [Item] {
         let a1 = doRows(store.state.items, today).first?.item
@@ -65,7 +65,7 @@ struct TodayView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                // The day's A1 leads, with what was added from Plan and Study under it.
+                // The day's A1 leads, with what was added from Plan under it.
                 if !fromPlan.isEmpty {
                     Section {
                         ForEach(Array(fromPlan.enumerated()), id: \.element.id) { k, item in planRow(item, first: k == 0) }
@@ -147,20 +147,24 @@ struct TodayView: View {
 
     // MARK: header
 
-    /// The date, how the day stands, Search and Sort.
+    /// The profile picture, Search and Sort, then the date and how the day stands.
     private func header(fromPlan: [Item]) -> some View {
         // A new list has nothing to search or sort yet.
         let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
         return VStack(alignment: .leading, spacing: 2) {
-            Text(Fmt.long(today))
-                .font(.largeTitle.bold())
-                .accessibilityAddTraits(.isHeader)
+            // The profile picture top left, as on every tab, Search and Sort top right.
             HStack(spacing: 0) {
-                Text(summary(open.count + fromPlan.count))
-                    .font(.subheadline)
+                ProfileButton()
+                    // Its circle in line with the date's first letter.
+                    .padding(.leading, -7)
                 Spacer(minLength: 8)
                 if hasTools { tools }
             }
+            Text(Fmt.long(today))
+                .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
+            Text(summary(open.count + fromPlan.count))
+                .font(.subheadline)
         }
         .onGround()
         .tint(.groundInk)
@@ -317,7 +321,7 @@ ForEach(list) { todo in
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    /// The A1, or an item added to Today from Plan or Study: tick it off here, or take it off
+    /// The A1, or an item added to Today from Plan: tick it off here, or take it off
     /// Today. The A1 (`first`, when it is one) has Start, for a focus session on it.
     private func planRow(_ item: Item, first: Bool) -> some View {
         let checked = ticking.contains(item.id)

@@ -3,7 +3,7 @@ import XCTest
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// add the day's A1 in Plan, set a reminder on one and Mark done on the reminder when it comes,
 /// give one a letter, tick off the A1 at the top of Today, a focus session on it, the first-run
-/// welcome, Plan tomorrow from Today's evening nudge, and Search.
+/// welcome, Plan tomorrow from Today's evening nudge, Search, and adding what the Agent found.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -175,13 +175,29 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(app.textFields["Add a to-do"].exists)
     }
 
+    func testTheAgentAddsOnlyWhatIsTicked() {
+        // The Agent answers from its script (`AgentDemo`): no server, key or subscription.
+        let app = launch(plan: "busy", tab: "agent", more: ["-agentDemo", "YES", "-agentConsent", "YES"])
+        let field = app.textFields["Message"]
+        XCTAssertTrue(field.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
+        field.typeText("Here's my syllabus")
+        let add = app.buttons["Add 3"]
+        XCTAssertTrue(tap(app.buttons["Send"], shows: add), "the Agent proposes three things")
+        let reading = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 7'")).firstMatch
+        XCTAssertTrue(tap(reading, shows: app.buttons["Add 2"]), "unticking one leaves two")
+        XCTAssertTrue(tap(app.buttons["Add 2"], shows: app.staticTexts["Added 2 items"]))
+        // Undo takes them out again, and the card offers them again.
+        XCTAssertTrue(tap(app.buttons["Undo"], shows: app.buttons["Add 2"]), "Undo brings the button back")
+    }
+
     // MARK: helpers
 
     /// Starts the app on a known plan; `night` makes it evening, past the planning time.
-    private func launch(plan: String, tab: String = "today", night: Bool = false) -> XCUIApplication {
+    private func launch(plan: String, tab: String = "today", night: Bool = false, more: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", night ? "YES" : "NO"]
+        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", night ? "YES" : "NO"] + more
         app.launch()
         return app
     }

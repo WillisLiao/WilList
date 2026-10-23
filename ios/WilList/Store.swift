@@ -11,13 +11,15 @@ final class Store {
     private(set) var state: AppState
     private(set) var today: Day = WilListCore.today()
     var toast: Toast?
-    /// A file shared to WilList from another app, waiting to be read.
+    /// A file shared to WilList from another app, waiting for the Agent.
     var incomingFile: URL?
+    /// Settings is open, from the profile picture at the top left of every tab.
+    var showingSettings = false
     /// A to-do or item to show, from a tapped reminder or a search result.
     var opening: String?
     /// A home-screen quick action waiting to be carried out.
     var quickAction: QuickAction?
-    /// Plan tomorrow is open (PlanTomorrow.swift): from Plan, Today's evening row or the evening notice.
+    /// Plan tomorrow is open (PlanTomorrow.swift): from Today's evening row or the evening notice.
     var planningTomorrow = false
     /// The focus session running, if any (FocusView.swift). It outlives the app being closed.
     var focus: FocusSession? = FocusSession.saved
@@ -81,16 +83,6 @@ final class Store {
         let data = try? JSONEncoder().encode(state), url = file
         writer.async { try? data?.write(to: url, options: .atomic) }
         reloadWidgets()
-        CloudSync.shared.planChanged()
-    }
-
-    /// Takes in the plan as merged with the other devices' (CloudSync). Undo would bring back what
-    /// another device changed, so it goes.
-    func takeSynced(_ synced: AppState) {
-        guard synced != state else { return }
-        change { $0 = synced }
-        undoState = nil
-        if toast?.canUndo == true { toast = nil }
     }
 
     /// Takes in changes made outside the app, such as a tick on a widget. Called when the app comes
@@ -102,7 +94,6 @@ final class Store {
         state = saved
         undoState = nil
         if toast?.canUndo == true { toast = nil } // its Undo would do nothing now
-        CloudSync.shared.planChanged()
     }
 
     /// The widgets show the new plan a moment after the last change.
@@ -235,6 +226,14 @@ final class Store {
                 if problem == nil { s.feeds[i].syncedAt = .now }
             }
         }
+    }
+
+    /// A calendar link's name, from where it lives: "Canvas", "Google Calendar", or its host.
+    static func feedName(for link: String) -> String {
+        let host = URL(string: link.trimmingCharacters(in: .whitespacesAndNewlines))?.host()?.lowercased() ?? ""
+        let known = [("instructure", "Canvas"), ("moodle", "Moodle"), ("blackboard", "Blackboard"), ("d2l", "Brightspace"),
+                     ("brightspace", "Brightspace"), ("google", "Google Calendar"), ("outlook", "Outlook"), ("office365", "Outlook")]
+        return known.first { host.contains($0.0) }?.1 ?? (host.isEmpty ? "Calendar" : host)
     }
 
     struct FeedError: LocalizedError {

@@ -21,17 +21,17 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 
 | Token | Value | Used for, and only for |
 |---|---|---|
-| Ground | `LinearGradient.ground`, `#BAC5CD` at the top to `#B1BAC3` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Study, More, Your goals): a light slate, the widget gallery's deep one (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on 2026-10-24 for it "at least 50% lighter". Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 8:1 at the top and 7:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
+| Ground | `LinearGradient.ground`, `#BAC5CD` at the top to `#B1BAC3` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Progress, Agent, Settings and Your goals): a light slate, the widget gallery's deep one (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on 2026-10-24 for it "at least 50% lighter". Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 8:1 at the top and 7:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
 | Words on the ground | white, through `.onGround()` | Today's date and summary and its tools, large titles, section titles and footers, "Letter them". Never grey or teal there. |
 | Sheet | `Color.sheet`, `#DAE2E7`, through `.sheetGround()` | What every sheet's cards lie on, so a sheet stands apart from the tab under it. |
-| Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card, and Study's first card is an opaque card of its own. |
+| Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card; the Agent's title card and chat bubbles are cards of their own. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
 | Teal | `AccentColor` asset and `Color.brand` in `ios/Shared/Look.swift`, `#347583`, the softer teal the owner picked from the widget gallery (5.2:1 with white either way round, 4.6:1 on the A1's pale card); `#285E69` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links, tappable rows and toolbar buttons. |
-| Deep teal | `Color.brandDeep`, `#285E69` (`#1F4B54` with Increase Contrast) | Teal words on a pale ground, where the teal itself falls under 4.5:1: on a sheet (5.5:1; the letter sorter's Close and Skip for now) and on a bordered button's teal wash (5.1:1; Bring in a schedule on Study). |
+| Deep teal | `Color.brandDeep`, `#285E69` (`#1F4B54` with Increase Contrast) | Teal words on a pale ground, where the teal itself falls under 4.5:1: on a sheet (5.5:1; the letter sorter's Close and Skip for now) on a bordered button's teal wash (5.1:1), and the student's own bubbles in the Agent (white on it, 7.3:1). |
 | Outlined on a field | `.outlinedOnField()` in `Theme.swift` | The second button on a field of colour (Pause on Focus, Letter them on Plan tomorrow's last page): white words in a white outline with no wash. On the system's white wash they read at 3.9:1; bare on the field they keep its 4.5:1 or better. |
 | Letters | `Letter.color` and `Letter.ink` in `ios/Shared/Letters.swift`: A red `#D92D20`, B orange `#FF9500`, C yellow `#FFCC00`, D green `#34C759`, E blue `#2563EB` | Each letter's chip. The words on it are white on the red and the blue and a deep shade of the colour on the three light ones (`#4A2500`, `#4A3B00`, `#0A3316`), 4.8:1 or better. |
-| Pale teal | teal at 9% over white (the A1 widgets, the chosen letter), 6% (Study's first card), 12% (the Letter button) | Emphasis that must stay quiet. |
+| Pale teal | teal at 9% over white (the A1 widgets, the chosen letter), 6% (the Agent's title card), 12% (the Letter button) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems: overdue, a day over the study budget, behind or short of time. The A's chip is red too, at the owner's ask; it is always a filled chip, never words, so it doesn't read as a problem. |
 | Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, green, raspberry, ochre, slate, then the teal; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
 
@@ -41,7 +41,7 @@ A course colour never stands for a problem: overdue stays red.
 Words on a field of colour are always pure white: white dimmed even to 85% falls below 4.5:1 on the teal, so size and weight make the hierarchy there.
 The guided flows open on a field too: the welcome's questions on the teal, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, as its focus session will be.
 That last page rises over the night like a sunrise, the list held still beneath it; between steps the band stays put while the new question rises in, and the step count sits in the middle and rolls on.
-On 2026-10-24 the owner took the A1 card off Today, and every explanation off Plan and Study: students know to letter what they add.
+On 2026-10-24 the owner took the A1 card off Today, and every explanation off Plan: students know to letter what they add.
 The A1 is now the first row of Today's first card, with Start beside it; an empty Plan day says only "Nothing planned".
 Your goals leads with the main goal set large in white on a teal card (or the question that asks for one); a tap writes it, keyboard up.
 
@@ -58,10 +58,10 @@ Your goals leads with the main goal set large in white on a teal card (or the qu
 
 As few words as do the job: on 2026-10-23 the owner said "each item, thing, description should have minimal words as possible".
 
-- Plain verbs, the user's words: "Remind me", "Add a due date", "Mark done", "Plan tomorrow", "Bring in a schedule".
+- Plain verbs, the user's words: "Remind me", "Add a due date", "Mark done", "Plan tomorrow", "Add 3".
 - Labels drop what the screen already says: "Starred on top", not "Move starred to-dos to top"; "7 to do, 1 overdue, 1 done" on Today, not "1 done today.".
 - Tracy's terms keep two plain words beside them: "A  Must do: serious consequences".
-- No explanatory footers. A footer is there only when it changes what the user does next ("50 min short. Raise daily study in More.").
+- No explanatory footers. A footer is there only when it changes what the user does next ("50 min short. Raise daily study in Settings.").
 - Say a status only when it needs attention, in as few words as it takes: "2 sessions behind", "Missed yesterday", never "On track".
 - An empty place says what is there in two or three words ("Nothing planned"), or gives its one button, never a paragraph or a lesson in the method.
 - Errors say what to do: "Turn on notifications for WilList in Settings."
@@ -75,18 +75,21 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Under today's date, the A1 first on a card (with Start, for a focus session) and anything added to Today from Plan and Study under it, how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist | Tick the A1; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
-| Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), items needing a letter, everything lettered that isn't on today's list under Later (soonest first), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full), then Bring in a schedule | Give each item a letter |
-| Study | Today's study sessions, this week's load, exams and deadlines coming up (with or without a date), then a month calendar showing each exam and deadline on its day in its course's colour (tap a day to list it in full) | Tick a session |
-| More | Your main goal (the way into all your goals), settings, calendar links, the Claude key, backups | (none) |
+| Today | Under today's date, the A1 first on a card (with Start, for a focus session) and anything added to Today from Plan under it, how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist | Tick the A1; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), items needing a letter, everything lettered that isn't on today's list under Later (soonest first), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
+| Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the last 14 days stacked by letter, suggestions with one action each (Replan, Add to Today, Letter them, Review, Adjust), the next 7 days' study load, then exams and deadlines coming up and whether each is on track | Act on a suggestion |
+| Agent | A chat: hand it a file, a photo or words and it proposes what to add, on a card to tick and Add; ask it about your plan and progress. Behind a subscription, and it asks once before anything is sent to Anthropic | Send |
+
+The profile picture at the top left of every tab opens **Settings** (a sheet): your main goal (the way into all your goals), to-do and study settings, the day's clocks, calendar links the Agent followed, backups.
+It will hold the account and sign-in once those exist.
 
 The four tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
 The chosen tab is in the deep teal on a pale teal pill.
 
-Search (magnifying glass) sits on Today, Plan and Study and covers everything.
+Search (magnifying glass) sits on Today and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
 
-Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan and Study, each nudge (letters waiting, Plan tomorrow) on a card of its own, then the to-dos with Add a to-do at their top, then each group.
+Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan, each nudge (letters waiting, Plan tomorrow) on a card of its own, then the to-dos with Add a to-do at their top, then each group.
 Plan's date sits on the ground the same way, under the tab's title.
 Section titles and footers stay on the ground between the cards, in the ground's ink.
 
@@ -98,19 +101,25 @@ There the highlighted tab names the screen, so a tab's own title steps aside, an
 All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swift` and `ios/WilList/Steps.swift` (the guided flows' page, line entry and A1 choice).
 
 - **Row:** check on the left, title, one quiet line under it, and on the right a star (to-dos) or a letter (items). Tap the text to open details. Swipe right to finish, left to delete.
-  On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check (Bring in a schedule) keep the words in that column.
+  On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date ("Due tomorrow, 10:00 AM", teal when today, red when overdue), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
-- **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in More). The row waits 450 ms filled, then glides away.
+- **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
 - **LetterMark:** a chip filled in the letter's colour (red, orange, yellow, green, blue from A to E), with E struck through as well; an item with no letter yet has a dashed grey outline. On a field of colour (Focus, the Live Activity) the A is white with its letter in the field's colour and the others are white outlines. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
   New task's letter row shows each letter as a pale wash of its colour with dark words, and in full once chosen; yellow and green words can't be read on white.
 - **StarButton:** grey outline, filled teal when important.
-- **MonthCalendar** (`MonthCalendar.swift`, under the rows of Plan and Study): the month and year with a month back and on, the days of the week in single letters, and the days in rows of seven, today's number in the teal. Under each number, what's planned that day: up to two titles in small chips of their colour (a letter's on Plan, a course's on Study), or one and "+2". Tapping a day fills its number teal and lists that day in full under the calendar; tapping it again lets it go.
+- **MonthCalendar** (`MonthCalendar.swift`, under the rows of Plan): the month and year with a month back and on, the days of the week in single letters, and the days in rows of seven, today's number in the teal. Under each number, what's planned that day: up to two titles in small chips of their letter's colour, or one and "+2". Tapping a day fills its number teal and lists that day in full under the calendar; tapping it again lets it go.
 - **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 96 pt bold, and white buttons.
   Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`).
   The Dynamic Island stays black: the letter is white with the course colour in it, and the time, bar and keyline use the course colour lifted with 35% white (`CourseColor.onDark`, 5.5:1 or better on black).
-- **Week chart** (`WeekChart` in `StudyView.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
+- **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 14 days' finished items, sessions and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top.
+- **Week chart** (`WeekChart` in `ProgressTab.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
 - **Focus** (`FocusView.swift`, from Start beside the A1 on Today): one task, one timer, nothing else. The letter and the title, the time left, the screen filling from the bottom as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
+- **Agent** (`AgentView.swift`): the student's words in deep teal bubbles on the right, the Agent's in white bubbles on the left, always as plain text (`Text(verbatim:)`, never Markdown or links, so nothing a file says becomes something to tap).
+  What it proposes comes as a white card of rows to tick, each with its kind and date, and one Add button; once added it says Added, and Undo brings the button back.
+  A calendar link the student typed comes as a card with Follow.
+  The message field is a white rounded bar above the tab bar with + (a file or a photo) and Send; attached files show as chips above it, five at most.
+  Before the first message the title card says what it does, with two questions to ask; until the student has agreed, it asks instead whether to send things to Anthropic, with Continue.
 - **Letter sorter** (`LetterSorter.swift`): letters the items waiting for one, one at a time. The item's title large at the top, the five letters as big rows with what each one means, the suggested one outlined and tagged, Skip for now, Back. It ends by naming your A1. Opened from Today's "2 waiting for a letter" and Plan's "Letter them".
 - **Plan tomorrow** (`PlanTomorrow.swift`): the evening habit in two steps on the welcome's pages: "Anything new for tomorrow?" (lines, dates read, with "4 done today, starting with an A." above when something got done), then "Which one first?" (tomorrow's list with its letters, plus the new lines; the current A1 is chosen to start). It ends on a sunrise: "Tomorrow starts with" and the A1's title, with Letter them when anything waits. Opened from Today's evening nudge and the evening notification. Close keeps the lines written and changes no letters.
 - **Widgets** (`ios/Shared/WidgetViews.swift`): Do this first (the A1 with Mark done) and Today (to-dos with a tick box each).
@@ -164,7 +173,7 @@ No decorative or entrance animation.
 14. **A list row's state can come back:** after Undo, a `List` brought the A1 card back with its old `@State`, still saying Done, even though the card is keyed with `.id`.
     Reset a row's passing state when it appears, or keep it in the screen above the list, as the `ticking` sets do.
 15. **Labels at the largest text sizes:** in a list, a `Label` with two lines of text wraps them around its icon.
-    Where that reads badly, lay the row out by hand and put the icon above the words at accessibility sizes (`ImportOption`), as the letter sorter does with its letters.
+    Where that reads badly, lay the row out by hand and put the icon above the words at accessibility sizes, as the letter sorter does with its letters.
 16. **Big buttons at the largest text sizes:** the round ends of a large button and its icon left "Mark done" so little room that it broke mid-word, "Ma / rk do…".
     `.labelStyle(WordsWhenLarge())` drops the icon at the accessibility sizes; Focus uses it.
 17. **A button centres the lines it wraps:** a row-like borderless button whose words wrap at a large size centres the second line under the first.
@@ -195,3 +204,6 @@ No decorative or entrance animation.
     UI tests tap its buttons by identifier (`tab-today`), not through `app.tabBars`.
 28. **A lazy grid inside a list's row:** a `LazyVGrid` in a `List` row sent the collection view's layout round in a loop (`_updateVisibleCellsNow`) until an assertion stopped the app, as soon as the row came on screen.
     `MonthCalendar` lays its days out in plain `HStack` rows of seven instead.
+29. **A text field above WilList's own tab bar:** the bar stays at the foot of the screen under the keyboard (`ignoresSafeArea(.keyboard)`), so a field kept clear of the bar would float a bar's height above the keyboard.
+    The Agent's message field leaves the bar's room only while the keyboard is down, read from the screen's bottom safe area (over 150 points means the keyboard is up), which also holds with a hardware keyboard, where focus alone would mislead.
+    Its toast host is told the bar takes no room (`tabBarRoom` 0), so Undo shows just above the field.

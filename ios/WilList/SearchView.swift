@@ -40,7 +40,7 @@ struct SearchView: View {
                     }
                 }
                 if !items.isEmpty {
-                    Section("Plan and Study") {
+                    Section("Plan") {
                         ForEach(items) { it in
                             Button { item = it } label: {
                                 result(it.title, Fmt.subline(it, store.today), done: it.done, letter: it.priority)

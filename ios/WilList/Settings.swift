@@ -3,17 +3,39 @@ import UniformTypeIdentifiers
 import UserNotifications
 import WilListCore
 
-enum MorePage: Hashable { case goals }
+enum SettingsPage: Hashable { case goals }
 
-/// Your goals, settings, calendar links, the Claude key and backups.
-struct MoreView: View {
+/// The profile picture at the top left of every tab: it opens Settings.
+struct ProfileButton: View {
     @Environment(Store.self) private var store
+
+    var body: some View {
+        Button { store.showingSettings = true } label: {
+            Image(systemName: "person.crop.circle.fill")
+                .font(.system(size: 30))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(Color.brand)
+                .tapArea()
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Settings")
+    }
+}
+
+extension View {
+    /// The profile picture at the top left of a tab's navigation bar.
+    func profileButton() -> some View {
+        toolbar { ToolbarItem(placement: .topBarLeading) { ProfileButton() } }
+    }
+}
+
+/// Your main goal and goals, how WilList behaves, and backups.
+struct SettingsView: View {
+    @Environment(Store.self) private var store
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var typeSize
     // `-open goals` on launch opens Goals (screenshots).
-    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [MorePage.goals] : []
-    @State private var addingFeed = false
-    @State private var importing = false
-    @State private var key = Keychain.apiKey ?? ""
+    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [SettingsPage.goals] : []
     @State private var restoring = false
     @State private var restoreError: String?
     @AppStorage("newOnTop") private var newOnTop = false
@@ -27,22 +49,6 @@ struct MoreView: View {
         NavigationStack(path: $path) {
             Form {
                 Section { goalRow }
-
-                Section {
-                    ForEach(store.state.feeds) { feed in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(feed.name)
-                            Text(feed.error ?? feed.syncedAt.map { "Read \($0.formatted(.relative(presentation: .named)))" } ?? "Not read yet")
-                                .font(.subheadline)
-                                .foregroundStyle(feed.error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.red))
-                        }
-                    }
-                    .onDelete { idx in idx.map { store.state.feeds[$0].url }.forEach(store.removeFeed) }
-                    Button("Add a calendar link", systemImage: "link") { addingFeed = true }
-                    Button("Bring in a schedule", systemImage: "square.and.arrow.down") { importing = true }
-                } header: {
-                    Text("Calendars").onGround()
-                }
 
                 Section {
                     Toggle("New to-dos on top", isOn: $newOnTop).tint(.brand)
@@ -80,18 +86,21 @@ struct MoreView: View {
                     Text("Day").onGround()
                 }
 
-                Section {
-                    SecureField("sk-ant-…", text: $key)
-                        .textContentType(.password)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                        .onSubmit { Keychain.apiKey = key }
-                        .onChange(of: key) { Keychain.apiKey = key }
-                    Link("Get a key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
-                } header: {
-                    Text("Claude").onGround()
-                } footer: {
-                    Text("Reads the schedules you bring in. The key stays on this iPhone.").onGround()
+                // Links the Agent subscribed to; they are read again every half hour.
+                if !store.state.feeds.isEmpty {
+                    Section {
+                        ForEach(store.state.feeds) { feed in
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(feed.name)
+                                Text(feed.error ?? feed.syncedAt.map { "Read \($0.formatted(.relative(presentation: .named)))" } ?? "Not read yet")
+                                    .font(.subheadline)
+                                    .foregroundStyle(feed.error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.red))
+                            }
+                        }
+                        .onDelete { idx in idx.map { store.state.feeds[$0].url }.forEach(store.removeFeed) }
+                    } header: {
+                        Text("Calendar links").onGround()
+                    }
                 }
 
                 Section {
@@ -102,10 +111,7 @@ struct MoreView: View {
                 } header: {
                     Text("Backup").onGround()
                 } footer: {
-                    Text(restoreError ?? (CloudSync.shared.available
-                        ? "Synced with iCloud."
-                        : "On this device only. Sign in to iCloud to sync."))
-                        .onGround()
+                    if let restoreError { Text(restoreError).foregroundStyle(.red) }
                 }
 
                 Section {
@@ -115,10 +121,12 @@ struct MoreView: View {
             }
             .ground()
             .readableColumn()
-            .navigationTitle("More")
-            .navigationDestination(for: MorePage.self) { _ in GoalsList() }
-            .sheet(isPresented: $addingFeed) { AddFeedSheet() }
-            .sheet(isPresented: $importing) { ImportSheet() }
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+            .navigationDestination(for: SettingsPage.self) { _ in GoalsList() }
             .fileImporter(isPresented: $restoring, allowedContentTypes: [.json]) { restore($0) }
             .onChange(of: badge) {
                 guard badge != .off else { return }
@@ -157,7 +165,7 @@ struct MoreView: View {
     /// The main goal, written down, first: the way into all of your goals.
     private var goalRow: some View {
         let goal = store.state.mdp, others = store.state.goals.count
-        return NavigationLink(value: MorePage.goals) {
+        return NavigationLink(value: SettingsPage.goals) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(goal.isEmpty ? "Set your main goal" : goal)
                     .font(.headline)
@@ -183,83 +191,5 @@ struct MoreView: View {
         }
         restoreError = nil
         store.change(undo: "Restored \(state.items.count) items") { $0 = state }
-    }
-}
-
-/// Adding a calendar link, with where to find one in each system.
-struct AddFeedSheet: View {
-    @Environment(Store.self) private var store
-    @Environment(\.dismiss) private var dismiss
-    @State private var link = ""
-    @State private var reading = false
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("https:// or webcal://", text: $link, axis: .vertical)
-                        .keyboardType(.URL)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    if let pasted = UIPasteboard.general.hasURLs ? UIPasteboard.general.url : nil, link.isEmpty {
-                        Button("Paste \(pasted.host() ?? "link")") { link = pasted.absoluteString }
-                    }
-                }
-                Section("Where to find it") {
-                    DisclosureGroup("Canvas") { Text("Calendar › Calendar Feed, bottom right") }
-                    DisclosureGroup("Moodle") { Text("Calendar › Import or export calendars › Export calendar › All courses, Recent and next 60 days › Get calendar URL") }
-                    DisclosureGroup("Blackboard") { Text("Calendar › settings gear › Share Calendar") }
-                    DisclosureGroup("Brightspace (D2L)") { Text("Calendar › Subscribe") }
-                    DisclosureGroup("Google Calendar") { Text("On a computer: Settings › your calendar › Secret address in iCal format") }
-                    DisclosureGroup("Outlook") { Text("Settings › Calendar › Shared calendars › Publish a calendar › ICS link") }
-                }
-            }
-            .sheetGround()
-            .navigationTitle("Calendar link")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(reading ? "Reading…" : "Add") {
-                        reading = true
-                        Task {
-                            await store.addFeed(link, name: Self.name(for: link))
-                            reading = false
-                            dismiss()
-                        }
-                    }
-                    .disabled(reading || URL(string: link.trimmingCharacters(in: .whitespacesAndNewlines))?.host() == nil)
-                }
-            }
-        }
-    }
-
-    static func name(for link: String) -> String {
-        let host = URL(string: link.trimmingCharacters(in: .whitespacesAndNewlines))?.host()?.lowercased() ?? ""
-        let known = [("instructure", "Canvas"), ("moodle", "Moodle"), ("blackboard", "Blackboard"), ("d2l", "Brightspace"),
-                     ("brightspace", "Brightspace"), ("google", "Google Calendar"), ("outlook", "Outlook"), ("office365", "Outlook")]
-        return known.first { host.contains($0.0) }?.1 ?? (host.isEmpty ? "Calendar" : host)
-    }
-}
-
-enum Keychain {
-    private static let account = "anthropic-api-key"
-
-    static var apiKey: String? {
-        get {
-            var out: AnyObject?
-            let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: account, kSecReturnData as String: true]
-            guard SecItemCopyMatching(query as CFDictionary, &out) == errSecSuccess, let data = out as? Data else { return nil }
-            return String(decoding: data, as: UTF8.self)
-        }
-        set {
-            let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: account]
-            SecItemDelete(query as CFDictionary)
-            guard let v = newValue?.trimmingCharacters(in: .whitespacesAndNewlines), !v.isEmpty else { return }
-            var add = query
-            add[kSecValueData as String] = Data(v.utf8)
-            add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-            SecItemAdd(add as CFDictionary, nil)
-        }
     }
 }

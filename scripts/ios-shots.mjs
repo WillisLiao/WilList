@@ -1,17 +1,17 @@
 // Screenshots of the iPhone app in the iOS Simulator, with a full sample planner loaded.
 //   npm run ios:shots                          the four tabs, into shots/ios
-//   npm run ios:shots -- more -open goals      one tab, with debug launch arguments
+//   npm run ios:shots -- today -open goals     one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
-//   -tab today|plan|study|more       which tab opens
-//   -open goals                      More: push Goals
+//   -tab today|plan|progress|agent   which tab opens
+//   -open settings|goals             Settings, from the profile picture (goals: with Goals pushed)
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
 //   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
 //   -scroll letters|calendar|bottom  Plan: scroll to Needs a letter, the calendar or the bottom row
-//   -sheet add|import|search|letters open that sheet (add and import from Plan, search and letters from Today)
+//   -sheet add|search|letters        open that sheet (add from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)
 //   -show "Email TA"                 open the to-do or item whose title starts with this
@@ -20,6 +20,9 @@
 //   -gallery YES|lock|focus|ticked   every widget at its real size, the focus Live Activity, or a tick on each
 //   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
 //   -focusSpent 30                   with -focus YES: 30 minutes of it already spent
+//   -agentDemo YES                   the Agent answers from a script, with no subscription (on by default here)
+//   -agentConsent YES|NO             the Agent's ask before sending anything to Anthropic, answered or not (YES here)
+//   -agentAsk "Here's my syllabus"   the Agent is sent these words on launch
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never
 // answered; `xcrun simctl erase <device>` clears it.
@@ -35,7 +38,7 @@ const OUT = 'shots/ios';
 process.chdir(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
 
 const argv = process.argv.slice(2);
-const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'plan', 'study', 'more'];
+const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'plan', 'progress', 'agent'];
 const run = (cmd, args, quiet = false) => execFileSync(cmd, args, { encoding: 'utf8', stdio: quiet ? 'ignore' : 'pipe' });
 const tryRun = (cmd, args) => { try { run(cmd, args, true); } catch { /* already in that state */ } };
 
@@ -100,6 +103,9 @@ const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').re
 if (!argv.includes('-focus')) argv.push('-focus', 'NO');
 // Shots look the same at any hour.
 if (!argv.includes('-night')) argv.push('-night', 'NO');
+// The Agent answers from its script: there is no server or key here.
+if (!argv.includes('-agentDemo')) argv.push('-agentDemo', 'YES');
+if (!argv.includes('-agentConsent')) argv.push('-agentConsent', 'YES');
 
 for (const tab of tabs) {
   const save = path.join(support, 'willist.v1.json');

@@ -1,0 +1,52 @@
+{
+  "identifier" : "4B9C3E2A",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_developerTeamID" : "45MSS5RXML"
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "8A6F1D20",
+      "localizations" : [
+
+      ],
+      "name" : "WilList Agent",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "6A2C9B11",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Hand it any schedule and it fills in your plan.",
+              "displayName" : "WilList Agent",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.lull.willist.agent.monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Agent monthly",
+          "subscriptionGroupID" : "8A6F1D20",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

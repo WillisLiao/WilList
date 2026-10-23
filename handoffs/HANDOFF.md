@@ -12,6 +12,8 @@ Anything after `8a23b92` is on the branch only (a check on every Plan row, the s
 
 **The owner's new direction (2026-10-24, late):** iPhone and Mac App Store only (the website is to be deleted), no iCloud (sign in with Google or Facebook, plus Apple as the App Store requires), a profile picture at the top left opening Settings, More becomes an Agent tab (a chat that logs anything from any file, with guardrails, as a subscription), every import option and the Claude key field go, and Study becomes Progress (analytics, forecasts, suggestions).
 Every request and its status is in `handoffs/OWNER-REQUESTS.md`; work through it in that order.
+**Done on the branch:** the tabs are Today, Plan, Progress, Agent; Settings opens from the profile picture; iCloud, Bring in a schedule and the key are gone; Progress and the Agent are built (see below and the devlog).
+**Still to do:** sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app), the Agent's server (until then a release build shows Coming soon), the subscription in App Store Connect, the Mac app, deleting the website, and study time blocks (open).
 
 **The owner's asks on 2026-10-24 (later):** Plan opens on today's date instead of the main goal (first with arrows to pick another day, then, "we already choose date when we enter task", without them); no Plan tomorrow row; a simple calendar under the rows in Plan and in Study; exams and deadlines added in Study must show in Study; no explanations ("give everything a letter", "no more cramming"); no A1 card on Today; and the background "at least 50% lighter".
 All done; see the devlog for how.
@@ -23,21 +25,22 @@ These replace the goal file's "light, one bright colour, red only for problems":
 Then, on 2026-10-23: "the app has too many words, each item, thing, description should have minimal words as possible", and "white nav bar keeps changing to background color when pressed or scrolled".
 So every visible string in the app was cut to the fewest words (the rules are in `docs/DESIGN.md`, Words), and the tab bar is now WilList's own solid white capsule: iOS 26's glass tab bar can't be made solid (pitfall 27).
 
-**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, every tab on a light slate (`#BAC5CD` to `#B1BAC3`, the widget gallery's mixed 55% with white, words on it in a deep slate ink, `#1E2B37`) and every sheet on a light blue-grey (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, the letters in red, orange, yellow, green and blue from A to E, and a colour for each course.
+**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs (Today, Plan, Progress, Agent) and Settings behind the profile picture at the top left, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, every tab on a light slate (`#BAC5CD` to `#B1BAC3`, the widget gallery's mixed 55% with white, words on it in a deep slate ink, `#1E2B37`) and every sheet on a light blue-grey (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, the letters in red, orange, yellow, green and blue from A to E, and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience.
 
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
-- **Today:** the date in large bold type with how the day stands, then a card with the A1 first (its check, its title, a play button for a focus session, and its A1 mark) and anything from Plan and Study added to Today under it.
+- **Today:** the date in large bold type with how the day stands, then a card with the A1 first (its check, its title, a play button for a focus session, and its A1 mark) and anything from Plan added to Today under it.
   Below: "N need a letter" (one tap letters them), or Plan tomorrow in the evening until it's done; then the quick checklist (typed dates are read, five sorts, stars, completed).
   There is no A1 card any more (the owner's call, 2026-10-24).
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
-- **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), items needing a letter (**Letter them** opens the sorter), everything lettered that isn't on today's list under **Later** (soonest first, the letter without a number), a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it), then Bring in a schedule.
+- **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), items needing a letter (**Letter them** opens the sorter), everything lettered that isn't on today's list under **Later** (soonest first, the letter without a number), and a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it).
   An empty day says "Nothing planned". New task has no Kind picker: the kind is read from the words (the owner's call).
-  The owner's rule (2026-10-24): all plans in Plan, only today's in Today, and whatever has study in Study.
-- **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up (undated ones too, last, saying "No date"), then a month calendar with each exam and deadline on its day as a small title in its course's colour, and a tapped day listed under it.
-- **More:** your main goal first (it opens Your goals: the main goal large on teal, the other goals, the last 21 days), then calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
+  The owner's rule (2026-10-24): all plans in Plan, only today's in Today.
+- **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a 14-day chart stacked by letter, suggestions with one action each (Replan, Add to Today, Letter them, Review, Adjust), the next 7 days' study load by course colour against the daily budget, and exams and deadlines coming up with whether each is on track.
+- **Agent:** a chat that takes files, photos and words, proposes what to add on a card to tick and Add (Undo works), follows a calendar link the student types, and answers questions about the plan; plain text only, guardrails in the devlog. Behind a StoreKit 2 subscription (`com.lull.willist.agent.monthly`), and it asks once before sending anything to Anthropic. Requests go to WilList's server (`WLAgentServer` in Info.plist, empty for now, so release builds show Coming soon); debug builds use `ANTHROPIC_API_KEY` or `-agentDemo YES`. Not yet tried against the live API.
+- **Settings** (the profile picture on every tab): your main goal first (it opens Your goals: the main goal large on teal, the other goals, the last 21 days), then to-do and study settings, the day's clocks, calendar links the Agent followed, backup and restore.
 - **Focus:** the whole screen in the task's course colour, the time spent rising from the bottom in a deeper shade like a glass filling, the time left in large bold type, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
@@ -50,13 +53,10 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
   Undo sits in a toast that stays long enough to read, and VoiceOver reads it out.
   On a widget, the ticked line shows done for a moment (the box fills, the words grey and are struck through), then leaves.
-- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 14 of them), every control is at least 44 points, words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the teal deepens with Increase Contrast.
+- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 18 of them), every control is at least 44 points, words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the teal deepens with Increase Contrast.
 - **Search** opens ready to type, keyboard up; its X closes it.
 - **iPad:** every list keeps to a centred readable column.
-- **iCloud sync** (`CloudSync.swift`, `PlanMerge` in the core): the plan is one record in the student's private iCloud database, and CloudKit's sync engine sends and fetches it, waking the app when another device changed it.
-  When both devices changed the plan, the two are merged against the copy both last agreed on: whatever only one side changed is kept, down to one field of one to-do; a delete goes unless the other side changed that thing; a field both changed keeps this device's change.
-  More says whether the plan syncs ("Your plan is the same on every iPhone and iPad signed in to your iCloud") or how to turn it on.
-  **Not yet tried with a real iCloud account:** it needs the owner's Apple ID in Xcode; the next `npm run ios` registers the container `iCloud.com.lull.willist` and push for the app.
+- **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
 **On the owner's devices:** the iPad (iOS 18.5) has `016ef8b` and the iPhone 15 Pro (iOS 18.7.8) has `a6c1962`; neither has anything from this evening.
@@ -90,14 +90,15 @@ The one hard limit kept is that saved plans (`willist.v1`) must keep loading.
 ## Where things are
 
 - `ios/WilList/`: the app.
-  Tabs: `TodayView` (with `A1Card`), `PlanView` (`PlanList`), `GoalsList`, `StudyView`, `MoreView`.
+  Tabs: `TodayView`, `PlanView` (`PlanList`, `MonthCalendar`), `ProgressTab` (`DoneChart`, `WeekChart`), `AgentView` (the chat, `AgentPass` for the subscription, `AgentDemo` in debug). `Settings` holds the profile picture and the Settings sheet; `GoalsList` opens from it.
   Flows: `Welcome` and `PlanTomorrow` (sharing `Steps`), `LetterSorter`, `FocusView` (with `LiveFocus` and `FocusNotice`).
   Details: `TodoEditor`, `ItemEditor`, `TaskFields`.
   `Theme` holds the shared pieces (the check button and its burst, the toast, the hero card, the readable column, letter menus); `Store` is the one source of truth (saves on every change, undo).
-  Also `CloudSync` (iCloud), `Reminders`, `ImportSheet`, `AddItemSheet`, `SearchView`, `Intents`; `TestPlan` and `WidgetGallery` are debug-only.
+  Also `Reminders`, `AddItemSheet`, `SearchView`, `Intents`; `TestPlan` and `WidgetGallery` are debug-only.
+- `ios/Agent.storekit`: the Agent's subscription for trying it from Xcode (the scheme's Run action uses it).
 - `ios/Shared/`: code the app and the widgets share: `Look` (the teal and the course colours), `Fmt`, `Glance` (what the widgets show), `Focus` (the session and the Live Activity's data), `FocusViews`, `WidgetViews`, `WidgetIntents`, `PlanFile` (the save file in the app group), `Letters`.
 - `ios/WilListWidgets/`: the widget extension: the two widgets and the focus Live Activity.
-- `ios/WilListUITests/`: the UI tests (`CoreFlowsTests`, `AuditTests`, and `WidgetTests`, which runs only when asked). `ios/WilListCore/`: the Swift package with all logic and its tests.
+- `ios/WilListUITests/`: the UI tests (`CoreFlowsTests`, `AuditTests`, and `WidgetTests`, which runs only when asked). `ios/WilListCore/`: the Swift package with all logic and its tests; `Agent.swift` is the Agent's prompt, tools, requests and guardrails, `Files.swift` turns any file into what Claude reads.
 - `app/`: the website (plain JavaScript). `tests/`: its tests.
 - `scripts/`: lint config, screenshots (`ios-shots.mjs` lists the debug launch arguments that open every screen), device install, the app icon generator (`app-icon.swift`).
 - `docs/DESIGN.md`: the design system and the SwiftUI pitfalls already paid for. `docs/PRINCIPLES.md`: Tracy's principles and where each lives.

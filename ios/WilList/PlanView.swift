@@ -14,7 +14,6 @@ struct PlanList: View {
     /// The day tapped on the calendar, listed in full under it.
     @State private var picked: Day?
     @State private var adding = false
-    @State private var importing = false
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
     @State private var searching = false
@@ -74,23 +73,21 @@ struct PlanList: View {
                     ForEach(picked.flatMap { byDay[$0] } ?? []) { plainRow($0) }
                 }
                 .id("calendar")
-                Section { importRow }
-                    .id("bottom")
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
             .ground()
             .readableColumn()
             #if DEBUG
-            // `-scroll letters|calendar|bottom` or `-sheet add|import` on launch, for screenshots.
+            // `-scroll letters|calendar` or `-sheet add` on launch, for screenshots.
             .onAppear {
                 UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) }
                 adding = UserDefaults.standard.string(forKey: "sheet") == "add"
-                importing = UserDefaults.standard.string(forKey: "sheet") == "import"
             }
             #endif
         }
         .navigationTitle("Plan")
+        .profileButton()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Search", systemImage: "magnifyingglass") { searching = true }
@@ -101,8 +98,6 @@ struct PlanList: View {
         }
         .sheet(isPresented: $searching) { SearchView() }
         .sheet(isPresented: $adding) { AddItemSheet() }
-        .sheet(isPresented: $importing) { ImportSheet() }
-        .onChange(of: store.incomingFile, initial: true) { if store.incomingFile != nil { importing = true } }
         .onChange(of: store.opening, initial: true) {
             if let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
                 store.opening = nil
@@ -200,21 +195,6 @@ struct PlanList: View {
         .buttonStyle(.borderless)
         .sensoryFeedback(.selection, trigger: item.priority)
         .accessibilityLabel(item.priority.map { "Letter \($0.rawValue), \($0.name). Change" } ?? "Give it a letter")
-    }
-
-    /// Its icon where the day's rows have their check, its words in the same column as theirs.
-    private var importRow: some View {
-        Button { importing = true } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "square.and.arrow.down").foregroundStyle(.secondary).frame(width: 44)
-                Text("Bring in a schedule")
-                    .foregroundStyle(Color.primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .frame(minHeight: 44)
-        }
-        .padding(.vertical, 4)
-        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
     }
 
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.

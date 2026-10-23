@@ -80,7 +80,7 @@ struct ItemEditor: View {
                         Text("Study plan")
                     } footer: {
                         if item.shortfallMin > 0 {
-                            Text("\(Fmt.minutes(item.shortfallMin)) short. Raise daily study in More.")
+                            Text("\(Fmt.minutes(item.shortfallMin)) short. Raise daily study in Settings.")
                         } else if item.sessions.isEmpty && item.effortMin > 0 {
                             Text("Planned when saved.")
                         }

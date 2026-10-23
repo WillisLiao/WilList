@@ -165,7 +165,7 @@ struct PlanTomorrow: View {
 }
 
 extension Store {
-    /// From the planning time on (8:30 PM unless changed in More), it's time to plan tomorrow.
+    /// From the planning time on (8:30 PM unless changed in Settings), it's time to plan tomorrow.
     var evening: Bool {
         #if DEBUG
         // `-night YES` or `-night NO` on launch fixes it, so tests and screenshots don't depend on the clock.

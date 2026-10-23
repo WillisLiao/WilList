@@ -11,18 +11,21 @@ final class AuditTests: XCTestCase {
             ("Today", "busy", ["-tab", "today"]),
             ("Plan", "busy", ["-tab", "plan"]),
             ("Plan, empty", "empty", ["-tab", "plan"]),
-            ("Study", "busy", ["-tab", "study"]),
-            ("More", "busy", ["-tab", "more"]),
+            ("Progress", "busy", ["-tab", "progress"]),
+            ("Agent, coming soon", "busy", ["-tab", "agent"]),
+            ("Agent, asking first", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "NO"]),
+            ("Agent", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "YES"]),
+            ("Agent, answered", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "YES", "-agentAsk", "Here's my syllabus"]),
             ("Welcome", "new", []),
             ("Plan tomorrow", "busy", ["-evening", "2"]),
             ("Focus", "busy", ["-focus", "YES"]),
-            ("Goals", "busy", ["-tab", "more", "-open", "goals"]),
+            ("Settings", "busy", ["-open", "settings"]),
+            ("Goals", "busy", ["-open", "goals"]),
             ("Search", "busy", ["-tab", "today", "-sheet", "search"]),
             ("Letter sorter", "busy", ["-tab", "today", "-sheet", "letters"]),
             ("To-do details", "busy", ["-tab", "today", "-edit", "t1"]),
             ("Item details", "busy", ["-show", "Read chapter"]),
             ("New task", "busy", ["-tab", "plan", "-sheet", "add"]),
-            ("Bring in a schedule", "busy", ["-tab", "plan", "-sheet", "import"]),
         ]
         for screen in screens {
             let app = XCUIApplication()
@@ -30,7 +33,8 @@ final class AuditTests: XCTestCase {
                 + (screen.args.contains("-focus") ? [] : ["-focus", "NO"]) + screen.args
             app.launch()
             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
-            sleep(1)
+            // The Agent's scripted answer takes three rounds of a second each.
+            sleep(screen.args.contains("-agentAsk") ? 5 : 1)
             let keyboard = app.keyboards.firstMatch
             try audit(app) { issue in
                 // The system keyboard isn't ours (Search opens with it up): the empty slots of the

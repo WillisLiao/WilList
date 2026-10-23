@@ -67,7 +67,7 @@ public enum PlanMerge {
         for id in Set(lm.keys).union(rm.keys) {
             if let entry = mergeEntry(bm[id], lm[id], rm[id]) { kept[id] = entry }
         }
-        // The order: this device's if it moved anything, otherwise iCloud's; then what the other
+        // The order: this device's if it moved anything, otherwise the other copy's; then what the other
         // side added goes in after the entry it followed there.
         let lOrder = l.map { $0.id! }, rOrder = r.map { $0.id! }, bOrder = b.map { $0.id! }
         let moved = lOrder.filter { bm[$0] != nil } != bOrder.filter { lm[$0] != nil }
@@ -98,7 +98,7 @@ public enum PlanMerge {
 
 extension JSONValue {
     var object: [String: JSONValue]? { if case .object(let o) = self { o } else { nil } }
-    var array: [JSONValue]? { if case .array(let a) = self { a } else { nil } }
+    public var array: [JSONValue]? { if case .array(let a) = self { a } else { nil } }
 
     /// An entry's `id`, when it is an object that has one.
     var id: String? { if case .string(let s)? = object?["id"] { s } else { nil } }

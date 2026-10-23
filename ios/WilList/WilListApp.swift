@@ -1,3 +1,4 @@
+import Security
 import SwiftUI
 import UserNotifications
 import WilListCore
@@ -24,12 +25,12 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle), .foregroundColor: UIColor(Color.groundInk)]
         bar.titleTextAttributes = [.font: Self.titleFont(.headline)]
         UNUserNotificationCenter.current().delegate = self
+        // The Claude key students once typed into More is no longer used: the Agent runs on
+        // WilList's own server. Leave no secret behind.
+        SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: "anthropic-api-key"] as CFDictionary)
         // Mark done on the focus Live Activity runs here, with the app in the background if need be.
         Focus.finish = { done in Store.shared.finishFocus(done: done) }
         if Store.shared.focus == nil { LiveFocus.end() }
-        // iCloud wakes the app when another device changed the plan.
-        CloudSync.shared.start()
-        application.registerForRemoteNotifications()
         return true
     }
 
@@ -67,7 +68,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 }
 
 enum AppTab: String, Hashable, CaseIterable {
-    case today, plan, study, more
+    case today, plan, progress, agent
 
     var title: String { rawValue.capitalized }
 
@@ -75,8 +76,8 @@ enum AppTab: String, Hashable, CaseIterable {
         switch self {
         case .today: "checklist"
         case .plan: "list.number"
-        case .study: "book.closed"
-        case .more: "ellipsis"
+        case .progress: "chart.bar.xaxis"
+        case .agent: "sparkles"
         }
     }
 }
@@ -137,14 +138,17 @@ struct RootView: View {
         TabView(selection: $tab) {
             Tab("Today", systemImage: "checklist", value: .today) { TodayView().underTabBar() }
             Tab("Plan", systemImage: "list.number", value: .plan) { PlanView().underTabBar() }
-            Tab("Study", systemImage: "book.closed", value: .study) { StudyView().underTabBar() }
-            Tab("More", systemImage: "ellipsis", value: .more) { MoreView().underTabBar() }
+            Tab("Progress", systemImage: "chart.bar.xaxis", value: .progress) { ProgressTab().underTabBar() }
+            Tab("Agent", systemImage: "sparkles", value: .agent) { AgentView().underTabBar() }
         }
         // The keyboard covers the bar rather than lifting it.
         .overlay(alignment: .bottom) { TabBar(tab: $tab).ignoresSafeArea(.keyboard) }
         // The accent colour is the teal already; tinting with it too turns the toolbar buttons teal.
         .tint(.brand)
         // The first launch writes the first plan, then opens Today on its A1.
+        .sheet(isPresented: Binding(get: { store.showingSettings }, set: { store.showingSettings = $0 })) {
+            SettingsView().tint(.brand)
+        }
         .fullScreenCover(isPresented: $welcoming) {
             WelcomeView { tab = .today }.tint(.brand)
         }
@@ -161,10 +165,10 @@ struct RootView: View {
         #endif
         .onOpenURL { url in
             // willist://today and willist://add come from the widgets; anything else is a file
-            // shared to WilList.
+            // shared to WilList, for the Agent to read.
             guard url.scheme == "willist" else {
                 store.incomingFile = url
-                tab = .plan
+                tab = .agent
                 return
             }
             if url.host() == "add" { store.quickAction = .add } else { tab = .today }
@@ -179,9 +183,10 @@ struct RootView: View {
         #if DEBUG
         // `-show <title>` on launch opens that to-do or item, `-focus YES` starts a focus session on
         // the A1 (`-focusSpent 30` with 30 minutes already spent), `-evening 1|2|3` opens Plan
-        // tomorrow at that step (screenshots).
+        // tomorrow at that step, `-open settings|goals` opens Settings (screenshots).
         .onAppear {
             store.planningTomorrow = UserDefaults.standard.integer(forKey: "evening") > 0
+            store.showingSettings = UserDefaults.standard.string(forKey: "open") != nil
             if UserDefaults.standard.bool(forKey: "focus"), store.focus == nil, let a1 = doRows(store.state.items, store.today).first {
                 store.startFocus(a1)
                 store.focus?.banked = UserDefaults.standard.double(forKey: "focusSpent") * 60
@@ -195,6 +200,8 @@ struct RootView: View {
             if let id = store.opening { tab = store.state.todos.contains { $0.id == id } ? .today : .plan }
         }
         .onChange(of: store.quickAction) { if store.quickAction != nil { tab = .today } }
+        // Subscription changes (a renewal, a refund) can arrive at any time.
+        .task { await AgentPass.shared.watch() }
         .task(id: badge.count(store.state, today: store.today)) {
             try? await UNUserNotificationCenter.current().setBadgeCount(badge.count(store.state, today: store.today))
         }

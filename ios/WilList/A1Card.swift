@@ -150,7 +150,7 @@ struct A1Card: View {
     }
 
     private func title(struck: Bool) -> some View {
-        Text(row.item.title)
+        Text(Fmt.noWidow(row.item.title))
             .font(poster ? .system(size: posterTitle, weight: .bold) : .title2.weight(.semibold))
             .fontDesign(Look.current.titles)
             .tracking(poster ? -0.6 : 0)

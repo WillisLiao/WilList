@@ -77,7 +77,7 @@ struct FocusView: View {
             Spacer(minLength: 8)
             VStack(spacing: 12) {
                 LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true, onBrand: true)
-                Text(f.title)
+                Text(Fmt.noWidow(f.title))
                     .font(.title.bold())
                     .fontDesign(Look.current.titles)
                     .foregroundStyle(.white)

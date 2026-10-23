@@ -64,7 +64,7 @@ private struct MainGoal: View {
                 Spacer()
                 Image(systemName: "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
             }
-            Text(goal.isEmpty ? "What one goal would change the most for you?" : goal)
+            Text(goal.isEmpty ? "What one goal would change the most for you?" : Fmt.noWidow(goal))
                 .font(.system(size: size, weight: .bold))
                 .fontDesign(Look.current.titles)
                 .tracking(-0.5)

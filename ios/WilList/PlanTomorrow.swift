@@ -95,7 +95,7 @@ struct PlanTomorrow: View {
                 Text("Tomorrow starts with")
                     .font(.headline)
                     .foregroundStyle(.white)
-                Text(a1.item.title)
+                Text(Fmt.noWidow(a1.item.title))
                     .font(.largeTitle.bold())
                     .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)

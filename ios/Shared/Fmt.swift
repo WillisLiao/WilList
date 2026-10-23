@@ -35,6 +35,15 @@ enum Fmt {
         return inSentence && ["Today", "Tomorrow", "Yesterday"].contains(s) ? s.lowercased() : s
     }
 
+    /// A title set large keeps its last two words on one line, so no word is left alone on the
+    /// last line ("Write the / lab report", not "Write the lab / report"). Long endings stay free
+    /// to wrap. VoiceOver reads the no-break space as a space.
+    static func noWidow(_ title: String) -> String {
+        let words = title.split(separator: " ")
+        guard words.count >= 3, words.suffix(2).joined().count <= 15, let last = title.lastIndex(of: " ") else { return title }
+        return title.replacingCharacters(in: last...last, with: "\u{00A0}")
+    }
+
     static func long(_ d: Day) -> String { date(d).formatted(.dateTime.weekday(.wide).day().month(.wide)) }
 
     static func time(_ hhmm: String?) -> String? {

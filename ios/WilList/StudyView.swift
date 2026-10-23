@@ -116,8 +116,8 @@ struct StudyView: View {
             CheckButton(done: ticking.contains(row.key)) { complete(row) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(s.label).strikethrough(ticking.contains(row.key), color: .secondary)
-                // What it's for, in its course's colour, as in the chart below.
-                Text("\(Text(row.item.title).foregroundStyle(row.item.course == nil ? Color.secondary : CourseColor.of(store.state.courseColor(row.item.course))))\(Fmt.when(row.item, today).map { ", \($0)" } ?? "")")
+                // What it's for, and its course in the course's colour, as in the chart below.
+                Text("\(row.item.title)\(Fmt.subline(row.item, today, in: store.state).map { Text(", \($0)") } ?? Text(""))")
                     .font(.subheadline).foregroundStyle(.secondary)
                 if row.overdue {
                     Text("Missed \(Fmt.day(s.date, today, inSentence: true)). Do it today.")

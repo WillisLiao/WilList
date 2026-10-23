@@ -107,11 +107,12 @@ enum Fmt {
         [when(it, today), it.course].compactMap { $0 }.joined(separator: ", ")
     }
 
-    /// The line under an item's title, its course in the course's colour.
+    /// The line under an item's title, its course in the course's colour. The course keeps to the
+    /// word before it, so it never wraps onto a line alone.
     static func subline(_ it: Item, _ today: Day, in s: AppState) -> Text? {
-        let course = it.course.map { Text($0).foregroundStyle(CourseColor.of(s.courseColor($0))) }
+        let course = it.course.map { Text($0.replacingOccurrences(of: " ", with: "\u{00A0}")).foregroundStyle(CourseColor.of(s.courseColor($0))) }
         switch (when(it, today).map { Text($0) }, course) {
-        case let (when?, course?): return Text("\(when), \(course)")
+        case let (when?, course?): return Text("\(when),\u{00A0}\(course)")
         case let (when, course): return when ?? course
         }
     }

@@ -1,8 +1,8 @@
 import SwiftUI
 import WilListCore
 
-/// Plan: today in ABCDE order (the A1 first, the same A1 that leads Today), anything still
-/// waiting for a letter, what comes later, and a month showing what's planned on each day.
+/// Plan: today in ABCDE order (the A1 first, the same A1 that leads Today), what comes later,
+/// and a month showing what's planned on each day.
 struct PlanView: View {
     var body: some View {
         NavigationStack { PlanList() }
@@ -17,11 +17,9 @@ struct PlanList: View {
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
     @State private var searching = false
-    @State private var sorting: LetterSorter.Batch?
 
     private var today: Day { store.today }
     private var rows: [Row] { dayRows(store.state.items, today) }
-    private var waiting: [Item] { unsorted(store.state.items, today) }
     private var later: [Item] { laterItems(store.state.items, today) }
     /// What's planned on each day: the open items due or set for it, by letter.
     private var byDay: [Day: [Item]] {
@@ -40,30 +38,14 @@ struct PlanList: View {
                     ForEach(rows) { itemRow($0) }
                         .onMove(perform: move)
                 }
-                if !waiting.isEmpty {
-                    Section {
-                        ForEach(waiting) { plainRow($0) }
-                    } header: {
-                        HStack {
-                            Text("Needs a letter")
-                            Spacer()
-                            Button { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) } label: {
-                                Text("Letter them").tapArea()
-                            }
-                            .font(.subheadline.weight(.semibold))
-                            .buttonStyle(.borderless)
-                        }
-                        .onGround()
-                    }
-                    .id("letters")
-                }
-                // The rest of the plan: everything lettered that isn't on today's list yet.
+                // The rest of the plan: everything that isn't on today's list yet.
                 if !later.isEmpty {
                     Section {
                         ForEach(later) { plainRow($0) }
                     } header: {
                         Text("Later").onGround()
                     }
+                    .id("later")
                 }
                 let byDay = byDay
                 Section {
@@ -105,7 +87,6 @@ struct PlanList: View {
             }
         }
         .sheet(item: $editing) { ItemEditor(item: $0) }
-        .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
         .toastHost()
     }
 
@@ -157,8 +138,8 @@ struct PlanList: View {
         .tint(.gray)
     }
 
-    /// An item off today's list, waiting for a letter or coming later: its check, title, when, and
-    /// its letter (without a number, which only the day's list has) or the empty mark.
+    /// An item off today's list: its check, title, when, and its letter (without a number, which
+    /// only the day's list has); nothing there without one.
     private func plainRow(_ item: Item) -> some View {
         let done = ticking.contains(item.id)
         return HStack(spacing: 10) {
@@ -174,7 +155,7 @@ struct PlanList: View {
             .contentShape(Rectangle())
             .onTapGesture { editing = item }
             // In the same column as the letters above.
-            letterMenu(item) { LetterMark(letter: item.priority) }
+            if item.priority != nil { letterMenu(item) { LetterMark(letter: item.priority) } }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
         .swipeActions(edge: .trailing) {
@@ -182,11 +163,10 @@ struct PlanList: View {
         }
     }
 
-    /// Tapping a letter (or "Letter") lists the five with what each one means.
+    /// Tapping a letter lists the five with what each one means, and None.
     private func letterMenu(_ item: Item, @ViewBuilder label: () -> some View) -> some View {
         Menu {
-            LetterChoices(suggested: item.priority == nil ? suggestedLetter(item.type, weightPct: item.weightPct) : nil,
-                          allowNone: item.priority != nil) { l in
+            LetterChoices(suggested: nil, allowNone: true) { l in
                 withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
             }
         } label: {

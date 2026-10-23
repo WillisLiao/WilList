@@ -1,7 +1,7 @@
 import SwiftUI
 import WilListCore
 
-/// Letters the items waiting for one, one at a time: the item large at the top, the five letters
+/// Letters items one at a time (Progress's Review): the item large at the top, the five letters
 /// under it with what each one means, the suggested one marked. Choosing moves on to the next;
 /// at the end it names your A1.
 struct LetterSorter: View {
@@ -181,9 +181,6 @@ struct LetterSorter: View {
                 .accessibilityAddTraits(.isHeader)
             if let a1 {
                 Text("Your A1 is \u{201C}\(a1.item.title)\u{201D}.")
-            }
-            if left > 0 {
-                Text("\(left) still \(left == 1 ? "needs" : "need") a letter").foregroundStyle(.secondary)
             }
         } buttons: {
             Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity) }

@@ -51,17 +51,17 @@ struct TodayView: View {
             .sorted { letterKey($0) < letterKey($1) }
         return (a1.map { [$0] } ?? []) + added
     }
-    /// Items still waiting for a letter.
-    private var waiting: Int { unsorted(store.state.items, today).count }
 
     var body: some View {
         let fromPlan = planItems
         let planned = plannedFor == addDays(today, 1)
+        // A new list has nothing to search or sort yet.
+        let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
         NavigationStack {
             List {
                 // The date sits straight on the ground; everything under it is on cards.
                 header(fromPlan: fromPlan)
-                    .padding(EdgeInsets(top: 12, leading: 4, bottom: 16, trailing: -4))
+                    .padding(.bottom, 16)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
@@ -71,11 +71,9 @@ struct TodayView: View {
                         ForEach(Array(fromPlan.enumerated()), id: \.element.id) { k, item in planRow(item, first: k == 0) }
                     }
                 }
-                // In the evening, until tomorrow is planned, planning comes first: it letters too.
+                // In the evening, until tomorrow is planned.
                 if store.evening && !planned {
                     Section { nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true } }
-                } else if waiting > 0 {
-                    Section { nudge("\(waiting) \(waiting == 1 ? "needs" : "need") a letter", action: letterThem) }
                 }
                 // The checklist on one card, Add a to-do at its top, as on the Today widget.
                 Section {
@@ -107,10 +105,22 @@ struct TodayView: View {
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
-            .ground(barless: true)
-            .readableColumn()
+            .ground()
+            // The profile picture, Search and Sort in the bar, as on every tab; the date is the
+            // screen's title, set large in the list so a long one wraps.
+            .readableColumn(inline: true)
+            // The date where the other tabs have their large title.
+            .contentMargins(.top, 0, for: .scrollContent)
             .scrollDismissesKeyboard(.interactively)
-            .toolbar(.hidden, for: .navigationBar)
+            .profileButton()
+            .toolbar {
+                if hasTools {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button("Search", systemImage: "magnifyingglass") { searching = true }
+                    }
+                    ToolbarItem(placement: .primaryAction) { sortMenu }
+                }
+            }
             .sheet(item: Binding(get: { editing.map(Opened.init) }, set: { editing = $0?.id })) { TodoEditor(id: $0.id) }
             .sheet(isPresented: $searching) { SearchView() }
             .sheet(item: $editingItem) { ItemEditor(item: $0) }
@@ -123,7 +133,9 @@ struct TodayView: View {
             .onAppear {
                 editing = UserDefaults.standard.string(forKey: "edit")
                 searching = UserDefaults.standard.string(forKey: "sheet") == "search"
-                if UserDefaults.standard.string(forKey: "sheet") == "letters" { letterThem() }
+                if UserDefaults.standard.string(forKey: "sheet") == "letters" {
+                    sorting = LetterSorter.Batch(ids: unsorted(store.state.items, today).map(\.id))
+                }
             }
             #endif
             // Home-screen quick actions: New to-do and Search.
@@ -147,19 +159,9 @@ struct TodayView: View {
 
     // MARK: header
 
-    /// The profile picture, Search and Sort, then the date and how the day stands.
+    /// The date and how the day stands.
     private func header(fromPlan: [Item]) -> some View {
-        // A new list has nothing to search or sort yet.
-        let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
-        return VStack(alignment: .leading, spacing: 2) {
-            // The profile picture top left, as on every tab, Search and Sort top right.
-            HStack(spacing: 0) {
-                ProfileButton()
-                    // Its circle in line with the date's first letter.
-                    .padding(.leading, -7)
-                Spacer(minLength: 8)
-                if hasTools { tools }
-            }
+        VStack(alignment: .leading, spacing: 2) {
             Text(Fmt.long(today))
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
@@ -167,10 +169,9 @@ struct TodayView: View {
                 .font(.subheadline)
         }
         .onGround()
-        .tint(.groundInk)
     }
 
-    /// A one-line nudge under the A1 card: what's waiting for a letter, or planning tomorrow.
+    /// A one-line nudge under the A1 card: Plan tomorrow, in the evening.
     private func nudge(_ title: String, systemImage: String? = nil, tint: Color = .brand, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -189,30 +190,16 @@ struct TodayView: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
     }
 
-    private var tools: some View {
-        HStack(spacing: 0) {
-            Button { searching = true } label: {
-                Label("Search", systemImage: "magnifyingglass")
-                    .labelStyle(.iconOnly)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+    private var sortMenu: some View {
+        Menu {
+            Picker("Sort by", selection: $sort) {
+                ForEach(TodoSort.allCases) { Text($0.name).tag($0) }
             }
-            .buttonStyle(.borderless)
-            Menu {
-                Picker("Sort by", selection: $sort) {
-                    ForEach(TodoSort.allCases) { Text($0.name).tag($0) }
-                }
-                .pickerStyle(.inline)
-                Toggle("Show completed", isOn: $showCompleted)
-            } label: {
-                Label("Sort and view", systemImage: "arrow.up.arrow.down")
-                    .labelStyle(.iconOnly)
-                    .frame(width: 44, height: 44)
-            }
+            .pickerStyle(.inline)
+            Toggle("Show completed", isOn: $showCompleted)
+        } label: {
+            Label("Sort and view", systemImage: "arrow.up.arrow.down")
         }
-        .font(.body.weight(.medium))
-        // Bar buttons stop growing at the largest text sizes, as the system's do.
-        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
     }
 
     /// Everything on Today still to do, A1 included; the overdue to-dos; all finished today.
@@ -224,10 +211,6 @@ struct TodayView: View {
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done") }
         return parts.joined(separator: ", ")
-    }
-
-    private func letterThem() {
-        sorting = LetterSorter.Batch(ids: unsorted(store.state.items, today).map(\.id))
     }
 
     // MARK: adding

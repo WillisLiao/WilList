@@ -118,8 +118,6 @@ public enum Suggestion: Equatable, Sendable {
     case overloaded(day: Day, minutes: Int, budget: Int)
     /// An A due in four to thirty days with nothing done yet: start it today.
     case startEarly(Item)
-    /// Items still waiting for a letter.
-    case letter(count: Int)
     /// C, D and E items over two weeks old: still worth it?
     case review(ids: [String])
     /// Things of a type take longer (or shorter) than planned.
@@ -139,8 +137,6 @@ public func suggestions(_ s: AppState, _ today: Day) -> [Suggestion] {
     }) {
         out.append(.startEarly(early))
     }
-    let waiting = unsorted(s.items, today).count
-    if waiting > 0 { out.append(.letter(count: waiting)) }
     let old = s.items.filter { it in
         guard let p = it.priority, p >= .C, isOpen(it, today), let made = it.createdAt else { return false }
         return diffDays(made, today) > 14

@@ -45,7 +45,8 @@ struct GoalsList: View {
             }
         }
         .ground()
-        .readableColumn()
+        // Inline, as Settings is: a large title here was drawn over the main goal.
+        .readableColumn(inline: true)
         .navigationTitle("Goals")
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
         .sheet(isPresented: $editingPurpose) { PurposeEditor() }

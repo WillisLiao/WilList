@@ -25,7 +25,6 @@ struct PlanTomorrow: View {
     @State private var pick: Pick?
     /// Tomorrow's list as it was chosen from, kept still while the last page rises over it.
     @State private var chosenFrom: [Row]?
-    @State private var sorting: LetterSorter.Batch?
     @FocusState private var typing: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -33,7 +32,6 @@ struct PlanTomorrow: View {
     private var tomorrow: Day { addDays(today, 1) }
     /// Tomorrow's list worth doing yourself, A1 first.
     private var rows: [Row] { doRows(store.state.items, tomorrow, realToday: today) }
-    private var waiting: [Item] { unsorted(store.state.items, today) }
 
     var body: some View {
         // The last page rises over the night like the sun, so the list never shows through it.
@@ -61,7 +59,6 @@ struct PlanTomorrow: View {
             if step == 1 { typing = true }
             pick = pick ?? rows.first.map { .item($0.item.id) }
         }
-        .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
     }
 
     /// How today went, when something got done: "4 done today, starting with an A."
@@ -103,17 +100,7 @@ struct PlanTomorrow: View {
                     .font(.title.bold())
                     .accessibilityAddTraits(.isHeader)
             }
-            if !waiting.isEmpty {
-                Text("\(waiting.count) \(waiting.count == 1 ? "needs" : "need") a letter")
-                    .foregroundStyle(.white)
-            }
         } buttons: {
-            if !waiting.isEmpty {
-                Button { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) } label: {
-                    Text("Letter them").foregroundStyle(.white).frame(maxWidth: .infinity)
-                }
-                .outlinedOnField()
-            }
             Button { dismiss() } label: { Text("Done").foregroundStyle(field).frame(maxWidth: .infinity) }
                 .buttonStyle(.borderedProminent)
                 .tint(.white)
@@ -143,7 +130,7 @@ struct PlanTomorrow: View {
         dismiss()
     }
 
-    /// Adds the lines written (waiting for a letter, unless one is the pick) and makes the pick
+    /// Adds the lines written (without a letter, unless one is the pick) and makes the pick
     /// tomorrow's A1.
     private func save(_ pick: Pick?) {
         let today = today, order = store.dateOrder, lines = lines

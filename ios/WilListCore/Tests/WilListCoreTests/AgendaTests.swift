@@ -109,7 +109,7 @@ private func state(_ items: Item...) -> AppState {
     s.items.append(mk("Someday", .task))
     // Their study starts later, so they aren't on the day's list, but the plan still holds them.
     #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay"])
-    #expect(Set(laterItems(s.items, monday).map(\.title)) == ["Medical ad reading", "Chem final"])
+    #expect(Set(laterItems(s.items, monday).map(\.title)) == ["Medical ad reading", "Chem final", "Someday"])
 }
 
 @Test func tickingOffSomethingLater() {

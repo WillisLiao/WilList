@@ -10,7 +10,8 @@
 //   -open settings|goals             Settings, from the profile picture (goals: with Goals pushed)
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
 //   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
-//   -scroll letters|calendar|bottom  Plan: scroll to Needs a letter, the calendar or the bottom row
+//   -scroll later|calendar           Plan: scroll to Later or the calendar
+//   -scroll next|coming              Progress: scroll to Next 7 days or Coming up
 //   -sheet add|search|letters        open that sheet (add from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)

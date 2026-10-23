@@ -177,6 +177,9 @@ struct ToastHost: ViewModifier {
 }
 
 struct ReadableColumn: ViewModifier {
+    /// A small title in the bar on every screen size (Today, sheets); set here, as a mode set
+    /// outside this modifier would be overridden by it.
+    let inline: Bool
     @State private var width: CGFloat = 0
     /// nil on a phone: the system's own margins, which keep a grouped list's cards inset.
     private var margin: CGFloat? { width > 700 ? (width - 700) / 2 : nil }
@@ -184,7 +187,7 @@ struct ReadableColumn: ViewModifier {
     func body(content: Content) -> some View {
         content
             .contentMargins(.horizontal, margin, for: .scrollContent)
-            .toolbarTitleDisplayMode(margin == nil ? .automatic : .inline)
+            .toolbarTitleDisplayMode(inline || margin != nil ? .inline : .automatic)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 }
@@ -222,17 +225,8 @@ extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
 
     /// A tab's cards on the slate ground (`LinearGradient.ground`), as the widgets sit on a Home Screen.
-    /// `barless` for a screen without a navigation bar (Today): nothing scrolls under the clock.
-    func ground(barless: Bool = false) -> some View {
+    func ground() -> some View {
         scrollContentBackground(.hidden)
-            .mask {
-                VStack(spacing: 0) {
-                    // A short fade, so a card slides away under the clock rather than being cut.
-                    if barless { LinearGradient(colors: [.clear, .black], startPoint: .top, endPoint: .bottom).frame(height: 10) }
-                    Rectangle()
-                }
-                .ignoresSafeArea(edges: barless ? .bottom : .all)
-            }
             .background(LinearGradient.ground)
             .modifier(HardTopEdge())
     }
@@ -256,7 +250,7 @@ extension View {
 
     /// On a wide screen (iPad), a list keeps to a readable column in the middle, and its title
     /// moves up beside the tabs, out of the column's way.
-    func readableColumn() -> some View { modifier(ReadableColumn()) }
+    func readableColumn(inline: Bool = false) -> some View { modifier(ReadableColumn(inline: inline)) }
 
     /// A bare button's label answers taps across at least 44 by 44 points. Put it inside the label:
     /// a frame outside a button looks the same but doesn't widen what it answers to.

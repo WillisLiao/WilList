@@ -74,7 +74,6 @@ private let tuesday: Day = "2026-10-20"
     s.items = [final, old, makeItem(draft("Email TA", .task), testSettings, tuesday)]
     let found = suggestions(s, tuesday)
     #expect(found.contains(.startEarly(final)))
-    #expect(found.contains(.letter(count: 1)))
     #expect(found.contains(.review(ids: [old.id])))
-    #expect(found.firstIndex(of: .startEarly(final))! < found.firstIndex(of: .letter(count: 1))!)
+    #expect(found.firstIndex(of: .startEarly(final))! < found.firstIndex(of: .review(ids: [old.id]))!)
 }

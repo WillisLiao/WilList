@@ -119,11 +119,9 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.buttons["Start"]))
         XCTAssertTrue(tap(app.buttons["Start"], shows: app.textFields["Add a to-do"]), "Today opens")
         XCTAssertTrue(title("Write the lab report", in: app).exists)
-        // The other line waits for a letter, one tap away.
-        XCTAssertTrue(tap(app.buttons["1 needs a letter"], shows: app.staticTexts["Email Prof. Chen"]))
-        XCTAssertTrue(tap(app.buttons["B, Should do. Mild consequences"], shows: app.staticTexts["All lettered"]))
-        XCTAssertTrue(app.staticTexts["Your A1 is \u{201C}Write the lab report\u{201D}."].exists)
-        XCTAssertTrue(tap(app.buttons["Done"], hides: app.buttons["1 needs a letter"]))
+        // The other line waits in Plan, with no letter and nothing asking for one.
+        XCTAssertTrue(tap(app.buttons["tab-plan"], shows: app.staticTexts["Email Prof. Chen"]))
+        XCTAssertFalse(app.buttons["Give it a letter"].exists, "no mark without a letter")
     }
 
     func testPlanTomorrowPicksTheA1() {
@@ -137,7 +135,6 @@ final class CoreFlowsTests: XCTestCase {
         choose(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch, in: app)
         XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]), "it ends on tomorrow's A1")
         XCTAssertTrue(title("Read chapter 4", in: app).exists, "the chosen one is tomorrow's A1")
-        XCTAssertTrue(app.staticTexts["1 needs a letter"].exists, "the line written waits for a letter")
         XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["Tomorrow starts with"]))
         XCTAssertTrue(title("Read chapter 4", in: app).exists, "Today leads with the new A1")
         XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")

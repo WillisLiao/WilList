@@ -1,4 +1,3 @@
-import Charts
 import SwiftUI
 import WilListCore
 
@@ -19,10 +18,11 @@ struct ProgressTab: View {
         let todosDone = store.state.todos.filter { $0.done && $0.doneAt.map { diffDays($0, today) < 7 && diffDays($0, today) >= 0 } ?? false }.count
         let tips = suggestions(store.state, today)
         NavigationStack {
+            ScrollViewReader { proxy in
             List {
                 Section {
                     numbers(stats, done: stats.done + todosDone)
-                    DoneChart(days: store.state.doneByDay(today, days: 14), today: today)
+                    DoneChart(days: store.state.doneByDay(today, days: 7), today: today)
                 } header: {
                     Text("Last 7 days").onGround()
                 }
@@ -52,6 +52,7 @@ struct ProgressTab: View {
                 } header: {
                     Text("Next 7 days").onGround()
                 }
+                .id("next")
 
                 if !ahead.isEmpty {
                     Section {
@@ -59,12 +60,18 @@ struct ProgressTab: View {
                     } header: {
                         Text("Coming up").onGround()
                     }
+                    .id("coming")
                 }
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
             .ground()
             .readableColumn()
+            #if DEBUG
+            // `-scroll next|coming` on launch, for screenshots.
+            .onAppear { UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) } }
+            #endif
+            }
             .navigationTitle("Progress")
             .profileButton()
             .sheet(item: $editing) { ItemEditor(item: $0) }
@@ -132,7 +139,6 @@ struct ProgressTab: View {
         case .replan: "arrow.triangle.2.circlepath"
         case .overloaded: "exclamationmark.triangle"
         case .startEarly: "flag"
-        case .letter: "textformat.abc"
         case .review: "tray.full"
         case .calibrate: "timer"
         }
@@ -152,7 +158,6 @@ struct ProgressTab: View {
         case .overloaded(let day, let minutes, let budget):
             ("\(Fmt.day(day, today)): \(Fmt.minutes(minutes)) of study", "Over your \(Fmt.minutes(budget)) a day")
         case .startEarly(let it): ("Start \u{201C}\(it.title)\u{201D}", it.date.map { "Due \(Fmt.day($0, today, inSentence: true))" })
-        case .letter(let n): ("\(n) \(n == 1 ? "needs" : "need") a letter", nil)
         case .review(let ids): ("\(ids.count) old C to E \(ids.count == 1 ? "item" : "items")", "Still worth it?")
         case .calibrate(let c): ("\(c.label) takes you \(c.ratio.formatted())× as long", "From \(c.n) focus sessions")
         }
@@ -166,8 +171,6 @@ struct ProgressTab: View {
             nil
         case .startEarly(let it):
             ("Add to Today", { withAnimation { store.change(undo: "Added to Today") { s in if let i = s.index(of: it.id) { s.items[i].myDay = today } } } })
-        case .letter:
-            ("Letter them", { sorting = LetterSorter.Batch(ids: unsorted(store.state.items, today).map(\.id)) })
         case .review(let ids):
             ("Review", { sorting = LetterSorter.Batch(ids: ids) })
         case .calibrate(let c):
@@ -238,38 +241,50 @@ struct ProgressTab: View {
     }
 }
 
-/// Things done on each of the last two weeks' days, stacked by letter in its colour (to-dos and
-/// unlettered items in grey), today on the right.
+/// What got done each of the last seven days: each bar stacks the day's letters in their colours,
+/// A on the floor, to-dos and anything without a letter in grey on top, with the day and its count
+/// under it, drawn like the week ahead below it.
 struct DoneChart: View {
     let days: [DayDone]
     let today: Day
+    private let height: CGFloat = 64
 
     private static let order: [Letter?] = [.A, .B, .C, .D, .E, nil]
-    private static func name(_ l: Letter?) -> String { l?.rawValue ?? "Other" }
 
     var body: some View {
-        Chart {
-            ForEach(days, id: \.date) { d in
-                ForEach(Self.order, id: \.self) { l in
-                    if let n = d.counts[l], n > 0 {
-                        BarMark(x: .value("Day", Fmt.date(d.date), unit: .day), y: .value("Done", n))
-                            .foregroundStyle(by: .value("Letter", Self.name(l)))
+        // One or two things done never fill the card: the scale starts at three.
+        let top = Double(max(3, days.map(\.total).max() ?? 0))
+        VStack(spacing: 8) {
+            HStack(alignment: .bottom, spacing: 0) {
+                ForEach(days, id: \.date) { d in
+                    VStack(spacing: 1.5) {
+                        ForEach(Self.order.reversed().filter { (d.counts[$0] ?? 0) > 0 }, id: \.self) { l in
+                            (l?.color ?? Color(.systemGray4))
+                                .frame(height: max(height * Double(d.counts[l] ?? 0) / top - 1.5, 1.5))
+                        }
                     }
+                    .frame(width: 24)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                    .frame(maxWidth: .infinity)
                 }
             }
-        }
-        .chartForegroundStyleScale(domain: Self.order.map(Self.name), range: Self.order.map { $0?.color ?? Color(.systemGray4) })
-        .chartLegend(.hidden)
-        .chartYAxis { AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) }
-        .chartXAxis {
-            AxisMarks(values: .stride(by: .day)) { _ in
-                AxisValueLabel(format: .dateTime.weekday(.narrow), centered: true)
+            .frame(height: height, alignment: .bottom)
+            HStack(spacing: 0) {
+                ForEach(days, id: \.date) { d in
+                    VStack(spacing: 3) {
+                        Text(d.date == today ? "Today" : Fmt.date(d.date).formatted(.dateTime.weekday(.abbreviated)))
+                            .fontWeight(d.date == today ? .semibold : .regular)
+                        Text(d.total > 0 ? "\(d.total)" : "–").monospacedDigit().foregroundStyle(.secondary)
+                    }
+                    .font(.caption2)
+                    .frame(maxWidth: .infinity)
+                }
             }
+            .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         }
-        .frame(height: 130)
-        .padding(.vertical, 6)
-        .accessibilityLabel("Done each day, last 14 days")
-        .accessibilityValue(days.suffix(7).map { "\(Fmt.day($0.date, today)): \($0.total)" }.joined(separator: ", "))
+        .padding(.vertical, 8)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(days.map { "\(Fmt.day($0.date, today)): \($0.total) done" }.joined(separator: ". "))
     }
 }
 

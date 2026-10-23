@@ -120,9 +120,8 @@ struct SettingsView: View {
                 }
             }
             .ground()
-            .readableColumn()
+            .readableColumn(inline: true)
             .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }

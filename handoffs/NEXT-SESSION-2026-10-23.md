@@ -4,6 +4,7 @@ The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
 Done since the last version of this file: the A1 as the poster of the day, a colour for each course (the poster, Focus and its Live Activity, the widget, course names, the week chart), the welcome and Plan tomorrow on fields of colour, "Your A’s are done." after the last A, the field reaching the edges on an iPad, and the owner's word that there are no fixed rules.
 Later the same day: step pages that change cleanly and a sunrise into Plan tomorrow's last page, Your goals led by the main goal on a green card, Today asking "What matters most today?" before anything has a letter (and turning night in the evening to ask about tomorrow), a deeper green (`#0F8044`) that holds 5:1 and gets a white status bar, no lone word on a large title's last line, Focus filling like a glass instead of a ring, and the tick's burst on "Your A’s are done.".
+Then: the next course's colour wipes up the poster instead of blending (and Undo brings an A back the same way), a study session names its course on Plan, and the core flow UI tests allow a busy CI machine 15 seconds.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
 ## Start here
@@ -21,9 +22,10 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Work, roughly in order of value
 
-- **Ask the owner how the colour, the evening poster and the focus tide land** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: Plan's and Study's session rows don't name their course yet (a coloured mark could tie them to the chart and the poster), and the field could change colour with a wipe instead of a blend.
+- **Ask the owner how the colour, the evening poster, the focus tide and the colour wipe land** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something.
   Shoot every change and look at it; show the owner side by side when it's a taste call.
-- **The colour change between courses** blends through a muddy middle for a tenth of a second (the colours mix in RGB); a quicker hand-over or a different blend may look cleaner.
+- **The A1 card's height** changes in one step when the next A's title has another number of lines (the list only animates a row's height with an animated data change, which animates everything inside it; DESIGN pitfalls 23 and 24).
+  A smooth change would need the poster out of the `List`'s sizing, for example drawn over a top content margin that follows the scroll; worth it only if the step reads as a flaw on a device.
 
 - **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.
   In the simulator, `xcrun simctl push <device> com.lull.willist payload.json` with `"category": "task"` and an `"id"` delivers a reminder, and XCUITest on SpringBoard can press its buttons.

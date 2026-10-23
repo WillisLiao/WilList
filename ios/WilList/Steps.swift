@@ -86,6 +86,9 @@ struct StepPage<Content: View>: View {
                         .id(step)
                         .transition(arrive)
                 }
+                // The step's controls take the page's colour: night in the evening.
+                .environment(\.field, field)
+                .tint(field)
                 .padding(.horizontal, 24)
                 .padding(.top, 12)
                 .frame(maxWidth: 560, alignment: .leading)
@@ -115,6 +118,7 @@ struct LinesEntry: View {
     @Binding var draft: String
     let typing: FocusState<Bool>.Binding
     let placeholder: String
+    @Environment(\.field) private var field
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -135,7 +139,7 @@ struct LinesEntry: View {
                 Divider().padding(.leading, 36)
             }
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(Color.brand)
+                Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(field)
                     .accessibilityHidden(true)
                 TextField(lines.isEmpty ? placeholder : "And next?", text: $draft)
                     .focused(typing)

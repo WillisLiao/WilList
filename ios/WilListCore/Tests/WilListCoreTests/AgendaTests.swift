@@ -98,6 +98,20 @@ private func state(_ items: Item...) -> AppState {
     #expect(rows[0].label == "A1")
 }
 
+@Test func planKeepsWhatStartsLater() {
+    var s = AppState()
+    var reading = Item(id: "", title: "Medical ad reading", type: .reading)
+    reading.date = addDays(monday, 21)
+    reading.priority = .A
+    s.items.append(makeItem(reading, s.settings, monday, s.items))
+    s.items.append(mk("Essay", .task, date: monday, priority: .A))
+    s.items.append(mk("Chem final", .exam, date: addDays(monday, 30), priority: .A))
+    s.items.append(mk("Someday", .task))
+    // Their study starts later, so they aren't on the day's list, but the plan still holds them.
+    #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay"])
+    #expect(Set(laterItems(s.items, monday).map(\.title)) == ["Medical ad reading", "Chem final"])
+}
+
 @Test func theLetterAddedLastComesLast() {
     var s = AppState()
     for (title, date) in [("Essay", nil), ("Lab", nil), ("Quiz prep", Optional(monday))] {

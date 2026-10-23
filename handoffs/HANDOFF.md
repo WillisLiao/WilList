@@ -28,7 +28,8 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
   Below: "N need a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
-- **Plan** (was Goals): main goal (Goals opens on it, large in white on a teal card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
+- **Plan** (was Goals): everything planned. Main goal (Goals opens on it, large in white on a teal card), the day in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), items needing a letter (**Letter them** opens the sorter), everything lettered that isn't on today's list under **Later** (soonest first, the letter without a number), then Plan tomorrow and Bring in a schedule.
+  The owner's rule (2026-10-24): all plans in Plan, only today's in Today, and whatever has study in Study.
   An empty Plan says "Give everything a letter" and shows the five letters in their colours with their names.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.

@@ -175,19 +175,40 @@ struct DueRow: View {
     var add = "Add a due date"
 
     var body: some View {
+        // The date and its time side by side in one row, after the calendar (a word beside both
+        // squeezed onto two lines; VoiceOver still reads it). The clear button takes off the time
+        // first, then the date.
         if let d = date {
-            SetRow(symbol: "calendar", overdue: diffDays(today, d) < 0, clear: { date = nil; time = nil }) {
-                DatePicker(title, selection: Binding(get: { Fmt.date(d) }, set: { date = WilListCore.today($0) }),
-                           displayedComponents: .date)
-            }
-            if let t = time {
-                SetRow(symbol: "clock", overdue: false, clear: { time = nil }) {
-                    DatePicker("At", selection: Binding(
-                        get: { Calendar.current.date(bySettingHour: (timeToMin(t) ?? 1020) / 60, minute: (timeToMin(t) ?? 1020) % 60, second: 0, of: .now) ?? .now },
-                        set: { time = minToTime(nowMinutes($0)) }), displayedComponents: .hourAndMinute)
+            SetRow(symbol: "calendar", overdue: diffDays(today, d) < 0,
+                   clearLabel: time == nil ? "Remove the date" : "Remove the time",
+                   clear: { if time == nil { date = nil } else { time = nil } }) {
+                HStack(spacing: 6) {
+                    DatePicker(title, selection: Binding(get: { Fmt.date(d) }, set: { date = WilListCore.today($0) }),
+                               displayedComponents: .date)
+                        .labelsHidden()
+                    if let t = time {
+                        DatePicker("Time", selection: Binding(
+                            get: { Calendar.current.date(bySettingHour: (timeToMin(t) ?? 1020) / 60, minute: (timeToMin(t) ?? 1020) % 60, second: 0, of: .now) ?? .now },
+                            set: { time = minToTime(nowMinutes($0)) }), displayedComponents: .hourAndMinute)
+                            .labelsHidden()
+                    } else {
+                        // Set like the date beside it.
+                        Button { time = "17:00" } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus").font(.subheadline.weight(.semibold))
+                                Text("Time")
+                            }
+                            .padding(.horizontal, 11)
+                            .frame(minHeight: 34)
+                            .background(Color(.tertiarySystemFill), in: Capsule())
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel("Add a time")
+                    }
+                    Spacer(minLength: 0)
                 }
-            } else {
-                Button { time = "17:00" } label: { Label("Add a time", systemImage: "clock") }
+                // Without words to line up with, the separator below would start at the row's edge.
+                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
             }
         } else {
             Menu {
@@ -336,6 +357,7 @@ private struct CustomRepeat: View {
 private struct SetRow<Content: View>: View {
     let symbol: String
     let overdue: Bool
+    var clearLabel = "Clear"
     let clear: () -> Void
     @ViewBuilder let content: Content
 
@@ -349,7 +371,7 @@ private struct SetRow<Content: View>: View {
                 Image(systemName: "xmark.circle.fill").foregroundStyle(Color(.tertiaryLabel))
             }
             .buttonStyle(.borderless)
-            .accessibilityLabel("Clear")
+            .accessibilityLabel(clearLabel)
         }
     }
 }

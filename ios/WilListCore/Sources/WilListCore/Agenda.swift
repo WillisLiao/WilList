@@ -135,6 +135,16 @@ public func doRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row] 
     dayRows(items, day, realToday: realToday).filter { $0.priority.map { $0 <= .C } ?? false }
 }
 
+/// Everything lettered that isn't on the day's list: work whose study starts later, things due
+/// further out, repeats on other days. Plan shows them under the day, soonest first.
+public func laterItems(_ items: [Item], _ day: Day) -> [Item] {
+    let shown = Set(dayRows(items, day).map(\.item.id))
+    func next(_ it: Item) -> Day { it.sessions.first { !$0.done }?.date ?? it.date ?? "9999" }
+    return items
+        .filter { $0.type != .event && $0.priority != nil && isOpen($0, day) && !shown.contains($0.id) }
+        .sorted { a, b in next(a) != next(b) ? next(a) < next(b) : letterKey(a) < letterKey(b) }
+}
+
 /// Study sessions due today or missed, one row per item, soonest deadline first. Unlike the
 /// lettered list, items still waiting for a letter are included: the work is real either way.
 public func studyRows(_ items: [Item], _ today: Day) -> [Row] {

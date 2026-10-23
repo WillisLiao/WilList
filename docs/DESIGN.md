@@ -77,7 +77,7 @@ Each screen has one job and one primary action.
 | Tab | Job | Primary action |
 |---|---|---|
 | Today | Your A1 as one large card under today's date (or, before anything has a letter, the question what matters most today), how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
-| Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
+| Plan | Everything you plan: your main goal, the day in ABCDE order with the A1 first (drag to re-rank), items needing a letter, everything lettered that isn't on today's list under Later (soonest first), then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |
 

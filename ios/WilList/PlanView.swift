@@ -32,6 +32,7 @@ struct PlanList: View {
     private var today: Day { store.today }
     private var rows: [Row] { dayRows(store.state.items, today) }
     private var waiting: [Item] { unsorted(store.state.items, today) }
+    private var later: [Item] { laterItems(store.state.items, today) }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -44,7 +45,7 @@ struct PlanList: View {
                 }
                 if !waiting.isEmpty {
                     Section {
-                        ForEach(waiting) { waitingRow($0) }
+                        ForEach(waiting) { plainRow($0) }
                     } header: {
                         HStack {
                             Text("Needs a letter")
@@ -58,6 +59,14 @@ struct PlanList: View {
                         .onGround()
                     }
                     .id("letters")
+                }
+                // The rest of the plan: everything lettered that isn't on today's list yet.
+                if !later.isEmpty {
+                    Section {
+                        ForEach(later) { plainRow($0) }
+                    } header: {
+                        Text("Later").onGround()
+                    }
                 }
                 Section { planningRows }
                     .id("bottom")
@@ -227,18 +236,22 @@ struct PlanList: View {
         .tint(.gray)
     }
 
-    private func waitingRow(_ item: Item) -> some View {
+    /// An item off today's list, waiting for a letter or coming later: its title, when, and its
+    /// letter (without a number, which only the day's list has) or the empty mark.
+    private func plainRow(_ item: Item) -> some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
+                    .strikethrough(item.priority == .E, color: .secondary)
+                    .foregroundStyle(item.priority == .E ? .secondary : .primary)
                 if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 6)
             .contentShape(Rectangle())
             .onTapGesture { editing = item }
-            // The empty mark, in the same column as the letters above.
-            letterMenu(item) { LetterMark(letter: nil) }
+            // In the same column as the letters above.
+            letterMenu(item) { LetterMark(letter: item.priority) }
         }
         // The words line up with the day's rows above, which have a check before them.
         .listRowInsets(EdgeInsets(top: 0, leading: 66, bottom: 0, trailing: 16))

@@ -6,8 +6,8 @@ Read it first; update the top section at the end of every substantial session.
 ## Now (2026-10-23, evening)
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
-`main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and GitHub Pages is on: the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose).
-Everything after `5bd0878` (Lagoon, iCloud sync, the widget-style cards) is on the branch only; merging it into `main` publishes the website again, so ask first.
+`main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and again to `220027f` the same evening (Lagoon, iCloud sync, the cards on slate, the letter colours), also with the owner's OK; GitHub Pages is on and the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose; `app/` hasn't changed).
+Anything after `220027f` is on the branch only; pushing it to `main` publishes the website again, so ask first.
 
 **The owner's answers (2026-10-23):** merge into `main` with the website as it is; keep the Lagoon look; no custom lists for now; sync the iPhone and iPad through iCloud.
 Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.
@@ -72,7 +72,7 @@ The widget-style cards were shot and looked at on every tab, Today's empty and e
 Answered on 2026-10-23: `main` merged with the website as it is (done), Lagoon kept (done), no custom lists for now, iCloud sync wanted (built, untried on devices), the app laid out like its widgets in the softer teal (done).
 Still open:
 
-1. Merging the work since `5bd0878` (Lagoon, iCloud sync, the widget-style cards) into `main`: ask first, as it publishes the website.
+1. Merging anything after `220027f` into `main`: ask first, as it publishes the website.
 2. The website stays the older version for now; bringing it up to the app (the A1 card, focus, the sorter, the welcome, sync, the cards on slate, the letter colours) is a later call.
 3. iPad: a sidebar or two columns (Today beside Plan) would use the space better than a centred column.
 

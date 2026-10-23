@@ -3,7 +3,7 @@
 The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
 Done since the last version of this file: the owner answered the open decisions.
-`main` was merged at `5bd0878` and the website is live at https://willisliao.github.io/WilList/; Lagoon is the one look, now laid out like its widgets at the owner's ask (every part on a white card, every tab on the gallery's deep slate and sheets on a light blue-grey, the softer teal `#347583`, system type, the A1 on a pale teal card, the letters red, orange, yellow, green and blue from A to E); there are no custom lists for now; and the iPhone and iPad now sync through iCloud (`CloudSync`, `PlanMerge`), not yet tried with a real account.
+`main` was merged at `5bd0878` and again at `220027f` (everything below), and the website is live at https://willisliao.github.io/WilList/; Lagoon is the one look, now laid out like its widgets at the owner's ask (every part on a white card, every tab on the gallery's deep slate and sheets on a light blue-grey, the softer teal `#347583`, system type, the A1 on a pale teal card, the letters red, orange, yellow, green and blue from A to E); there are no custom lists for now; and the iPhone and iPad now sync through iCloud (`CloudSync`, `PlanMerge`), not yet tried with a real account.
 Also: Mark done on a reminder no longer crashes the app (a UI test presses it on the Home Screen), and the Lock Screen widgets were checked on the real Lock Screen, where the ring now says what it counts.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
@@ -16,7 +16,7 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Ask the owner first
 
-- Merging what came after `5bd0878` (Lagoon, iCloud sync, the widget-style cards) into `main`: it publishes the website again.
+- Merging anything after `220027f` into `main`: it publishes the website again.
 - Installing on the devices (`npm run ios`) needs team `45MSS5RXML` signed in to Xcode (it had lost the credentials on 2026-10-23); this build registers the app group, the widget extension, Live Activities, the iCloud container and push.
 - The iPad layout: a sidebar or two columns instead of a centred column.
 

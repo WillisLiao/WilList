@@ -81,12 +81,16 @@ struct A1Card: View {
                                 RoundedRectangle(cornerRadius: 4).fill(Color.brand.opacity(0.2)).padding(.horizontal, -4)
                             }
                         }
+                    // Each line at its full height, so none is cut short and re-wrapped while the
+                    // card changes size.
                     if let detail = Fmt.detail(row, today) {
-                        Text(detail).foregroundStyle(grey)
+                        Text(detail).foregroundStyle(grey).fixedSize(horizontal: false, vertical: true)
                     }
                     // A session is part of something bigger: say what it is for and when that is due.
                     if row.session != nil, let due = Fmt.when(row.item, today) {
-                        Text([due, row.item.course].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(grey)
+                        Text([due, row.item.course].compactMap { $0 }.joined(separator: ", "))
+                            .foregroundStyle(grey)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
                 .opacity(faded == row.key ? 0 : 1)
@@ -132,6 +136,7 @@ struct A1Card: View {
                 Text("\(shownStreak) \(shownStreak == 1 ? "day" : "days") in a row you started with an A.")
                     .font(.footnote)
                     .foregroundStyle(grey)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: poster ? .leading : .center)
             }
         }

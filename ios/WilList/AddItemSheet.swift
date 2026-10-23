@@ -35,7 +35,7 @@ struct AddItemSheet: View {
                         .onSubmit(add)
                 } footer: {
                     if empty {
-                        Text("Type it the way you’d say it: \u{201C}Calc midterm fri 2pm #math\u{201D}, \u{201C}Essay due 11/24 4h\u{201D}, \u{201C}Gym every mon and wed 7am\u{201D}.")
+                        Text("Like \u{201C}Essay due fri 4h #ENG101\u{201D}")
                     } else if let hint = parsed.hints.first {
                         Text(advice(hint))
                     }
@@ -65,7 +65,7 @@ struct AddItemSheet: View {
                 } header: {
                     Text("Letter")
                 } footer: {
-                    Text(letter?.meaning ?? "No letter yet. It waits under Needs a letter in Plan.")
+                    if let letter { Text(letter.meaning) }
                 }
 
                 if !added.isEmpty {
@@ -134,17 +134,17 @@ struct AddItemSheet: View {
         guard plannedTypes.contains(type), parsed.recur == nil, parsed.date != nil else { return nil }
         let it = makeItem(draft, store.state.settings, store.today, store.state.items)
         guard let start = it.sessions.first?.date else {
-            return it.shortfallMin > 0 ? "Too late to plan study for it" : nil
+            return it.shortfallMin > 0 ? "Too late to plan" : nil
         }
         return "\(Fmt.minutes(it.effortMin)) in \(it.sessions.count) \(it.sessions.count == 1 ? "session" : "sessions") from \(Fmt.day(start, store.today, inSentence: true))"
     }
 
     private func advice(_ hint: Hint) -> String {
         switch hint {
-        case .tryTo: "\u{201C}Try\u{201D} leaves room not to. Decide: will you do it?"
-        case .wish: "A wish with a deadline is a goal. Give it a date."
-        case .haveTo: "You choose to. Saying \u{201C}I will\u{201D} makes it yours."
-        case .problem: "Call it a situation and ask what you can do about it."
+        case .tryTo: "Don’t try. Decide."
+        case .wish: "Give the wish a date."
+        case .haveTo: "You choose to. Say \u{201C}I will\u{201D}."
+        case .problem: "Call it a situation."
         }
     }
 

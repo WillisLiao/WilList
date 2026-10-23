@@ -53,7 +53,7 @@ struct ItemEditor: View {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)
                     }
                     Label {
-                        TextField("Course or project", text: Binding(get: { item.course ?? "" }, set: { item.course = $0.isEmpty ? nil : $0 }))
+                        TextField("Course", text: Binding(get: { item.course ?? "" }, set: { item.course = $0.isEmpty ? nil : $0 }))
                     } icon: {
                         // In the course's colour, once it has one: a course already in the plan shows
                         // its colour as it's typed.
@@ -80,17 +80,15 @@ struct ItemEditor: View {
                         Text("Study plan")
                     } footer: {
                         if item.shortfallMin > 0 {
-                            Text("There isn’t enough time before it for all of this: \(Fmt.minutes(item.shortfallMin)) short. Start now, or raise your daily study time in More.")
+                            Text("\(Fmt.minutes(item.shortfallMin)) short. Raise daily study in More.")
                         } else if item.sessions.isEmpty && item.effortMin > 0 {
-                            Text("Save to plan the study sessions.")
-                        } else if !item.sessions.isEmpty {
-                            Text("Spread back from the date, around everything else you have on.")
+                            Text("Planned when saved.")
                         }
                     }
                 }
 
                 Section("Notes") {
-                    TextField("Anything to remember", text: $item.notes, axis: .vertical).lineLimit(2...8)
+                    TextField("Add a note", text: $item.notes, axis: .vertical).lineLimit(2...8)
                 }
 
                 Section {

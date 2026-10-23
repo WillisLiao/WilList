@@ -149,7 +149,7 @@ struct FirstWidgetView: View {
             // Before anything has a letter, the question Today asks.
             Text(glance.doneToday > 0 ? "All done for today" : "What matters most today?")
                 .font(.headline)
-            Text(glance.doneToday > 0 ? "\(glance.doneToday) finished." : "Give it an A in WilList.")
+            Text(glance.doneToday > 0 ? "\(glance.doneToday) finished" : "Give it an A")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         }
@@ -233,7 +233,7 @@ struct TodayWidgetView: View {
                 Image(systemName: "checkmark.circle.fill").font(.title2).foregroundStyle(Color.brand).widgetAccentable()
             }
             Text(glance.todosDone > 0 ? "All clear" : "Nothing on your list").font(.headline)
-            Text(glance.todosDone > 0 ? "\(glance.todosDone) done today." : "Tap + to add a to-do.")
+            Text(glance.todosDone > 0 ? "\(glance.todosDone) done today" : "Tap + to add")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)

@@ -59,7 +59,7 @@ enum Reminders {
         guard !reminders.isEmpty, [.authorized, .provisional, .ephemeral].contains(status) else { return }
         center.setNotificationCategories([UNNotificationCategory(identifier: category, actions: [
             UNNotificationAction(identifier: doneAction, title: "Mark done", options: []),
-            UNNotificationAction(identifier: snoozeAction, title: "Remind me in 10 minutes", options: []),
+            UNNotificationAction(identifier: snoozeAction, title: "Snooze 10 min", options: []),
         ], intentIdentifiers: [])])
         for r in reminders.prefix(60) {
             let content = UNMutableNotificationContent()

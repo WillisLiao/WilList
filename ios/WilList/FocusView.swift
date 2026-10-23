@@ -88,7 +88,7 @@ struct FocusView: View {
             .padding(.horizontal, 24)
             Spacer(minLength: 24)
             clock(f, left: left)
-            Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it’s done.")
+            Text(over ? "Take 5 to 10 minutes." : f.paused ? "Paused" : "One thing until it’s done.")
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -162,7 +162,7 @@ extension Store {
         guard let f = focus else { LiveFocus.end(); return }
         reload() // a widget may have changed the plan meanwhile
         let today = today
-        change(undo: done ? "Marked \u{201C}\(f.title)\u{201D} done" : nil) { s in
+        change(undo: done ? "\u{201C}\(f.title)\u{201D} done" : nil) { s in
             if done, let row = dayRows(s.items, today, realToday: today).first(where: { $0.key == f.key }) {
                 s.complete(row, today: today)
             }

@@ -128,41 +128,52 @@ extension Fmt {
     }
 }
 
+extension EnvironmentValues {
+    /// The room a tab's screen leaves at the bottom for WilList's own tab bar (`TabBar`).
+    @Entry var tabBarRoom: CGFloat = 0
+}
+
 /// Shows the store's short messages ("Deleted…  Undo") above the tab bar.
 struct ToastHost: ViewModifier {
     @Environment(Store.self) private var store
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
+    @Environment(\.tabBarRoom) private var tabBarRoom
 
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom) {
-          // The toast's animation stays with the toast. On the whole screen it animated everything
-          // that changed with it, and the list crossfaded Today's A1 card when Mark done said so.
-          ZStack {
-            if let toast = store.toast {
-                HStack(spacing: 16) {
-                    Text(toast.text).lineLimit(2)
-                    Spacer(minLength: 0)
-                    if toast.canUndo {
-                        // Animated, unless it brings back another A1: the list would resize the A1's
-                        // row slowly behind words already in place. The card brings its A in itself.
-                        Button("Undo") { withAnimation(store.undoChangesA1 ? nil : .default) { store.undo() } }.bold()
+            VStack(spacing: 0) {
+                // The toast's animation stays with the toast. On the whole screen it animated everything
+                // that changed with it, and the list crossfaded Today's A1 card when Mark done said so.
+                ZStack {
+                    if let toast = store.toast {
+                        HStack(spacing: 16) {
+                            Text(toast.text).lineLimit(2)
+                            Spacer(minLength: 0)
+                            if toast.canUndo {
+                                // Animated, unless it brings back another A1: the list would resize the A1's
+                                // row slowly behind words already in place. The card brings its A in itself.
+                                Button("Undo") { withAnimation(store.undoChangesA1 ? nil : .default) { store.undo() } }.bold()
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                        .frame(minHeight: 50)
+                        .floating()
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .task(id: toast.id) {
+                            // With VoiceOver, Undo stays until it's reached, however long that takes.
+                            guard !(toast.canUndo && voiceOver) else { return }
+                            try? await Task.sleep(for: toast.shownFor)
+                            if store.toast?.id == toast.id { withAnimation { store.toast = nil } }
+                        }
                     }
                 }
-                .padding(.horizontal, 20)
-                .frame(minHeight: 50)
-                .floating()
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-                .task(id: toast.id) {
-                    // With VoiceOver, Undo stays until it's reached, however long that takes.
-                    guard !(toast.canUndo && voiceOver) else { return }
-                    try? await Task.sleep(for: toast.shownFor)
-                    if store.toast?.id == toast.id { withAnimation { store.toast = nil } }
-                }
+                .animation(.snappy, value: store.toast)
+                // Clear of the tab bar drawn over the screen, for the toast and the list's last rows.
+                // Here, inside the screen's navigation stack: an inset outside it doesn't reach the list.
+                Color.clear.frame(height: tabBarRoom)
             }
-          }
-          .animation(.snappy, value: store.toast)
         }
     }
 }
@@ -269,12 +280,9 @@ extension View {
         }
     }
 
-    /// The tab bar shrinks while you scroll down, where the system supports it (iOS 26).
-    @ViewBuilder func minimizingTabBar() -> some View {
-        if #available(iOS 26, *) {
-            tabBarMinimizeBehavior(.onScrollDown)
-        } else {
-            self
-        }
+    /// A tab's screen under WilList's own white tab bar (`TabBar`): the system's glass one is
+    /// hidden, and the screen's toast host leaves room for ours.
+    func underTabBar() -> some View {
+        toolbar(.hidden, for: .tabBar).environment(\.tabBarRoom, TabBar.room)
     }
 }

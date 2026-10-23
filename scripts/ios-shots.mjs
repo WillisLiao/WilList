@@ -7,7 +7,7 @@
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
 //   -tab today|plan|study|more       which tab opens
-//   -open goals                      Plan: push Your goals
+//   -open goals                      Plan: push Goals
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
 //   -night YES                       it's evening: Today and Plan offer Plan tomorrow (NO, the default here)
 //   -scroll letters|bottom           Plan: scroll to Needs a letter or the bottom rows

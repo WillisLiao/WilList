@@ -94,7 +94,7 @@ struct LetterSorter: View {
                 .padding(.bottom, 14)
             ForEach(Letter.allCases, id: \.self) { letterButton($0, item: item, suggested: suggested) }
             Button { go(1) } label: {
-                Text("Skip for now").frame(maxWidth: .infinity).tapArea()
+                Text("Skip").frame(maxWidth: .infinity).tapArea()
             }
             .font(.body.weight(.medium))
                 .padding(.top, 6)
@@ -183,7 +183,7 @@ struct LetterSorter: View {
                 Text("Your A1 is \u{201C}\(a1.item.title)\u{201D}.")
             }
             if left > 0 {
-                Text("\(left) still \(left == 1 ? "waits" : "wait") for a letter in Plan.").foregroundStyle(.secondary)
+                Text("\(left) still \(left == 1 ? "needs" : "need") a letter").foregroundStyle(.secondary)
             }
         } buttons: {
             Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity) }

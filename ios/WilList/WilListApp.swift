@@ -66,7 +66,61 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 }
 
-enum AppTab: String, Hashable { case today, plan, study, more }
+enum AppTab: String, Hashable, CaseIterable {
+    case today, plan, study, more
+
+    var title: String { rawValue.capitalized }
+
+    var symbol: String {
+        switch self {
+        case .today: "checklist"
+        case .plan: "list.number"
+        case .study: "book.closed"
+        case .more: "ellipsis"
+        }
+    }
+}
+
+/// The four tabs on a solid white capsule. The system's glass tab bar takes on the colour of
+/// whatever is behind it (the slate, a card), turns it when pressed and can't be made solid on
+/// iOS 26, so WilList draws its own; the system's stays hidden (`underTabBar()`).
+struct TabBar: View {
+    /// How much room a tab's content leaves for the bar.
+    static let room: CGFloat = 76
+    @Binding var tab: AppTab
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(AppTab.allCases, id: \.self) { item in
+                let on = item == tab
+                Button { tab = item } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: item.symbol)
+                            .font(.system(size: 19, weight: .semibold))
+                            .frame(height: 24)
+                        Text(item.title).font(.caption2.weight(.semibold))
+                    }
+                    // The deeper teal on its pale pill: the teal itself reads at only 4.4:1 there.
+                    .foregroundStyle(on ? Color.brandDeep : Color.primary)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .background(Color.brand.opacity(on ? 0.12 : 0), in: Capsule())
+                    .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(on ? .isSelected : [])
+                .accessibilityIdentifier("tab-\(item.rawValue)")
+            }
+        }
+        .padding(5)
+        .background(Color.white, in: Capsule())
+        .shadow(color: .black.opacity(0.14), radius: 14, y: 5)
+        .dynamicTypeSize(...DynamicTypeSize.xxLarge)
+        .frame(maxWidth: 440)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 4)
+        .sensoryFeedback(.selection, trigger: tab)
+    }
+}
 
 struct RootView: View {
     @Environment(Store.self) private var store
@@ -81,12 +135,13 @@ struct RootView: View {
 
     var body: some View {
         TabView(selection: $tab) {
-            Tab("Today", systemImage: "checklist", value: .today) { TodayView() }
-            Tab("Plan", systemImage: "list.number", value: .plan) { PlanView() }
-            Tab("Study", systemImage: "book.closed", value: .study) { StudyView() }
-            Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }
+            Tab("Today", systemImage: "checklist", value: .today) { TodayView().underTabBar() }
+            Tab("Plan", systemImage: "list.number", value: .plan) { PlanView().underTabBar() }
+            Tab("Study", systemImage: "book.closed", value: .study) { StudyView().underTabBar() }
+            Tab("More", systemImage: "ellipsis", value: .more) { MoreView().underTabBar() }
         }
-        .minimizingTabBar()
+        // The keyboard covers the bar rather than lifting it.
+        .overlay(alignment: .bottom) { TabBar(tab: $tab).ignoresSafeArea(.keyboard) }
         // The accent colour is the teal already; tinting with it too turns the toolbar buttons teal.
         .tint(.brand)
         // The first launch writes the first plan, then opens Today on its A1.
@@ -149,7 +204,7 @@ struct RootView: View {
         .task(id: store.state.settings) {
             if await !Reminders.update(store.state.settings) {
                 store.change { $0.settings.notify = false }
-                store.say("Notifications are off for WilList. Turn them on in the Settings app.")
+                store.say("Turn on notifications for WilList in Settings.")
             }
         }
     }

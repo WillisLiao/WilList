@@ -91,19 +91,11 @@ struct TodayView: View {
                 if store.evening && !planned && !tonight {
                     Section { nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true } }
                 } else if waiting > 0 && !asking {
-                    Section { nudge("\(waiting) waiting for a letter", action: letterThem) }
+                    Section { nudge("\(waiting) \(waiting == 1 ? "needs" : "need") a letter", action: letterThem) }
                 }
                 // The checklist on one card, Add a to-do at its top, as on the Today widget.
                 Section {
                     addRow
-                    // A list with no to-dos yet shows what a line can say.
-                    if store.state.todos.isEmpty && readDates && draft.isEmpty {
-                        Text("Dates are read for you: \u{201C}Call mum tomorrow 6pm\u{201D}.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 4, leading: 66, bottom: 4, trailing: 20))
-                    }
                     if sort != .due { rows(open, movable: sort == .manual) }
                 }
                 if sort == .due {
@@ -115,7 +107,7 @@ struct TodayView: View {
                     Section {
                         ForEach(fromPlan) { planRow($0) }
                     } header: {
-                        Text("From Plan and Study").onGround()
+                        Text("Planned").onGround()
                     }
                 }
                 if showCompleted && !completed.isEmpty {
@@ -247,12 +239,11 @@ struct TodayView: View {
     private func summary(_ toDo: Int) -> String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
         let doneToday = completed.filter { $0.doneAt == today }.count + doneOn(store.state.items, today).count
-        // An empty day says so plainly: the card below asks what matters most, and the line under
-        // "Add a to-do" shows how to write one.
-        var parts = [toDo == 0 ? (doneToday == 0 ? "Nothing for today yet" : "All clear") : "\(toDo) to do"]
+        // An empty day says so plainly: the card below asks what matters most.
+        var parts = [toDo == 0 ? (doneToday == 0 ? "Nothing yet" : "All clear") : "\(toDo) to do"]
         if overdue > 0 { parts.append("\(overdue) overdue") }
-        if doneToday > 0 { parts.append("\(doneToday) done today") }
-        return parts.joined(separator: ", ") + "."
+        if doneToday > 0 { parts.append("\(doneToday) done") }
+        return parts.joined(separator: ", ")
     }
 
     private func letterThem() {
@@ -390,7 +381,7 @@ ForEach(list) { todo in
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {
-                store.change(undo: "Marked \u{201C}\(item.title)\u{201D} done") { s in
+                store.change(undo: "\u{201C}\(item.title)\u{201D} done") { s in
                     if let row = dayRows(s.items, today, realToday: today).first(where: { $0.item.id == item.id }) {
                         s.complete(row, today: today)
                     } else {

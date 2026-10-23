@@ -16,7 +16,7 @@ struct TodoEditor: View {
                 if let todo = store.state.todos.first(where: { $0.id == id }) {
                     form(todo)
                 } else {
-                    ContentUnavailableView("This to-do was deleted", systemImage: "trash")
+                    ContentUnavailableView("Deleted", systemImage: "trash")
                 }
             }
             .navigationTitle("To-do")
@@ -49,8 +49,6 @@ struct TodoEditor: View {
                 ReminderRow(at: field(\.remindAt), today: today)
                 DueRow(date: field(\.date), time: field(\.time), today: today)
                 RepeatRow(recur: field(\.recur), date: field(\.date), today: today)
-            } footer: {
-                if todo.recur != nil { Text("When you tick it off, the next one is added.") }
             }
 
             Section("Note") {
@@ -65,13 +63,11 @@ struct TodoEditor: View {
                     } label: {
                         Label("Give it a letter", systemImage: "list.number").fillsRow()
                     }
-                } footer: {
-                    Text("It moves into Plan with its steps, dates and note, and stays on Today for today.")
                 }
             }
 
             Section {
-                Button("Delete to-do", role: .destructive) {
+                Button("Delete", role: .destructive) {
                     if confirmDelete { asking = true } else { delete(todo) }
                 }
             } footer: {

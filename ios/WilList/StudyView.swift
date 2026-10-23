@@ -39,7 +39,7 @@ struct StudyView: View {
                 } else {
                     Section {
                         if sessions.isEmpty {
-                            Text("Nothing to study today.").foregroundStyle(.secondary)
+                            Text("Nothing today.").foregroundStyle(.secondary)
                         }
                         ForEach(sessions) { sessionRow($0) }
                     } header: {
@@ -48,13 +48,13 @@ struct StudyView: View {
 
                     Section {
                         if week.allSatisfy({ $0.load == 0 }) {
-                            Text("No study planned this week.").foregroundStyle(.secondary)
+                            Text("Nothing this week.").foregroundStyle(.secondary)
                         } else {
                             WeekChart(days: week, budget: store.state.settings.perDayMin, today: today) { store.state.courseColor($0.course) }
                             VStack(alignment: .leading, spacing: 8) {
                                 // The chart reads out each day's courses itself.
                                 courseKey?.accessibilityHidden(true)
-                                Text("The dashed line is your \(Fmt.minutes(store.state.settings.perDayMin)) a day.")
+                                Text("Dashed line: \(Fmt.minutes(store.state.settings.perDayMin)) a day")
                             }
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -66,7 +66,7 @@ struct StudyView: View {
 
                     Section {
                         if ahead.isEmpty {
-                            Text("No exams or deadlines in the next 45 days.").foregroundStyle(.secondary)
+                            Text("Nothing in the next 45 days.").foregroundStyle(.secondary)
                         }
                         ForEach(ahead, id: \.item.id) { readinessRow($0) }
                     } header: {
@@ -99,8 +99,10 @@ struct StudyView: View {
     /// Nothing to study yet: what this tab does, and the two ways to start.
     private var firstRun: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Add an exam or a deadline, and WilList spreads your study over the days before it, so you never have to cram.")
-                .fixedSize(horizontal: false, vertical: true)
+            // Spaced study instead of cramming: what this tab does, set like Today's question card.
+            Text("No more cramming")
+                .font(.title2.weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
             Button { adding = true } label: {
                 Text("Add an exam or deadline").frame(maxWidth: .infinity)
             }
@@ -131,7 +133,7 @@ struct StudyView: View {
                 Text("\(row.item.title)\(Fmt.subline(row.item, today, in: store.state).map { Text(", \($0)") } ?? Text(""))")
                     .font(.subheadline).foregroundStyle(.secondary)
                 if row.overdue {
-                    Text("Missed \(Fmt.day(s.date, today, inSentence: true)). Do it today.")
+                    Text("Missed \(Fmt.day(s.date, today, inSentence: true))")
                         .font(.footnote).foregroundStyle(.red)
                 }
                 if typeSize.isAccessibilitySize { minutes }
@@ -176,10 +178,10 @@ struct StudyView: View {
     private func status(_ v: Vital) -> String? {
         let missed = v.item.sessions.filter { !$0.done && diffDays(today, $0.date) < 0 }.count
         return switch v.status {
-        case .short: "Not enough time: \(Fmt.minutes(v.item.shortfallMin)) short"
-        case .behind: "Behind by \(missed) \(missed == 1 ? "session" : "sessions")"
-        case .notStarted: "Study starts \(v.startBy.map { Fmt.day($0, today, inSentence: true) } ?? "soon")"
-        case .noPlan: "No study planned. Tap to set the prep time."
+        case .short: "\(Fmt.minutes(v.item.shortfallMin)) short"
+        case .behind: "\(missed) \(missed == 1 ? "session" : "sessions") behind"
+        case .notStarted: "Starts \(v.startBy.map { Fmt.day($0, today, inSentence: true) } ?? "soon")"
+        case .noPlan: "No study planned"
         case .onTrack: nil
         }
     }

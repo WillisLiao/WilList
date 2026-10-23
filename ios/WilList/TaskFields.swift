@@ -104,7 +104,7 @@ struct ReminderRow: View {
             if await Reminders.allowed() {
                 await Reminders.sync(Reminders.due(store.state, today: store.today))
             } else {
-                store.say("Notifications are off for WilList. Turn them on in the Settings app to get reminders.")
+                store.say("Turn on notifications for WilList in Settings.")
             }
         }
     }

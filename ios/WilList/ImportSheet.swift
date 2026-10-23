@@ -65,26 +65,26 @@ struct ImportSheet: View {
         Form {
             Section {
                 Button { choosingFile = true } label: {
-                    ImportOption(title: "Choose a file", detail: "PDF, Word, Excel, PowerPoint, a calendar file or text", symbol: "doc")
+                    ImportOption(title: "Choose a file", detail: "PDF, Word, Excel, calendar file", symbol: "doc")
                 }
                 PhotosPicker(selection: $photo, matching: .images) {
-                    ImportOption(title: "Choose a photo", detail: "A printed timetable, a whiteboard, a screenshot", symbol: "photo")
+                    ImportOption(title: "Choose a photo", detail: "Timetable or screenshot", symbol: "photo")
                 }
                 Button { pasting.toggle() } label: {
-                    ImportOption(title: "Paste text", detail: "An email, a course page, a list", symbol: "doc.on.clipboard")
+                    ImportOption(title: "Paste text", detail: "Email or course page", symbol: "doc.on.clipboard")
                 }
                 if pasting {
-                    TextField("Paste or type the schedule here", text: $pasted, axis: .vertical).lineLimit(4...12)
+                    TextField("Paste it here", text: $pasted, axis: .vertical).lineLimit(4...12)
                     Button("Read it") { read(text: pasted) }.disabled(pasted.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             } footer: {
                 Text(Keychain.apiKey == nil
-                     ? "Files, photos and text are read by Claude. Add your Anthropic API key in More first. Calendar files don’t need it."
-                     : "Claude reads it and finds every exam, deadline, class and shift, for any kind of course, job or project. You check the list before anything is added.")
+                     ? "Add a Claude key in More first."
+                     : "You check the list before anything is added.")
             }
             Section {
                 NavigationLink { AddFeedSheet() } label: {
-                    ImportOption(title: "Add a calendar link", detail: "Canvas, Moodle, Google and others stay up to date by themselves", symbol: "link")
+                    ImportOption(title: "Add a calendar link", detail: "Stays up to date", symbol: "link")
                 }
             }
         }
@@ -96,7 +96,7 @@ struct ImportSheet: View {
         VStack(spacing: 16) {
             ProgressView().controlSize(.large)
             Text("Reading \(what)…").font(.headline)
-            Text("A long syllabus can take a minute.").foregroundStyle(.secondary)
+            Text("Can take a minute.").foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -127,7 +127,7 @@ struct ImportSheet: View {
                                 .foregroundStyle(keep.contains(i) ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(it.title).foregroundStyle(.primary)
-                                Text([it.type.name, Fmt.subline(it, store.today), existing.contains(i) ? "already in WilList" : nil]
+                                Text([it.type.name, Fmt.subline(it, store.today), existing.contains(i) ? "already added" : nil]
                                     .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", "))
                                     .font(.subheadline).foregroundStyle(.secondary)
                             }
@@ -138,7 +138,7 @@ struct ImportSheet: View {
             } header: {
                 Text("Found \(found.count)")
             } footer: {
-                if let cost { Text("Reading it cost about \(cost.formatted(.currency(code: "USD").precision(.fractionLength(2...3)))) on your Anthropic account.") }
+                if let cost { Text("Cost about \(cost.formatted(.currency(code: "USD").precision(.fractionLength(2...3))))") }
             }
         }
         .sheetGround()
@@ -146,7 +146,7 @@ struct ImportSheet: View {
             Button {
                 let chosen = keep.sorted().map { found[$0] }
                 store.change { s in s.applyImport(planImport(s.items, chosen), today: store.today) }
-                store.say("Added \(chosen.count) \(chosen.count == 1 ? "item" : "items"). Give them a letter in Plan.")
+                store.say("Added \(chosen.count) \(chosen.count == 1 ? "item" : "items")")
                 dismiss()
             } label: {
                 Text("Add \(keep.count) \(keep.count == 1 ? "item" : "items")").frame(maxWidth: .infinity)
@@ -171,7 +171,7 @@ struct ImportSheet: View {
     private func read(_ data: Data, name: String) {
         if (name as NSString).pathExtension.lowercased() == "ics" {
             let r = importICS(String(decoding: data, as: UTF8.self), today: store.today)
-            show(r.items, cost: nil, empty: r.past > 0 ? "Everything in that calendar is already over." : "No dated items in that calendar.")
+            show(r.items, cost: nil, empty: r.past > 0 ? "It’s all in the past." : "Nothing with a date in it.")
             return
         }
         do {
@@ -191,7 +191,7 @@ struct ImportSheet: View {
         work = Task {
             do {
                 let r = try await Claude.extract(content, today: store.today, key: Keychain.apiKey ?? "")
-                show(r.items, cost: r.costUSD, empty: "Claude found nothing with a date in it.")
+                show(r.items, cost: r.costUSD, empty: "Nothing with a date in it.")
             } catch is CancellationError {
             } catch {
                 phase = .failed((error as? LocalizedError)?.errorDescription ?? "Something went wrong.")

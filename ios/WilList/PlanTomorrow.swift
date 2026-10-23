@@ -40,8 +40,8 @@ struct PlanTomorrow: View {
         ZStack {
             StepPage(field: Self.night, step: min(step, 2), of: 2, about: step == 1 ? recap : nil,
                      title: step == 1 ? "Anything new for tomorrow?" : "Which one first?",
-                     subtitle: step == 1 ? "Write down what came up today, one thing per line. Dates are read for you."
-                         : "If you could do only one thing tomorrow, which would it be? That’s your A1.",
+                     subtitle: step == 1 ? "One thing per line."
+                         : "If you could do only one, that’s your A1.",
                      exit: "Close", back: { step = 1 }, leave: close,
                      button: step == 1 ? "Next" : "Make it my A1", enabled: step == 1 || pick != nil, next: next) {
                 if step == 1 {
@@ -68,7 +68,7 @@ struct PlanTomorrow: View {
     private var recap: String? {
         let done = store.state.todos.filter { $0.done && $0.doneAt == today }.count + doneOn(store.state.items, today).count
         guard done > 0 else { return nil }
-        return "\(done) done today" + (store.state.meta.firstDone[today] == "A" ? ", starting with an A." : ".")
+        return "\(done) done today" + (store.state.meta.firstDone[today] == "A" ? ", an A first" : "")
     }
 
     /// Tomorrow's list in ABCDE order, then the lines just written.
@@ -98,17 +98,13 @@ struct PlanTomorrow: View {
                 Text(Fmt.noWidow(a1.item.title))
                     .font(.largeTitle.bold())
                     .accessibilityAddTraits(.isHeader)
-                Text("It’ll be at the top of Today and on your widgets in the morning.")
-                    .foregroundStyle(.white)
             } else {
-                Text("Nothing planned for tomorrow")
+                Text("Nothing for tomorrow")
                     .font(.title.bold())
                     .accessibilityAddTraits(.isHeader)
-                Text("Add what you need to do in Plan and give the most important an A.")
-                    .foregroundStyle(.white)
             }
             if !waiting.isEmpty {
-                Text("\(waiting.count) still \(waiting.count == 1 ? "waits" : "wait") for a letter.")
+                Text("\(waiting.count) \(waiting.count == 1 ? "needs" : "need") a letter")
                     .foregroundStyle(.white)
             }
         } buttons: {

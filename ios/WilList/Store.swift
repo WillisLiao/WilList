@@ -258,7 +258,7 @@ final class Store {
             throw FeedError(errorDescription: "Couldn’t reach it. Check your connection.")
         }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-        guard status == 200 else { throw FeedError(errorDescription: "The calendar answered with an error (\(status)). The link may have been reset.") }
+        guard status == 200 else { throw FeedError(errorDescription: "Calendar error \(status). The link may have changed.") }
         let text = String(decoding: data, as: UTF8.self)
         guard text.contains("BEGIN:VCALENDAR") else { throw FeedError(errorDescription: "That link isn’t a calendar feed.") }
         return text

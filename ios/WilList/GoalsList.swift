@@ -36,8 +36,6 @@ struct GoalsList: View {
                 Button("Add a goal", systemImage: "plus") { editingGoal = Goal(id: "", title: "") }
             } header: {
                 Text("Other goals").onGround()
-            } footer: {
-                Text("Give each goal a deadline, then break it into items with a letter.").onGround()
             }
 
             Section {
@@ -48,7 +46,7 @@ struct GoalsList: View {
         }
         .ground()
         .readableColumn()
-        .navigationTitle("Your goals")
+        .navigationTitle("Goals")
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
         .sheet(isPresented: $editingPurpose) { PurposeEditor() }
         .toastHost()
@@ -63,16 +61,14 @@ private struct MainGoal: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Your main goal").font(.subheadline.weight(.medium))
+                Text("Main goal").font(.subheadline.weight(.medium))
                 Spacer()
                 Image(systemName: "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
             }
-            Text(goal.isEmpty ? "What one goal would change the most for you?" : Fmt.noWidow(goal))
+            Text(goal.isEmpty ? "What one goal would change the most?" : Fmt.noWidow(goal))
                 .font(.system(size: size, weight: .bold))
                 .tracking(-0.5)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("The goal that would help you most if you reached it.")
-                .font(.subheadline)
         }
         .foregroundStyle(.white)
         .multilineTextAlignment(.leading)
@@ -105,8 +101,8 @@ struct StreakDots: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("\(days.filter { firstDone[$0] == "A" }.count) of the last 21 days started with an A")
             Text(streak == 0
-                 ? "Finish an A before anything else today to start a streak. A habit takes about 21 days."
-                 : "\(streak) \(streak == 1 ? "day" : "days") in a row your first finished thing was an A.")
+                 ? "Finish an A first to start a streak."
+                 : "\(streak)-day streak")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -130,7 +126,7 @@ struct PurposeEditor: View {
                         .lineLimit(3...8)
                         .focused($writing)
                 } footer: {
-                    Text("Your one major definite purpose: the goal that would help you most if you reached it.")
+                    Text("Your major definite purpose.")
                 }
             }
             .sheetGround()
@@ -172,11 +168,11 @@ struct GoalEditor: View {
                     Toggle("Deadline", isOn: $hasDeadline).tint(.brand)
                     if hasDeadline { DatePicker("By", selection: $deadline, displayedComponents: .date) }
                 }
-                Section("Why you want it") { TextField("The reasons that will keep you going", text: $goal.why, axis: .vertical) }
-                Section("The biggest obstacle") { TextField("The one thing most in the way", text: $goal.rock, axis: .vertical) }
-                Section("What you’ll need to learn") { TextField("Skills and knowledge", text: $goal.knowledge, axis: .vertical) }
-                Section("Who can help") { TextField("People to ask", text: $goal.people, axis: .vertical) }
-                Section("Your reward") { TextField("How you’ll celebrate", text: $goal.reward, axis: .vertical) }
+                Section("Why") { TextField("Reasons", text: $goal.why, axis: .vertical) }
+                Section("Obstacle") { TextField("What’s in the way", text: $goal.rock, axis: .vertical) }
+                Section("To learn") { TextField("Skills", text: $goal.knowledge, axis: .vertical) }
+                Section("Who can help") { TextField("People", text: $goal.people, axis: .vertical) }
+                Section("Reward") { TextField("How you’ll celebrate", text: $goal.reward, axis: .vertical) }
             }
             .sheetGround()
             .navigationTitle(goal.id.isEmpty ? "New goal" : "Goal")

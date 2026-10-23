@@ -16,7 +16,7 @@ final class AuditTests: XCTestCase {
             ("Welcome", "new", []),
             ("Plan tomorrow", "busy", ["-evening", "2"]),
             ("Focus", "busy", ["-focus", "YES"]),
-            ("Your goals", "busy", ["-tab", "plan", "-open", "goals"]),
+            ("Goals", "busy", ["-tab", "plan", "-open", "goals"]),
             ("Search", "busy", ["-tab", "today", "-sheet", "search"]),
             ("Letter sorter", "busy", ["-tab", "today", "-sheet", "letters"]),
             ("To-do details", "busy", ["-tab", "today", "-edit", "t1"]),

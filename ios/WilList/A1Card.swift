@@ -125,7 +125,7 @@ struct A1Card: View {
             .frame(maxWidth: 440, alignment: .leading)
             .padding(.top, 6)
             if shownStreak > 0 {
-                Text("\(shownStreak) \(shownStreak == 1 ? "day" : "days") in a row you started with an A.")
+                Text("\(shownStreak)-day streak")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -181,7 +181,7 @@ struct A1Card: View {
             // Not animated: the list would animate everything in the row, the old words back over
             // the new ones. The card takes its new height while its words are hidden, and the
             // next A's words rise in on their own.
-            store.change(undo: "Marked \u{201C}\(title)\u{201D} done") { s in
+            store.change(undo: "\u{201C}\(title)\u{201D} done") { s in
                 if let r = dayRows(s.items, today, realToday: today).first(where: { $0.key == key }) { s.complete(r, today: today) }
             }
         }
@@ -206,13 +206,12 @@ struct AsDone: View {
                 // The tick's ring and sparks, at the size of the day's biggest win.
                 .background { if !reduceMotion { TickBurst(done: shown).scaleEffect(1.7) } }
                 .accessibilityHidden(true)
-            Text("Your A’s are done.")
+            Text("A’s done")
                 .font(.title2.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text([done > 0 ? "\(done) done today." : nil,
-                  streak > 0 ? "\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A." : nil]
-                .compactMap { $0 }.joined(separator: " "))
+            Text([done > 0 ? "\(done) done today" : nil, streak > 0 ? "\(streak)-day streak" : nil]
+                .compactMap { $0 }.joined(separator: ", "))
                 .foregroundStyle(.secondary)
                 // Its full height from the start: otherwise, while the row grows, it is cut short
                 // and re-wraps on the way, its words crossing.
@@ -234,9 +233,7 @@ struct NoA1: View {
 
     var body: some View {
         AskCard(question: "What matters most today?",
-                detail: waiting > 0
-                    ? "\(waiting) \(waiting == 1 ? "thing waits" : "things wait") for a letter. The most important one becomes your A1."
-                    : "Add it and give it an A. It leads your day, here and on your widgets.",
+                detail: waiting > 0 ? "\(waiting) \(waiting == 1 ? "needs" : "need") a letter" : nil,
                 action: waiting > 0 ? "Letter them" : "Add your A1",
                 color: .brand,
                 perform: waiting > 0 ? letterThem : add) {
@@ -255,12 +252,11 @@ struct Tonight: View {
 
     var body: some View {
         AskCard(question: "What matters most tomorrow?",
-                detail: "Two short steps tonight, and the morning starts with your A1.",
                 action: "Plan tomorrow",
                 color: PlanTomorrow.night,
                 perform: plan) {
             Image(systemName: "moon.fill").foregroundStyle(PlanTomorrow.night).accessibilityHidden(true)
-            Text("This evening")
+            Text("Tonight")
         }
     }
 }
@@ -268,7 +264,7 @@ struct Tonight: View {
 /// A question in the A1's place, on a card of its colour, with the one button that answers it.
 private struct AskCard<Label: View>: View {
     let question: String
-    let detail: String
+    var detail: String? = nil
     let action: String
     let color: Color
     let perform: () -> Void
@@ -283,9 +279,11 @@ private struct AskCard<Label: View>: View {
                 .font(.title2.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-            Text(detail)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+            if let detail {
+                Text(detail)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Button(action: perform) {
                 Text(action).foregroundStyle(Color.white).frame(maxWidth: .infinity)
             }

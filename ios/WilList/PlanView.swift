@@ -110,10 +110,11 @@ struct PlanList: View {
                     .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
                     // Two lines hold even a long goal, except at the largest text sizes.
                     .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
-                Text(goal.isEmpty ? "The one goal that would change the most for you"
-                     : others == 0 ? "Your main goal" : "Your main goal and \(others) more")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                if !goal.isEmpty {
+                    Text(others == 0 ? "Main goal" : "Main goal and \(others) more")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.vertical, 4)
         }
@@ -134,12 +135,9 @@ struct PlanList: View {
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 // Nothing in the plan yet: the method itself, set like Today's question card.
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Give everything a letter")
-                        .font(.title2.weight(.semibold))
-                        .accessibilityAddTraits(.isHeader)
-                    Text("Your A1 leads Today.").foregroundStyle(.secondary)
-                }
+                Text("Give everything a letter")
+                    .font(.title2.weight(.semibold))
+                    .accessibilityAddTraits(.isHeader)
                 legend.padding(.vertical, 4)
             }
             // With items waiting below, their Letter buttons are the way to fill this card.
@@ -161,8 +159,8 @@ struct PlanList: View {
 
     /// What the empty card says when the plan has something in it; nil when it has nothing yet.
     private var emptyMessage: String? {
-        if !waiting.isEmpty { return "Give the items below a letter. Your most important one becomes your A1, at the top of Today." }
-        return nextUp.map { "Nothing to do today. Next: \($0.title), \(Fmt.day($0.day, today, inSentence: true))." }
+        if !waiting.isEmpty { return "Letter the items below." }
+        return nextUp.map { "Nothing today. Next: \($0.title), \(Fmt.day($0.day, today, inSentence: true))." }
     }
 
     /// Tracy's five letters and what each means, for a plan with nothing in it yet: the method at a
@@ -270,9 +268,6 @@ struct PlanList: View {
                 // The moon in the evening's colour, as on Plan tomorrow itself.
                 planningRow("moon.fill", tint: PlanTomorrow.night) {
                     Text("Plan tomorrow").foregroundStyle(Color.primary)
-                    if store.evening {
-                        Text("It’s evening. Pick tomorrow’s first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
-                    }
                 }
             }
             Button { importing = true } label: {
@@ -306,7 +301,7 @@ struct PlanList: View {
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {
-                store.change(undo: "Marked \u{201C}\(row.item.title)\u{201D} done") { $0.complete(row, today: today) }
+                store.change(undo: "\u{201C}\(row.item.title)\u{201D} done") { $0.complete(row, today: today) }
                 ticking.remove(row.key)
             }
         }

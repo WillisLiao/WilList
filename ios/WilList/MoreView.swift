@@ -34,39 +34,33 @@ struct MoreView: View {
                     Button("Add a calendar link", systemImage: "link") { addingFeed = true }
                     Button("Bring in a schedule", systemImage: "square.and.arrow.down") { importing = true }
                 } header: {
-                    Text("Calendars and schedules").onGround()
-                } footer: {
-                    Text("A link from Canvas, Moodle, Google or Outlook keeps your deadlines and exams up to date.").onGround()
+                    Text("Calendars").onGround()
                 }
 
                 Section {
-                    Toggle("Add new to-dos on top", isOn: $newOnTop).tint(.brand)
-                    Toggle("Move starred to-dos to top", isOn: $starredOnTop).tint(.brand)
-                    Toggle("Recognize dates and times in titles", isOn: $readDates).tint(.brand)
-                    Toggle("Play completion sound", isOn: $playSound).tint(.brand)
-                    Toggle("Confirm before deleting", isOn: $confirmDelete).tint(.brand)
-                    Picker("App icon badge", selection: $badge) {
+                    Toggle("New to-dos on top", isOn: $newOnTop).tint(.brand)
+                    Toggle("Starred on top", isOn: $starredOnTop).tint(.brand)
+                    Toggle("Read dates in titles", isOn: $readDates).tint(.brand)
+                    Toggle("Completion sound", isOn: $playSound).tint(.brand)
+                    Toggle("Confirm deletes", isOn: $confirmDelete).tint(.brand)
+                    Picker("Icon badge", selection: $badge) {
                         ForEach(Badge.allCases) { Text($0.name).tag($0) }
                     }
                 } header: {
                     Text("To-dos").onGround()
-                } footer: {
-                    Text("Reminders you set on a to-do or an item arrive as notifications, with Mark done right on them.").onGround()
                 }
 
                 Section {
-                    Stepper("Study per day: \(Fmt.minutes(store.state.settings.perDayMin))", value: setting(\.perDayMin), in: 30...480, step: 15)
-                    Stepper("Session length: \(Fmt.minutes(store.state.settings.sessionMin))", value: setting(\.sessionMin), in: 15...120, step: 5)
-                    Stepper("Finish deadlines \(store.state.settings.bufferDays) \(store.state.settings.bufferDays == 1 ? "day" : "days") early", value: setting(\.bufferDays), in: 0...3)
-                    Button("Plan everything again") {
+                    Stepper("Per day: \(Fmt.minutes(store.state.settings.perDayMin))", value: setting(\.perDayMin), in: 30...480, step: 15)
+                    Stepper("Sessions: \(Fmt.minutes(store.state.settings.sessionMin))", value: setting(\.sessionMin), in: 15...120, step: 5)
+                    Stepper("Finish \(store.state.settings.bufferDays) \(store.state.settings.bufferDays == 1 ? "day" : "days") early", value: setting(\.bufferDays), in: 0...3)
+                    Button("Replan everything") {
                         let n = store.state.items.count
                         store.change { $0.replanAll(today: store.today) }
-                        store.say(n == 0 ? "Nothing to plan yet." : "Planned again, A’s first.")
+                        store.say(n == 0 ? "Nothing to plan" : "Replanned, A’s first")
                     }
                 } header: {
-                    Text("Study plan").onGround()
-                } footer: {
-                    Text("Plan everything again to use these for what’s already planned.").onGround()
+                    Text("Study").onGround()
                 }
 
                 Section {
@@ -76,9 +70,7 @@ struct MoreView: View {
                     Toggle("Remind me to plan", isOn: Binding(get: { store.state.settings.notify }, set: { on in store.change { $0.settings.notify = on } }))
                         .tint(.brand)
                 } header: {
-                    Text("Your day").onGround()
-                } footer: {
-                    Text("Planning the night before saves time the next day.").onGround()
+                    Text("Day").onGround()
                 }
 
                 Section {
@@ -88,24 +80,24 @@ struct MoreView: View {
                         .textInputAutocapitalization(.never)
                         .onSubmit { Keychain.apiKey = key }
                         .onChange(of: key) { Keychain.apiKey = key }
-                    Link("Get a key at console.anthropic.com", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
+                    Link("Get a key", destination: URL(string: "https://console.anthropic.com/settings/keys")!)
                 } header: {
                     Text("Claude").onGround()
                 } footer: {
-                    Text("Claude reads the files and photos you bring in. Your key stays on this iPhone.").onGround()
+                    Text("Reads the schedules you bring in. The key stays on this iPhone.").onGround()
                 }
 
                 Section {
                     ShareLink(item: backup, preview: SharePreview("WilList backup")) {
-                        Label("Save a backup", systemImage: "square.and.arrow.up")
+                        Label("Back up", systemImage: "square.and.arrow.up")
                     }
-                    Button("Restore from a backup", systemImage: "arrow.counterclockwise") { restoring = true }
+                    Button("Restore", systemImage: "arrow.counterclockwise") { restoring = true }
                 } header: {
-                    Text("Your data").onGround()
+                    Text("Backup").onGround()
                 } footer: {
                     Text(restoreError ?? (CloudSync.shared.available
-                        ? "Your plan is the same on every iPhone and iPad signed in to your iCloud."
-                        : "Everything stays on this device. Sign in to iCloud in the Settings app to have your plan on your iPhone and iPad."))
+                        ? "Synced with iCloud."
+                        : "On this device only. Sign in to iCloud to sync."))
                         .onGround()
                 }
 
@@ -126,7 +118,7 @@ struct MoreView: View {
                     if await Reminders.allowed() {
                         try? await UNUserNotificationCenter.current().setBadgeCount(badge.count(store.state, today: store.today))
                     } else {
-                        store.say("Notifications are off for WilList. Turn them on in the Settings app to see the badge.")
+                        store.say("Turn on notifications for WilList in Settings.")
                     }
                 }
             }
@@ -186,16 +178,14 @@ struct AddFeedSheet: View {
                     if let pasted = UIPasteboard.general.hasURLs ? UIPasteboard.general.url : nil, link.isEmpty {
                         Button("Paste \(pasted.host() ?? "link")") { link = pasted.absoluteString }
                     }
-                } footer: {
-                    Text("WilList only reads the calendar. You can reset the link in your school’s system at any time.")
                 }
                 Section("Where to find it") {
-                    DisclosureGroup("Canvas") { Text("Calendar, then Calendar Feed at the bottom right. Copy the link.") }
-                    DisclosureGroup("Moodle") { Text("Calendar, then Import or export calendars, then Export calendar. Choose All courses and Recent and next 60 days, then Get calendar URL.") }
-                    DisclosureGroup("Blackboard") { Text("Calendar, then the settings gear, then Share Calendar. Copy the link.") }
-                    DisclosureGroup("Brightspace (D2L)") { Text("Calendar, then Subscribe. Copy the link.") }
-                    DisclosureGroup("Google Calendar") { Text("On a computer: Settings, choose the calendar, then Secret address in iCal format.") }
-                    DisclosureGroup("Outlook") { Text("Settings, Calendar, Shared calendars, Publish a calendar. Copy the ICS link.") }
+                    DisclosureGroup("Canvas") { Text("Calendar › Calendar Feed, bottom right") }
+                    DisclosureGroup("Moodle") { Text("Calendar › Import or export calendars › Export calendar › All courses, Recent and next 60 days › Get calendar URL") }
+                    DisclosureGroup("Blackboard") { Text("Calendar › settings gear › Share Calendar") }
+                    DisclosureGroup("Brightspace (D2L)") { Text("Calendar › Subscribe") }
+                    DisclosureGroup("Google Calendar") { Text("On a computer: Settings › your calendar › Secret address in iCal format") }
+                    DisclosureGroup("Outlook") { Text("Settings › Calendar › Shared calendars › Publish a calendar › ICS link") }
                 }
             }
             .sheetGround()

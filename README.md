@@ -1,112 +1,30 @@
 # WilList
 
-**Willis's list:** a student planner built on Brian Tracy's ABCDE method.
+**Willis's list:** a student planner for iPhone, built on Brian Tracy's ABCDE method.
 
-1. **Add everything.** Tap **+** (or press `/`) and type it the way you'd say it, or import your
-   whole semester.
-2. **Give each one a letter.** A = serious if skipped, B = mild, C = nothing happens,
-   D = someone else can, E = doesn't matter.
-3. **Do A1 first.** WilList plans study sessions backwards from every exam and deadline and fits
-   today's work between your classes.
+1. **Write it down.** Type it the way you'd say it ("Chem quiz thu 2pm"), or hand the Agent a syllabus or a photo of a timetable.
+2. **Give the things that matter a letter.** A means serious if skipped, B mild, C nothing happens, D someone else can, E it doesn't matter.
+3. **Do the A1 first.** WilList plans study sessions back from every exam and deadline, and Today leads with the one thing to do first.
 
 Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.md](docs/PRINCIPLES.md).
 
-## Five tabs
+## Four tabs
 
 | | |
 |---|---|
-| **Today** | Your day in time order: classes as fixed blocks, your A1 card in the first free gap, a line for now, what you finished above it and what won't fit below the end of the day. The greeting says whether it all fits. Flip to **Tomorrow** in the evening to number your A's and lock in the plan. |
-| **Quick** | A plain checklist for small stuff: type it, tick it off. No letters, dates or planning, and it stays out of Today. Ticked items clear the next day. |
-| **Ahead** | Each A in the next two weeks as a peak, as high as its share of the grade and filled in as far as you've studied; then countdowns, study load against your budget, and the last 7 days. |
-| **Goals** | The one goal that matters most, your goals with their next step, and 21 days of starting with an A. |
-| **More** | Import semester, coach, Worry Buster, 20 Ideas, Pre-game, principles, calendar export, backup, settings. |
+| **Today** | Today's date, the A1 first with a play button for a focus session, what you added to Today from Plan, then a quick checklist. Type a line and press return; "Call mum tomorrow 6pm" is due tomorrow at 6. In the evening it offers Plan tomorrow. |
+| **Plan** | Today in ABCDE order (drag to re-rank), everything later by date, and a month calendar showing what's due each day. |
+| **Progress** | The last 7 days in numbers and a chart by letter, suggestions with one action each, the next 7 days' study load, and whether each exam and deadline is on track. |
+| **Agent** | A chat that reads files, photos and words and proposes what to add, on a card you tick; nothing goes in until you tap Add. It answers questions about your plan too. A subscription. |
 
-## iPhone and iPad app
+The profile picture at the top left of every tab opens Settings: your main goal and goals, to-do and study settings, the day's clocks and backups.
 
-`ios/` is a native SwiftUI app for iOS 18 and later (with Liquid Glass on iOS 26).
-Every part sits on a white card over a deep slate, with one teal for ticking off and the main button, a colour for each letter from red for A to blue for E, a colour for each course, and red words only for problems.
-It has four tabs:
+Every to-do and item has steps, a reminder (with Mark done on the notification), a due date and time, a repeat and a note.
+Ticking something off fills the circle with a burst, a chime and a haptic.
+Focus sessions run as a Live Activity on the Lock Screen and in the Dynamic Island, and two widgets show your A1 and today's to-dos.
 
-| | |
-|---|---|
-| **Today** | A plain checklist under today's date. Type a line, press return, type the next; "Call mum tomorrow 6pm" is due tomorrow at 6. Tick it off and it slides into Completed. Below your to-dos are the items you added to Today from Goals and Study. |
-| **Goals** | Your main goal, what to do first as one large card, then the rest by letter, with the letter on the right of each row. Items still waiting for a letter get a **Letter** button. **Plan tomorrow** and **Bring in a schedule** sit at the bottom; your other goals and 21 days of starting with an A are behind the main goal. |
-| **Study** | Today's study sessions, this week's study per day (red where a day has more than your daily study time), and each exam and deadline coming up, with a line only when it needs attention. |
-| **More** | Calendar links, to-do and study settings, your Claude key and backups. |
+## Working on it
 
-Every to-do and every item has the task details of Microsoft To Do, on the screen you get by tapping it:
-
-- **Steps**, each ticked off on its own, with "1 of 3" in the list.
-- **Remind me**: later today, tomorrow at 9, next week, or any date and time. The reminder arrives as a notification with **Mark done** and **Remind me in 10 minutes** on it.
-- **Due date and time**: today, tomorrow, next week or any date, with an optional time. Overdue shows in red.
-- **Repeat**: daily, weekdays, weekly, monthly, yearly, or every so many days, weeks, months or years on chosen weekdays. Ticking off a repeating to-do adds the next one.
-- **A note**, and for to-dos **a star** for important, and for items **Add to Today**.
-
-Today sorts by your own order, importance, due date (grouped into Overdue, Today, Tomorrow, This week and Later), alphabetically or by creation date, and can hide completed to-dos.
-**Search** (Today, Goals and Study) finds to-dos and items by title, step, note or course.
-More has Microsoft To Do's settings: new to-dos on top, starred to-dos on top, recognising dates in titles, a completion sound, confirming before deleting, and an app icon badge for what's open on Today or what's due.
-Pressing and holding the app icon offers **New to-do** and **Search**.
-
-Ways in, from the least effort:
-
-- **Calendar links** from Canvas, Moodle, Blackboard, Brightspace, Google or Outlook are read again every time the app opens, so new deadlines appear by themselves.
-- **Bring in a schedule** reads any file or photo with Claude (PDF, Word, Excel, PowerPoint, a photo of a printed timetable or whiteboard, pasted text) and lists what it found for you to check before anything is added. It works for any course, job, roster or project. It needs your own Anthropic API key, kept in the iPhone's keychain. Calendar files are read without it.
-- **Typing it the way you'd say it**, as on the web.
-
-The planner, the parser, the importer and the Claude request live in `ios/WilListCore`, a Swift package with its own tests: `swift test` in that folder.
-`npm run ios` builds the app and installs it on every paired iPhone and iPad that is unlocked and on this Mac's Wi-Fi.
-`npm run ios:shots` takes screenshots of the app in the iOS Simulator with a full sample planner loaded.
-Working on WilList with a coding agent: start from `CLAUDE.md`, then `handoffs/HANDOFF.md`.
-It keeps your plan in the same file the earlier web-based app used, so updating loses nothing.
-
-## Typing
-
-| You type | WilList reads |
-|---|---|
-| `Calc midterm fri 2pm 25% #MATH201` | Exam, Friday 2pm, 25% of grade (suggests A), spaced study sessions |
-| `HW3 due 10/24 11:59pm` | Homework due that date and time |
-| `Calculus lecture mwf 10-10:50am` | Class every Mon/Wed/Fri |
-| `Essay draft due in 2 weeks !a1` | Deadline, already A1 |
-
-Dates: `today`, `fri`, `next fri`, `in 3 days`, `10/24`, `oct 24`. Repeats: `daily`, `weekdays`,
-`every tue`, `mwf`, `tth`, `every other thu`. Weight: `25%`, `worth 25%`.
-
-## Import
-
-**More → Import semester** reads an `.ics` calendar file (Canvas, Moodle, Blackboard, Google,
-Outlook) or a pasted syllabus. You see every line before anything is added, and importing again
-only adds or updates what changed. It all runs in your browser.
-
-## Your data
-
-Everything stays in this browser on this device: no account, no server. **More → Backup**
-downloads a copy. **More → Add to calendar** exports an `.ics` with alarms for reliable phone
-reminders. The optional coach uses your own Anthropic key ([docs/AI.md](docs/AI.md)).
-
-## Run it
-
-No build step, no dependencies:
-
-```sh
-npm start          # http://localhost:8080
-npm test           # unit tests (Node 18+)
-npm run test:e2e   # browser test: npm i --no-save playwright (uses Playwright's Chromium, else your Chrome)
-```
-
-On a phone, open the site and **Add to Home Screen**: it installs like an app and works offline.
-`.github/workflows/pages.yml` publishes `app/` to GitHub Pages on every push to `main`
-(one-time setup: **Settings → Pages → Source: GitHub Actions**).
-
-## Layout
-
-```
-app/          the website: index.html, styles.css, sw.js, icons/, fonts/, vendor/ (coach SDK)
-  src/        parse, importer, plan, timeline, agenda, insights, store, ai, ics, coach
-  src/views/  today, radar (Ahead), goals, tools (More), editor, import, coach
-tests/        unit tests and a Playwright smoke test
-docs/         PRINCIPLES.md (Tracy → app), AI.md (coach)
-ios/          the native app (SwiftUI) and WilListCore, its planner as a tested Swift package
-```
-
-Fonts: Instrument Sans and Instrument Serif (SIL OFL, `app/fonts/OFL.txt`).
-The visual style was dealt and checked with [taste-skill](https://github.com/Leonxlnx/taste-skill)'s app-screen rules.
+`ios/` is the SwiftUI app for iOS 18 and later; the planner, the parser and the Agent's requests live in `ios/WilListCore`, a Swift package with its own tests (`swift test` in that folder).
+`npm run ios:shots` takes screenshots in the iOS Simulator with a sample week loaded, and `npm run ios` installs on every paired iPhone and iPad on this Mac's Wi-Fi.
+With a coding agent, start from `CLAUDE.md`, then `handoffs/HANDOFF.md`.

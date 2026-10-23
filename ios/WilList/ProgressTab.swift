@@ -88,7 +88,7 @@ struct ProgressTab: View {
             ("\(done)", "Done"),
             ("\(w.aDone)", "A’s"),
             ("\(w.aFirstDays) of 7", "A first"),
-            (w.focusMin == 0 ? "0" : Fmt.minutes(w.focusMin), "Focus"),
+            (Fmt.minutes(w.focusMin), "Focus"),
         ]
         return HStack(alignment: .top, spacing: 8) {
             ForEach(cells, id: \.1) { value, label in

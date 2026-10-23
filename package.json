@@ -2,14 +2,10 @@
   "name": "willist",
   "version": "0.1.0",
   "private": true,
-  "description": "A student planner built on Brian Tracy's ABCDE method.",
+  "description": "WilList, a student planner built on Brian Tracy's ABCDE method: scripts for the iPhone app.",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/*.test.js",
-    "start": "npx --yes http-server app -p 8080 -c-1",
-    "test:e2e": "node tests/e2e.mjs",
-    "lint": "npx --yes eslint@10 --config scripts/eslint.config.mjs app/src app/sw.js tests scripts",
-    "shots": "node scripts/shots.mjs shots",
+    "lint": "npx --yes eslint@10 --config scripts/eslint.config.mjs scripts",
     "ios": "node scripts/ios.mjs",
     "ios:shots": "node scripts/ios-shots.mjs"
   },

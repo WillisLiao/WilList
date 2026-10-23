@@ -1,4 +1,4 @@
-name: Test and deploy
+name: Test
 
 on:
   push:
@@ -9,14 +9,14 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  # The Node scripts (screenshots, installing on devices).
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm test
       - run: npm run lint
 
   # The iPhone app: the Swift core's tests, then the app and its widgets built for the simulator.
@@ -62,24 +62,3 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    concurrency:
-      group: pages
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: app
-      - id: deployment
-        uses: actions/deploy-pages@v4

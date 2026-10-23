@@ -9,9 +9,13 @@ The transcript contains sessions 1–17, 19, 20 and 24–27. Sessions 18 and 21�
 missing from it. Two ideas come from Tracy's other time-management teaching, not from
 this transcript. They are marked **(outside the transcript)**.
 
+**Where to look:** the section "In the iPhone app" near the end is where each idea lives today.
+The tables before it, under "On the website", record where each idea lived in the website, which was taken out of the code on 2026-10-24 at the owner's ask.
+They stay as the list of every idea to keep; the ones the app doesn't have yet are listed at the end of "In the iPhone app".
+
 ## The core loop
 
-| Principle | Where it comes from | In WilList |
+| Principle | Where it comes from | On the website |
 |---|---|---|
 | **The law of control**: you feel good about yourself to the degree you feel in control of your life. Time management *is* "control of the sequence of events". | S2, S17 | The whole app. One place for classes, deadlines, exams, readings and errands. Today lays them out as one day in time order; Ahead shows the next two weeks. |
 | **Think on paper**: get it all out of your head onto a list. | S17, S20 | The + button (or `/`) on every screen opens *Write it down*, in plain language: `Chem quiz thu 2pm #CHEM110`. The sheet stays open so you can empty your head in one go. More → Import semester reads a whole LMS calendar or a pasted syllabus in one step. |
@@ -27,7 +31,7 @@ this transcript. They are marked **(outside the transcript)**.
 
 ## Getting it done
 
-| Principle | Source | In WilList |
+| Principle | Source | On the website |
 |---|---|---|
 | **Concentration of power / single handling**: first things first, one at a time, stay until 100% complete. | S17, S20 | Focus mode: one task, one timer, nothing else. |
 | **Do it now; sense of urgency; fast tempo.** Finishing gives a jolt of energy and self-esteem. | S17 | "Start" beside the A1 on Today; short done messages. |
@@ -42,7 +46,7 @@ this transcript. They are marked **(outside the transcript)**.
 
 ## Studying (rapid learning)
 
-| Principle | Source | In WilList |
+| Principle | Source | On the website |
 |---|---|---|
 | **Cram-and-dump is lost within weeks; use spaced repetition.** | S13 | Exam prep is spread over expanding gaps before the exam (1, 2, 4, 7, 11… days out), ending with a light review the day before. |
 | **You remember the beginning and end of a study period best: take breaks.** | S13 | Sessions default to ~50 minutes; focus mode tells you to take a break at the end. |
@@ -54,7 +58,7 @@ this transcript. They are marked **(outside the transcript)**.
 
 ## Goals
 
-| Principle | Source | In WilList |
+| Principle | Source | On the website |
 |---|---|---|
 | **Success is goals; all else is commentary.** ~3% have written goals. | S15 | The Goals tab. |
 | **Major definite purpose**: one measurable goal bigger than the rest. | S15 | The headline of the Goals tab. |
@@ -68,7 +72,7 @@ this transcript. They are marked **(outside the transcript)**.
 
 ## Mindset tools
 
-| Principle | Source | In WilList |
+| Principle | Source | On the website |
 |---|---|---|
 | **Worry buster**: define it in writing, determine the worst possible outcome, resolve to accept it, start improving on it. Get the facts. The antidote to worry is purposeful action. ~96% of worries never matter. | S8 | More → Worry Buster; the actions become tasks. |
 | **Quick programming and mental rehearsal before a one-off event**: visualize the perfect outcome, affirm it, feel it, release it. Recall past excellence, not past failure. | S12 | More → Pre-game, pre-filled with your next exam or presentation. |
@@ -82,7 +86,7 @@ this transcript. They are marked **(outside the transcript)**.
 
 These aren't from the seminar. They make the ideas above work for a student's actual week.
 
-| Idea | Why | In WilList |
+| Idea | Why | On the website |
 |---|---|---|
 | **Learn the real pace.** | A plan built on wishful estimates fails quietly, then all at once. | Focus mode logs real minutes. After three finished sessions of a type, Ahead shows the ratio ("Reading takes you 1.4× longer") and offers to adjust. |
 | **Load-aware planning.** | Sub-deadlines only help if the days they land on have room. | New sessions go to days with free study time first. The Ahead chart shows each day's load against your budget, and Balance gives A's first claim. |
@@ -93,7 +97,7 @@ These aren't from the seminar. They make the ideas above work for a student's ac
 
 ## In the iPhone app
 
-The native app (`ios/`) keeps every idea above and arranges them in four tabs, so each place answers one question.
+The app (`ios/`) is WilList now. It keeps the ideas above in four tabs, so each place answers one question.
 
 | Principle | In the iPhone app |
 |---|---|
@@ -113,8 +117,9 @@ The native app (`ios/`) keeps every idea above and arranges them in four tabs, s
 | **Written goals, a major definite purpose.** | Your main goal is the first thing in Settings, from the profile picture on every tab, and leads Your goals. |
 | **Plan every day in advance.** | Plan's calendar shows what's planned on every day of the month. Any to-do or item can have a reminder at a date and time, a due date and time, and a repeat; the reminder can be marked done from the notification. |
 
-Not in the iPhone app yet: the coach, Worry Buster, 20 Ideas and Pre-game.
+Not in the iPhone app yet: Worry Buster, 20 Ideas, Pre-game and the seven questions for finding goals; the Agent takes the coach's place.
 Their data is kept untouched in the save file, so nothing is lost while they are missing.
+Whether they come to the app is the owner's call.
 
 ## Deliberately left out
 

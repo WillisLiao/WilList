@@ -259,7 +259,11 @@ struct TodayWidgetView: View {
         Gauge(value: Double(glance.todosDone), in: 0...Double(max(1, glance.todosDone + glance.todos.count))) {
             Image(systemName: "checklist")
         } currentValueLabel: {
-            Text("\(glance.todos.count)")
+            // The ring shows no label of its own, and a bare number didn't say what it counts.
+            VStack(spacing: 0) {
+                Image(systemName: "checklist").font(.system(size: 10, weight: .semibold))
+                Text("\(glance.todos.count)")
+            }
         }
         .gaugeStyle(.accessoryCircularCapacity)
         .widgetAccentable()

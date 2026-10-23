@@ -8,7 +8,7 @@ Read it first; update the top section at the end of every substantial session.
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
 `main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and again to `220027f` the same evening (Lagoon, iCloud sync, the cards on slate, the letter colours), also with the owner's OK; GitHub Pages is on and the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose; `app/` hasn't changed).
 On 2026-10-24 the owner asked to push to `main` again, and it was fast-forwarded to `8a23b92` (the white tab bar, the words pass, A ordering, Later in Plan, the one-row due date); `app/` hadn't changed.
-Anything after `8a23b92` is on the branch only; pushing it to `main` publishes the website again, so ask first.
+Anything after `8a23b92` is on the branch only (the A1 buttons stacking under Display Zoom, a check on every Plan row, a CI flake fix); pushing it to `main` publishes the website again, so ask first.
 
 **The owner's answers (2026-10-23):** merge into `main` with the website as it is; keep the Lagoon look; no custom lists for now; sync the iPhone and iPad through iCloud.
 Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.

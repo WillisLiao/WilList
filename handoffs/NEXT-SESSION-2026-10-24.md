@@ -6,7 +6,9 @@ Done since the last version of this file: the owner answered the open decisions.
 `main` was merged at `5bd0878` and again at `220027f` (everything below), and the website is live at https://willisliao.github.io/WilList/; Lagoon is the one look, now laid out like its widgets at the owner's ask (every part on a white card, every tab on the gallery's deep slate and sheets on a light blue-grey, the softer teal `#347583`, system type, the A1 on a pale teal card, the letters red, orange, yellow, green and blue from A to E); there are no custom lists for now; and the iPhone and iPad now sync through iCloud (`CloudSync`, `PlanMerge`), not yet tried with a real account.
 Also: Mark done on a reminder no longer crashes the app (a UI test presses it on the Home Screen), and the Lock Screen widgets were checked on the real Lock Screen, where the ring now says what it counts.
 Since then (2026-10-23 into 10-24), at the owner's ask: every visible string was cut to the fewest words ("each item, thing, description should have minimal words as possible"), and the tab bar is WilList's own solid white capsule, because iOS 26's glass tab bar takes on the slate's colour when pressed or scrolled and can't be made solid (DESIGN pitfall 27).
-The app was installed on the owner's wired iPhone 15 Pro on 2026-10-23, before those two changes.
+Then, from the owner's own use on the iPhone: a new A comes after the A's already there (drag in Plan to re-rank, which the owner likes as it is); Plan keeps every planned item, with everything not on today's list under Later; the due date and time are picked in one row; every Plan row has its check; and the A1 card's buttons stack when the card is too narrow (the owner uses Display Zoom set to Larger Text, about 320 points wide).
+The latest build is on the iPhone 15 Pro and the iPad; `main` is at `8a23b92`, the branch is ahead with the last two fixes.
+The simulator has no Display Zoom: two text sizes up on the iPhone SE is the closest match, so check narrow layouts there.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
 ## Start here

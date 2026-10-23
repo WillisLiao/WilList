@@ -69,20 +69,13 @@ struct TodayView: View {
         let field = tonight ? PlanTomorrow.night : CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
-                // The field is painted in the rows, not as their list backgrounds, which the list
-                // doesn't repaint when the next A comes from another course.
-                header(first: first, fromPlan: fromPlan, poster: poster)
-                    .padding(EdgeInsets(top: 12, leading: 20, bottom: poster ? 0 : 16, trailing: 12))
-                    // The field reaches up under the status bar, and shows when the list is pulled down;
-                    // on an iPad it runs past the readable column to the screen's edges.
-                    .background { if poster { field.padding(.top, -1000).padding(.horizontal, -1000) } }
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                // One row for the A1, "Your A's are done" and the question before an A1, so the field
-                // stays solid when one hands over to the next.
-                if first != nil || poster {
+                if poster {
+                    // The poster is one row, the date and what comes first together, so its field is
+                    // one piece that a new colour can rise up. The field is painted in the row, not as
+                    // its list background, which the list doesn't repaint when only its colour changes.
                     VStack(spacing: 0) {
+                        header(first: first, fromPlan: fromPlan, poster: true)
+                            .padding(EdgeInsets(top: 12, leading: 20, bottom: 0, trailing: 12))
                         if let first {
                             A1Card(row: first) { editingItem = $0 }
                         } else if won {
@@ -95,11 +88,23 @@ struct TodayView: View {
                         }
                     }
                     .environment(\.field, field)
-                    .padding(poster ? EdgeInsets() : EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
-                    .background { if poster { field.padding(.horizontal, -1000) } }
+                    .background { RisingField(color: field) }
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
+                } else {
+                    header(first: first, fromPlan: fromPlan, poster: false)
+                        .padding(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                    if let first {
+                        A1Card(row: first) { editingItem = $0 }
+                            .padding(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                    }
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && !planned && !tonight {

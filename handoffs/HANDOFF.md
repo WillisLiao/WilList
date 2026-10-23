@@ -15,7 +15,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **First run:** three short steps, each question in white on the green field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
 - **Today:** your A1 as the poster of the day: a field of its course's colour (green without a course) across the top, running up under the status bar, with the date, the title in 44 pt bold serif, **Start** (focus) and **Mark done**.
-  Mark done draws a line through the title, its words fade, and the next A rises into its place while the field blends into the next course's colour.
+  Mark done draws a line through the title, its words fade, and the next A rises into its place while its course's colour wipes up the field from the bottom (no muddy blend); Undo brings the last A back the same way.
   After the last one the poster stays green and says "Your A’s are done.", with what got done and the streak.
   Before anything has a letter, the poster asks "What matters most today?", with Letter them or Add your A1 (the widgets ask too).
   Below: "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.

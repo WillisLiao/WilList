@@ -20,6 +20,9 @@ struct A1Card: View {
     /// The streak as shown. It catches up once the card has settled, so a new line doesn't land on
     /// the buttons while they move.
     @State private var shownStreak = 0
+    /// The next A's words, about to rise into the card. The card moves them itself: the change that
+    /// brings the next A isn't animated, since the list would animate everything in the row.
+    @State private var rising = false
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// The colour it sits on when filled: its course's.
@@ -72,6 +75,9 @@ struct A1Card: View {
                                 }
                                 .opacity(done ? 1 : 0)
                                 .animation(reduceMotion ? .easeOut(duration: 0.2) : .easeInOut(duration: 0.45), value: done)
+                                // The next A's copy starts fresh, not reshaped from this one's line.
+                                .id(row.key)
+                                .transition(.identity)
                                 .accessibilityHidden(true)
                         }
                         .padding(.bottom, poster ? 2 : 0)
@@ -95,8 +101,8 @@ struct A1Card: View {
                 }
                 .opacity(faded == row.key ? 0 : 1)
                 // The next A moves up into its place.
-                .id(row.key)
-                .transition(reduceMotion ? .opacity : .push(from: .bottom))
+                .opacity(rising ? 0 : 1)
+                .offset(y: rising && !reduceMotion ? 28 : 0)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             // Room for the Notebook look's highlighter, which reaches past the words.
@@ -117,10 +123,18 @@ struct A1Card: View {
                 .tint(solid ? Color.white : Color.brand)
                 .accessibilityHint("Starts a focus timer for \(Fmt.minutes(row.session?.minutes ?? store.state.settings.taskMin))")
                 Button(action: finish) {
-                    Label(done ? "Done" : "Mark done", systemImage: done ? "checkmark.circle.fill" : "checkmark")
-                        .contentTransition(.symbolEffect(.replace))
-                        .foregroundStyle(solid ? field : Color.white)
-                        .frame(maxWidth: .infinity)
+                    // The words change at once and the check fills; crossfaded, the two words overlap.
+                    Label {
+                        Text(done ? "Done" : "Mark done").contentTransition(.identity)
+                    } icon: {
+                        Image(systemName: done ? "checkmark.circle.fill" : "checkmark")
+                            .contentTransition(.symbolEffect(.replace))
+                    }
+                    .foregroundStyle(solid ? field : Color.white)
+                    .frame(maxWidth: .infinity)
+                    // The next A's button starts fresh, without the last one's check fading where it was.
+                    .id(row.key)
+                    .transition(.identity)
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(solid ? Color.white : Color.brand)
@@ -141,6 +155,9 @@ struct A1Card: View {
             }
         }
         .opacity(gone == row.key ? 0 : 1)
+        // Another A arriving with an animation, as Undo brings one back, would cross the two titles
+        // and buttons; the card brings the new one in itself.
+        .transaction(value: row.key) { $0.animation = nil }
         .modifier(A1Ground(poster: poster))
         .contentShape(Rectangle())
         .onTapGesture { open(row.item) }
@@ -151,7 +168,12 @@ struct A1Card: View {
             try? await Task.sleep(for: .milliseconds(400))
             withAnimation(.easeOut(duration: 0.25)) { shownStreak = streak }
         }
-        .onChange(of: row.key) { doneKey = nil; faded = nil; gone = nil }
+        .onChange(of: row.key) {
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { doneKey = nil; faded = nil; gone = nil; rising = true }
+            Task { @MainActor in withAnimation(reduceMotion ? .easeOut(duration: 0.2) : .smooth(duration: 0.5)) { rising = false } }
+        }
     }
 
     private func title(struck: Bool) -> some View {
@@ -182,10 +204,11 @@ struct A1Card: View {
                 if last { gone = key }
             }
             try? await Task.sleep(for: .milliseconds(140))
-            withAnimation(.snappy) {
-                store.change(undo: "Marked \u{201C}\(title)\u{201D} done") { s in
-                    if let r = dayRows(s.items, today, realToday: today).first(where: { $0.key == key }) { s.complete(r, today: today) }
-                }
+            // Not animated: the list would animate everything in the row, the old words back over
+            // the new ones. The card takes its new height while its words are hidden, and the
+            // next A's words and its field rise in on their own.
+            store.change(undo: "Marked \u{201C}\(title)\u{201D} done") { s in
+                if let r = dayRows(s.items, today, realToday: today).first(where: { $0.key == key }) { s.complete(r, today: today) }
             }
         }
     }
@@ -328,5 +351,42 @@ struct Tonight: View {
         .padding(.horizontal, 20)
         .padding(.top, 22)
         .padding(.bottom, 28)
+    }
+}
+
+/// The poster's field. When its colour changes, because the next A belongs to another course, the
+/// new colour rises up from the bottom over the old one as the next A rises into its place, instead
+/// of the two blending through a muddy middle. It reaches up under the status bar, shows when the
+/// list is pulled down, and on an iPad runs past the readable column to the screen's edges.
+struct RisingField: View {
+    let color: Color
+    /// The colour underneath while a new one rises.
+    @State private var under: Color?
+    @State private var risen = 1.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        GeometryReader { geo in
+            // Past the top by the status bar's height, so the new colour covers it too.
+            // The colours themselves never blend, even when the change around them is animated:
+            // blue to orange passes through a vivid blue and a grey mauve.
+            color.animation(nil, value: color)
+                .frame(height: (geo.size.height + 100) * risen)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+        }
+        .background((under ?? color).animation(nil, value: color).padding(.top, -1000))
+        .padding(.horizontal, -1000)
+        .onChange(of: color) { old, _ in
+            guard !reduceMotion else { return }
+            var still = Transaction()
+            still.disablesAnimations = true
+            withTransaction(still) { under = old; risen = 0 }
+            // A turn later, so the rise starts from the bottom rather than from where it was. Eased
+            // in and out over a fixed time: a spring's long tail left the strip under the status
+            // bar in the old colour after the rest had changed.
+            Task { @MainActor in
+                withAnimation(.easeInOut(duration: 0.5)) { risen = 1 } completion: { under = nil }
+            }
+        }
     }
 }

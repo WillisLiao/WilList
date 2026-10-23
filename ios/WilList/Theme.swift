@@ -136,12 +136,17 @@ struct ToastHost: ViewModifier {
 
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom) {
+          // The toast's animation stays with the toast. On the whole screen it animated everything
+          // that changed with it, and the list crossfaded Today's poster when Mark done said so.
+          ZStack {
             if let toast = store.toast {
                 HStack(spacing: 16) {
                     Text(toast.text).lineLimit(2)
                     Spacer(minLength: 0)
                     if toast.canUndo {
-                        Button("Undo") { withAnimation { store.undo() } }.bold()
+                        // Animated, unless it brings back another A1: the list would resize the A1's
+                        // row slowly behind words already in place. The card brings its A in itself.
+                        Button("Undo") { withAnimation(store.undoChangesA1 ? nil : .default) { store.undo() } }.bold()
                     }
                 }
                 .padding(.horizontal, 20)
@@ -157,8 +162,9 @@ struct ToastHost: ViewModifier {
                     if store.toast?.id == toast.id { withAnimation { store.toast = nil } }
                 }
             }
+          }
+          .animation(.snappy, value: store.toast)
         }
-        .animation(.snappy, value: store.toast)
     }
 }
 

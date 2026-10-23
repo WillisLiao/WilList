@@ -83,7 +83,8 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **LetterMark:** letters differ by intensity, not hue. A is filled green with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
 - **StarButton:** grey outline, filled green when important.
 - **A1 poster** (`A1Card.swift`, at the top of Today, in Meadow): a field of the A1's course colour across the top of Today, running up under the status bar, with the date, the letter and "Do this first", the title in 44 pt bold serif, at most two lines under it, "Start" (white, bordered) beside a wide white "Mark done", and "3 days in a row you started with an A" when there is a streak.
-  Mark done draws a line through the title left to right, its words fade, then the next A rises into the same place and the field blends into its course's colour; the toast offers Undo.
+  Mark done fills the button's check and says Done at once, draws a line through the title left to right, and fades its words.
+  Then the card takes the next A's height in one step while it is empty, the next A's words rise into place, and its course's colour wipes up the field from the bottom, never blending through a muddy middle; the toast offers Undo, which brings the last A back the same way.
   After the day's last A (nothing lettered left for today), the poster stays, green, and says "Your A’s are done." with a check, how many things got done today and the streak; the last card fades out whole first, so nothing ghosts through.
   The A1 and this poster are one list row whose contents swap, so the field stays solid during the hand-over.
   The other looks draw it as a card, corner radius 22.
@@ -160,3 +161,9 @@ No decorative or entrance animation.
     Paint the field inside the row with `.background`, padded out past the row's edges.
 21. **A label on a `Text` splits it:** `.accessibilityLabel` on a `Text` that also has traits or actions gave two elements, a button and the text, which VoiceOver reads twice.
     Leave the text as it is when it reads right (a no-break space reads as a space).
+22. **An animation on a whole screen:** `.animation(_:value:)` on a screen's root animates everything that changes in the same update as its value.
+    The toast host had it, so Mark done's Undo toast animated Today's list too, and the poster crossfaded; keep such modifiers on the piece they are for.
+23. **A list row's height animates only with its data:** a `List` resizes a row smoothly only when the change that resized it was an animated change to the list's data.
+    A state change inside the row, or a value the parent passes in, resizes it at once, and the row's contents sit centred in the new height while they animate, so everything in the row jumps halfway.
+24. **An animated data change animates everything in the row:** with the next A's arrival inside `withAnimation`, the old and new titles crossfaded, the old one coming back from transparent, and the field's blue went orange through a vivid blue and a grey mauve.
+    The poster's change isn't animated; the card brings its words in itself, `.transaction(value: row.key) { $0.animation = nil }` keeps any other animated change (Undo) off them, and the field's colours never animate.

@@ -94,11 +94,12 @@ enum Fmt {
         return diffDays(today, date) < 0 ? "Overdue, \(at)" : "Due \(at)"
     }
 
-    /// Parts of a line under a title, spaced apart; nil when there are none.
+    /// Parts of a line under a title, spaced apart; nil when there are none. The gaps don't break,
+    /// so a short part (a bell, "1 of 3") wraps with the word before it rather than alone.
     static func meta(_ parts: [Text?]) -> Text? {
         let parts = parts.compactMap { $0 }
         guard var line = parts.first else { return nil }
-        for p in parts.dropFirst() { line = Text("\(line)   \(p)") }
+        for p in parts.dropFirst() { line = Text("\(line)\u{00A0}\u{00A0}\u{00A0}\(p)") }
         return line
     }
 

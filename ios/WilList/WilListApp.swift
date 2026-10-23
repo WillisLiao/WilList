@@ -122,11 +122,13 @@ struct RootView: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in store.refreshDay() }
         #if DEBUG
         // `-show <title>` on launch opens that to-do or item, `-focus YES` starts a focus session on
-        // the A1, `-evening 1|2|3` opens Plan tomorrow at that step (screenshots).
+        // the A1 (`-focusSpent 30` with 30 minutes already spent), `-evening 1|2|3` opens Plan
+        // tomorrow at that step (screenshots).
         .onAppear {
             store.planningTomorrow = UserDefaults.standard.integer(forKey: "evening") > 0
             if UserDefaults.standard.bool(forKey: "focus"), store.focus == nil, let a1 = doRows(store.state.items, store.today).first {
                 store.startFocus(a1)
+                store.focus?.banked = UserDefaults.standard.double(forKey: "focusSpent") * 60
             }
             guard let t = UserDefaults.standard.string(forKey: "show") else { return }
             store.opening = store.state.items.first { $0.title.hasPrefix(t) }?.id ?? store.state.todos.first { $0.title.hasPrefix(t) }?.id

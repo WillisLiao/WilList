@@ -3,8 +3,9 @@ import SwiftUI
 import UserNotifications
 import WilListCore
 
-/// Focus: one task, one timer, nothing else, on a field of its course's colour. The ring fills as
-/// the planned minutes pass, then it says to take a break. The same timer runs on the Lock Screen
+/// Focus: one task, one timer, nothing else, on a field of its course's colour. The time spent
+/// rises from the bottom in a deeper shade, like a glass filling, and reaches the top when the
+/// planned minutes are up; then it says to take a break. The same timer runs on the Lock Screen
 /// and in the Dynamic Island.
 struct FocusView: View {
     @Environment(Store.self) private var store
@@ -65,7 +66,7 @@ struct FocusView: View {
             .frame(maxWidth: 560)
         }
         .frame(maxWidth: .infinity)
-        .background(field)
+        .background { tide(field, progress: 1 - left / f.total) }
         .environment(\.field, field)
         .sensoryFeedback(.success, trigger: over) { was, now in !was && now }
         .onChange(of: over) { _, now in if now { Chime.play() } }
@@ -87,7 +88,7 @@ struct FocusView: View {
             }
             .padding(.horizontal, 24)
             Spacer(minLength: 24)
-            ring(f, left: left)
+            clock(f, left: left)
             Text(over ? "Take a 5 to 10 minute break." : f.paused ? "Paused" : "One thing. Stay with it until it’s done.")
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
@@ -99,23 +100,29 @@ struct FocusView: View {
         .frame(maxWidth: .infinity)
     }
 
-    private func ring(_ f: FocusSession, left: TimeInterval) -> some View {
-        let progress = 1 - left / f.total
-        return ZStack {
-            Circle().stroke(.white.opacity(0.22), lineWidth: 16)
-            Circle()
-                .trim(from: 0, to: progress)
-                .stroke(.white, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                .rotationEffect(.degrees(-90))
+    /// The time left, large, in the posters' serif.
+    private func clock(_ f: FocusSession, left: TimeInterval) -> some View {
+        Text(left == 0 ? "Break" : Self.clock(left))
+            .font(.system(size: 96, weight: .bold, design: Look.current.titles))
+            .monospacedDigit()
+            .tracking(-1)
+            .foregroundStyle(.white)
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
+            .padding(.horizontal, 24)
+            .accessibilityLabel(left == 0 ? "Time for a break" : "\(Fmt.minutes(Int((left / 60).rounded(.up)))) left\(f.paused ? ", paused" : "")")
+    }
+
+    /// The field, and the time spent rising up it in a deeper shade of the same colour.
+    private func tide(_ field: Color, progress: Double) -> some View {
+        GeometryReader { geo in
+            field.mix(with: .black, by: 0.24)
+                .frame(height: geo.size.height * min(max(progress, 0), 1))
+                .frame(maxHeight: .infinity, alignment: .bottom)
                 .animation(reduceMotion ? nil : .linear(duration: 1), value: progress)
-            Text(left == 0 ? "Break" : Self.clock(left))
-                .font(.system(size: 60, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(.white.opacity(f.paused ? 0.6 : 1))
         }
-        .frame(width: 260, height: 260)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(left == 0 ? "Time for a break" : "\(Fmt.minutes(Int((left / 60).rounded(.up)))) left\(f.paused ? ", paused" : "")")
+        .background(field)
+        .ignoresSafeArea()
     }
 
     /// 42:07

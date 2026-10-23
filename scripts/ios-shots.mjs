@@ -20,6 +20,7 @@
 //   -welcome 2                       the first-run welcome at step 2 or 3, with sample lines (use FIRST=1)
 //   -gallery YES|lock|focus|ticked   every widget at its real size, the focus Live Activity, or a tick on each
 //   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
+//   -focusSpent 30                   with -focus YES: 30 minutes of it already spent
 //   -look frog                       a look from ios/Shared/Look.swift (or LOOK=frog)
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never

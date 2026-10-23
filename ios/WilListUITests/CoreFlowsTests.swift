@@ -1,8 +1,8 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// set a reminder on one, give one a letter, Mark done on the A1 card at the top of Today, a focus
-/// session on it, the first-run welcome, Plan tomorrow and Search.
+/// add the day's A1 from Today, set a reminder on one, give one a letter, Mark done on the A1 card
+/// at the top of Today, a focus session on it, the first-run welcome, Plan tomorrow and Search.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -12,7 +12,20 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["Mark done"].firstMatch.tap()
         XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Done"].exists, "the to-do's circle is filled")
-        XCTAssertTrue(app.staticTexts["All clear, 1 done today."].exists)
+    }
+
+    func testAddTheA1FromToday() {
+        let app = launch(plan: "empty")
+        // Before anything has a letter, Today asks what matters most, and adding it starts with an A.
+        XCTAssertTrue(app.staticTexts["What matters most today?"].waitForExistence(timeout: 5))
+        app.buttons["Add your A1"].tap()
+        let field = app.textFields["What and when"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'A:'")).firstMatch.isSelected, "A is chosen")
+        field.typeText("Write the essay intro\n")
+        app.navigationBars.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: 5), "it leads the day on the A1 card")
+        XCTAssertTrue(app.staticTexts["Write the essay intro"].exists)
     }
 
     func testSetAReminderOnATodo() {

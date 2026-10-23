@@ -7,6 +7,8 @@ struct AddItemSheet: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     var preset: ItemType?
+    /// The letter chosen as it opens: A when Today asks for the day's A1.
+    var startLetter: Letter?
     #if DEBUG
     @State private var text = UserDefaults.standard.string(forKey: "draft") ?? ""
     #else
@@ -81,6 +83,7 @@ struct AddItemSheet: View {
             }
             .sensoryFeedback(.success, trigger: added.count)
             .onAppear {
+                if let startLetter, chosenLetter == nil { chosenLetter = .some(startLetter) }
                 #if DEBUG
                 if UserDefaults.standard.string(forKey: "draft") != nil { return } // screenshots without the keyboard
                 #endif

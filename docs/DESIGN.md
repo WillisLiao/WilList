@@ -22,7 +22,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 | Paper | system white (plain `List`), system grouped grey in `Form`s | Backgrounds. Main tabs use plain white lists; settings and detail sheets use grouped forms. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
-| Green | `AccentColor` asset and `Look.accent`, `#12884A` (4.5:1 on white, so green words stay readable); `#0B6B39` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
+| Green | `AccentColor` asset and `Look.accent`, `#0F8044` (5:1 with white either way round, so green words read on white and white words on green; the earlier `#12884A` sat so close to the middle that iOS drew a black status bar over it); `#0B6B39` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links and tappable rows. |
 | Pale green | green at 9% (the A1 card in the Lagoon look), 12% (the Letter button) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
 | Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, teal, raspberry, ochre, slate, then the green; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
@@ -33,6 +33,7 @@ A course colour never stands for a problem: overdue stays red.
 Words on a field of colour are always pure white: white dimmed even to 85% falls below 4.5:1 on the green, so size and weight make the hierarchy there.
 The guided flows open on a field too: the welcome's questions on the green, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, so it previews the morning's poster.
 That last page rises over the night like a sunrise, the list held still beneath it; between steps the band stays put while the new question rises in, and the step count sits in the middle and rolls on.
+Before anything has a letter, Today's poster asks "What matters most today?" on the green, under a dashed A1 mark, with one button: Letter them when things wait for a letter, otherwise Add your A1 (New task opens with A chosen).
 Your goals leads with the main goal set large in white on a green card (or the question that asks for one); a tap writes it, keyboard up.
 
 ## Type
@@ -57,7 +58,7 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Your A1 as one large card under today's date, how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Your A1 as one large card under today's date (or, before anything has a letter, the question what matters most today), how many items wait for a letter (a tap letters them; in the evening, until tomorrow is planned, Plan tomorrow instead), then a quick checklist, plus anything added to Today from Plan and Study | "Mark done" on the A1 card; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |

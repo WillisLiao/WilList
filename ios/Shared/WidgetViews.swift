@@ -19,7 +19,7 @@ struct FirstWidgetView: View {
     var body: some View {
         switch family {
         case .accessoryInline:
-            Text(glance.first.map { "\($0.label ?? "A1"): \($0.title)" } ?? "Nothing to do first")
+            Text(glance.first.map { "\($0.label ?? "A1"): \($0.title)" } ?? "What matters most today?")
         case .accessoryRectangular:
             rectangular
         case .systemMedium:
@@ -72,7 +72,7 @@ struct FirstWidgetView: View {
             Text(glance.first.map { "\($0.label ?? "A1")  Do this first" } ?? "Do this first")
                 .font(.caption.weight(.semibold))
                 .widgetAccentable()
-            Text(glance.first?.title ?? "Nothing yet. Give something an A.")
+            Text(glance.first?.title ?? "What matters most today?")
                 .font(.headline)
                 .lineLimit(2)
         }
@@ -147,15 +147,21 @@ struct FirstWidgetView: View {
     private var nothingFirst: some View {
         VStack(alignment: .leading, spacing: 4) {
             Spacer(minLength: 0)
-            Image(systemName: glance.doneToday > 0 ? "checkmark.circle.fill" : "circle.dashed")
-                .font(.title2)
-                .foregroundStyle(solid ? Color.white : field)
-                .widgetAccentable()
-            Text(glance.doneToday > 0 ? "All done for today" : "Nothing to do first")
+            if glance.doneToday > 0 {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(solid ? Color.white : field)
+                    .widgetAccentable()
+            } else {
+                // The empty slot, as on Today: the A1 mark drawn dashed.
+                LetterMark(letter: nil, label: "A1", onBrand: solid).accessibilityHidden(true)
+            }
+            // Before anything has a letter, the question Today asks.
+            Text(glance.doneToday > 0 ? "All done for today" : "What matters most today?")
                 .font(.headline)
                 .fontDesign(Look.current.titles)
                 .foregroundStyle(ink)
-            Text(glance.doneToday > 0 ? "\(glance.doneToday) finished." : "Give something an A in WilList.")
+            Text(glance.doneToday > 0 ? "\(glance.doneToday) finished." : "Give it an A in WilList.")
                 .font(.footnote)
                 .foregroundStyle(grey)
         }

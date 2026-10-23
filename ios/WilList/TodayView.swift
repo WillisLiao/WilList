@@ -37,6 +37,7 @@ struct TodayView: View {
     @State private var deleting: Todo?
     @State private var editingItem: Item?
     @State private var sorting: LetterSorter.Batch?
+    @State private var adding = false
 
     private var today: Day { store.today }
     private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
@@ -56,10 +57,12 @@ struct TodayView: View {
     var body: some View {
         let first = self.first, fromPlan = planItems(besides: first)
         // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
-        // its course. After the day's last A, the poster stays, green, to say the A's are done.
+        // its course. After the day's last A, the poster stays, green, to say the A's are done;
+        // before anything has a letter, it asks what matters most today.
         let finished = doneOn(store.state.items, today)
         let won = first == nil && finished.contains { $0.item.priority == .A }
-        let poster = (first != nil || won) && Look.current.hero == .poster
+        let poster = Look.current.hero == .poster
+        let asking = poster && first == nil && !won
         let field = CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
@@ -73,15 +76,17 @@ struct TodayView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                // One row for the A1 and for "Your A's are done", so the field stays solid when the
-                // last A hands over to it.
-                if first != nil || won && poster {
+                // One row for the A1, "Your A's are done" and the question before an A1, so the field
+                // stays solid when one hands over to the next.
+                if first != nil || poster {
                     VStack(spacing: 0) {
                         if let first {
                             A1Card(row: first) { editingItem = $0 }
-                        } else {
+                        } else if won {
                             AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
                                    streak: a1Streak(store.state.meta.firstDone, today))
+                        } else {
+                            NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
                         }
                     }
                     .environment(\.field, field)
@@ -94,7 +99,7 @@ struct TodayView: View {
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && plannedFor != addDays(today, 1) {
                     nudge("Plan tomorrow", systemImage: "moon.fill") { store.planningTomorrow = true }
-                } else if waiting > 0 {
+                } else if waiting > 0 && !asking {
                     nudge("\(waiting) waiting for a letter", action: letterThem)
                 }
                 Section {
@@ -146,6 +151,7 @@ struct TodayView: View {
             .sheet(isPresented: $searching) { SearchView() }
             .sheet(item: $editingItem) { ItemEditor(item: $0) }
             .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
+            .sheet(isPresented: $adding) { AddItemSheet(startLetter: .A) }
             .confirmationDialog("Delete \u{201C}\(deleting?.title ?? "")\u{201D}?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
                 Button("Delete", role: .destructive) { deleting.map(delete) }
             }
@@ -194,6 +200,8 @@ struct TodayView: View {
                 Spacer(minLength: 8)
                 if hasTools { tools.tint(.white) }
             }
+            // As tall as the tools, so with none yet the row still fills with the field.
+            .frame(minHeight: 44)
         } else {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Fmt.long(today))

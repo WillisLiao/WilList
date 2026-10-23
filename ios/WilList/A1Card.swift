@@ -232,3 +232,51 @@ struct AsDone: View {
         .onAppear { shown = true }
     }
 }
+
+/// Before anything has a letter, the poster asks the question the day turns on, with one way to
+/// answer it: letter what's waiting, or add the one thing with its A.
+struct NoA1: View {
+    /// Items waiting for a letter.
+    let waiting: Int
+    let letterThem: () -> Void
+    let add: () -> Void
+    @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
+    @Environment(\.field) private var field
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                // The empty slot: the A1 mark drawn dashed, as on Plan before anything is lettered.
+                LetterMark(letter: nil, label: "A1", large: true, onBrand: true)
+                    .accessibilityHidden(true)
+                Text("Do this first").font(.subheadline.weight(.medium))
+            }
+            Text("What matters most today?")
+                .font(.system(size: posterTitle, weight: .bold))
+                .fontDesign(Look.current.titles)
+                .tracking(-0.6)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text(waiting > 0
+                 ? "\(waiting) \(waiting == 1 ? "thing waits" : "things wait") for a letter. The most important one becomes your A1."
+                 : "Add it and give it an A. It leads your day, here and on your widgets.")
+                .fixedSize(horizontal: false, vertical: true)
+            Button(action: waiting > 0 ? letterThem : add) {
+                Text(waiting > 0 ? "Letter them" : "Add your A1")
+                    .foregroundStyle(field)
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.white)
+            .controlSize(.large)
+            // On an iPad the button stops at a phone's width, as the A1 card's do.
+            .frame(maxWidth: 440, alignment: .leading)
+            .padding(.top, 10)
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 28)
+    }
+}

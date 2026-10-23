@@ -26,7 +26,7 @@ enum Look: String, CaseIterable {
     /// Each darkens with Increase Contrast, so green text on a pale tint still reads.
     var accent: Color {
         switch self {
-        case .meadow: Color(hex: 0x12884A, highContrast: 0x0B6B39)
+        case .meadow: Color(hex: 0x0F8044, highContrast: 0x0B6B39)
         case .frog: Color(hex: 0x0E7C42, highContrast: 0x0A6034)
         case .notebook: Color(hex: 0x14A04B, highContrast: 0x0D7A37)
         case .lagoon: Color(hex: 0x0A8796, highContrast: 0x066875)

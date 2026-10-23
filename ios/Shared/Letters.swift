@@ -40,7 +40,8 @@ struct LetterMark: View {
         switch letter {
         case .A: onBrand ? field : .white
         case .B: onBrand ? .white : .primary
-        default: onBrand ? .white.opacity(0.75) : .secondary
+        // On a field every word is pure white: dimmed, it falls below 4.5:1.
+        default: onBrand ? .white : .secondary
         }
     }
 

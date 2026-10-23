@@ -98,6 +98,23 @@ private func state(_ items: Item...) -> AppState {
     #expect(rows[0].label == "A1")
 }
 
+@Test func theLetterAddedLastComesLast() {
+    var s = AppState()
+    for (title, date) in [("Essay", nil), ("Lab", nil), ("Quiz prep", Optional(monday))] {
+        var draft = Item(id: "", title: title, type: .task)
+        draft.date = date
+        draft.priority = .A
+        s.items.append(makeItem(draft, s.settings, monday, s.items))
+    }
+    #expect(dayRows(s.items, monday).map(\.label) == ["A1", "A2", "A3"])
+    #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay", "Lab", "Quiz prep"])
+    var todo = Item(id: "", title: "Call the bank", type: .task)
+    todo = makeItem(todo, s.settings, monday, s.items)
+    s.items.append(todo)
+    s.setLetter(todo.id, .A)
+    #expect(dayRows(s.items, monday).last?.item.title == "Call the bank")
+}
+
 @Test func theSameLetterAgainKeepsItsPlace() {
     var s = state(mk("Essay", .task), mk("Lab", .task))
     s.setLetter(s.items[0].id, .A)

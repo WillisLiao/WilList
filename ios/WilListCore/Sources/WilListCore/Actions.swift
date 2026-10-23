@@ -14,10 +14,10 @@ public func suggestedLetter(_ type: ItemType, weightPct: Double? = nil) -> Lette
     }
 }
 
-/// New letters land in due-date order; you can re-rank afterwards.
-func defaultOrder(_ it: Item) -> Double {
-    if let d = it.date { return Double(diffDays("2000-01-01", d) * 1000 + Int.random(in: 0..<900)) }
-    return 9e9 + Double(Int(Date().timeIntervalSince1970 * 1000) % 1_000_000)
+/// A new letter lands after every item that already has it: the A added last is the last A,
+/// and dragging it up ranks it higher.
+func defaultOrder(_ it: Item, after items: [Item]) -> Double {
+    (items.filter { $0.priority == it.priority && $0.id != it.id }.map(\.order).max() ?? 0) + 1
 }
 
 private func calibrated(_ type: ItemType, _ title: String, _ settings: Settings) -> Int {
@@ -57,7 +57,7 @@ public func makeItem(_ draft: Item, _ settings: Settings, _ today: Day, _ items:
     it.doneAt = nil
     it.doneDates = []
     it.createdAt = today
-    it.order = defaultOrder(it)
+    it.order = defaultOrder(it, after: items)
     applyPlan(&it, settings, today, items)
     return it
 }
@@ -109,7 +109,7 @@ extension AppState {
         guard let i = index(of: id), items[i].priority != letter else { return }
         let wasIdle = items[i].priority == .D || items[i].priority == .E
         items[i].priority = letter
-        items[i].order = defaultOrder(items[i])
+        items[i].order = defaultOrder(items[i], after: items)
         if let today, letter == .D || letter == .E || wasIdle { replan(id, today: today) }
     }
 

@@ -32,7 +32,6 @@ Work at the default text size; the owner asked not to spend time on the largest 
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.
 - **iPad:** a sidebar or two columns (Today beside Plan) would use the space far better than a centred column; ask the owner.
 - **The Lock Screen Live Activity** still shows a bar and the Dynamic Island a ring; ActivityKit can only animate system timer views, so the focus tide can't follow there as it is.
-- **The app icon** is drawn from `#12884A` (`scripts/app-icon.swift`); the accent is now `#0F8044`. The gradient hides the difference, but regenerate it if the icon is touched again.
 - **The website,** only if the owner says so.
 
 ## Notes

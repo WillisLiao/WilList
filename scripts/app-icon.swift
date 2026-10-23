@@ -43,8 +43,8 @@ func draw(_ name: String, ground: (top: UInt32, bottom: UInt32)?, mark: CGColor)
     print("\(out)/\(name)")
 }
 
-// Light: white on the app's green (#12884A at the middle of the gradient).
-draw("AppIcon.png", ground: (0x169A54, 0x0E7640), mark: rgb(0xFFFFFF))
+// Light: white on the app's green (#0F8044 at the middle of the gradient).
+draw("AppIcon.png", ground: (0x13924E, 0x0B6E3A), mark: rgb(0xFFFFFF))
 // Dark: iOS lays a transparent icon on its own dark ground; a lighter green holds up on it.
 draw("AppIcon-dark.png", ground: nil, mark: rgb(0x3DCB80))
 // Tinted: iOS colours a grey icon itself.

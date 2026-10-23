@@ -58,6 +58,7 @@ Mark done on a reminder was checked there too, with the app closed: the plan and
 With the app open in the background it crashed the app until 2026-10-23 (the handler finished off the main thread); `testMarkDoneFromAReminder` now covers it.
 
 The Lock Screen widgets were added to the simulator's real Lock Screen through its own editor and look right there.
+Mark done on the Lagoon card was checked frame by frame in a screen recording.
 
 **Not yet checked on a real device:** iCloud sync between two devices, reminders arriving and their buttons, the badge, quick actions, the chime's volume, the widgets on a real Home and Lock Screen (the simulator holds a ticked line one to two seconds; a device may differ), the Live Activity and its Mark done.
 

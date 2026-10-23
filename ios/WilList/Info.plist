@@ -41,8 +41,10 @@
 	<!-- A focus session's timer on the Lock Screen and in the Dynamic Island. -->
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<!-- A shared file is read where it is (the Agent opens it with security-scoped access), as
+	     the Mac requires; iOS then keeps no copy of it. -->
 	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<false/>
+	<true/>
 	<!-- Press and hold the app icon. -->
 	<key>UIApplicationShortcutItems</key>
 	<array>

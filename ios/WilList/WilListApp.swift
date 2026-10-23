@@ -191,8 +191,18 @@ struct RootView: View {
                 store.startFocus(a1)
                 store.focus?.banked = UserDefaults.standard.double(forKey: "focusSpent") * 60
             }
-            guard let t = UserDefaults.standard.string(forKey: "show") else { return }
-            store.opening = store.state.items.first { $0.title.hasPrefix(t) }?.id ?? store.state.todos.first { $0.title.hasPrefix(t) }?.id
+            if let t = UserDefaults.standard.string(forKey: "show") {
+                store.opening = store.state.items.first { $0.title.hasPrefix(t) }?.id ?? store.state.todos.first { $0.title.hasPrefix(t) }?.id
+            }
+        }
+        // `-snapshot <path>`: the window as a PNG four seconds in, for the Mac app, whose window
+        // can't be captured from outside without screen recording access.
+        .task {
+            guard let path = UserDefaults.standard.string(forKey: "snapshot") else { return }
+            try? await Task.sleep(for: .seconds(4))
+            guard let window = UIApplication.shared.connectedScenes.compactMap({ ($0 as? UIWindowScene)?.keyWindow }).first else { return }
+            let image = UIGraphicsImageRenderer(bounds: window.bounds).image { _ in _ = window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
+            try? image.pngData()?.write(to: URL(filePath: path))
         }
         #endif
         // A tapped reminder or search result opens its to-do in Today, or its item in Plan.

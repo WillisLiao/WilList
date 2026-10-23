@@ -11,7 +11,9 @@ struct WilListWidgets: WidgetBundle {
     var body: some Widget {
         FirstWidget()
         TodayWidget()
+        #if !targetEnvironment(macCatalyst)
         FocusActivity()
+        #endif
     }
 }
 

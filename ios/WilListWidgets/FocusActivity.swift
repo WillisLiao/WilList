@@ -3,6 +3,9 @@ import SwiftUI
 import WidgetKit
 import WilListCore
 
+// The focus Live Activity, on iPhone and iPad only: a Mac has no Lock Screen or Dynamic Island.
+#if !targetEnvironment(macCatalyst)
+
 /// A focus session's timer on the Lock Screen and in the Dynamic Island, with Mark done.
 struct FocusActivity: Widget {
     var body: some WidgetConfiguration {
@@ -64,3 +67,4 @@ struct FocusActivity: Widget {
         }
     }
 }
+#endif

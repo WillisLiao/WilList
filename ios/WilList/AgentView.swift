@@ -325,6 +325,11 @@ private struct AgentChat: View {
                         .foregroundStyle(Color.brandDeep)
                         .tapArea()
                 }
+                // A plain + on every device; a Mac would draw a pop-up button with a chevron, and
+                // sizes the menu to its glyph, which then sat low in the bar.
+                .menuIndicator(.hidden)
+                .buttonStyle(.borderless)
+                .frame(minWidth: 44, minHeight: 44)
                 .accessibilityLabel("Attach")
                 TextField("Message", text: $draft, axis: .vertical)
                     .lineLimit(1...5)
@@ -337,6 +342,7 @@ private struct AgentChat: View {
                     .disabled(!canSend)
                     .keyboardShortcut(.return, modifiers: .command)
                     .tapArea()
+                    .buttonStyle(.borderless)
             }
             .padding(.leading, 4)
             .padding(.trailing, 2)
@@ -344,6 +350,8 @@ private struct AgentChat: View {
         }
         .padding(.horizontal, 16)
         .padding(.top, 6)
+        // In the chat's column on a wide screen (iPad, Mac), lined up with the bubbles.
+        .frame(maxWidth: ReadableColumn.width)
     }
 
     // MARK: sending

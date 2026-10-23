@@ -98,6 +98,12 @@ Section titles and footers stay on the ground between the cards, in the ground's
 
 On a wide screen (iPad) every list keeps to a centred 700 pt column (`readableColumn()`).
 There the highlighted tab names the screen, so a tab's own title steps aside, and a pushed screen's title sits centred above the column.
+The Agent's message field keeps to the same column, lined up with the bubbles.
+
+**On a Mac** (Mac Catalyst, the Mac idiom) the app is the same screens in a window: the column in the middle, the Mac's own smaller type, WilList's tab bar at the foot.
+Buttons laid out by hand are borderless, since the Mac would otherwise draw them as push buttons, and a `Menu` hides its indicator, which the Mac would draw as a chevron.
+There is no focus Live Activity on a Mac (it has no Lock Screen or Dynamic Island); the Focus screen still runs the session.
+`-snapshot <path>` (debug) saves the window as a PNG, as the Mac build can't be shot from outside without screen recording access.
 
 ## Components
 

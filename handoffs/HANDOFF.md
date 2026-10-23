@@ -3,17 +3,17 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-24)
+## Now (2026-10-24, night)
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
-`main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and again to `220027f` the same evening (Lagoon, iCloud sync, the cards on slate, the letter colours), also with the owner's OK; GitHub Pages is on and the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose; `app/` hasn't changed).
-On 2026-10-24 the owner asked to push to `main` again, and it was fast-forwarded to `8a23b92` (the white tab bar, the words pass, A ordering, Later in Plan, the one-row due date); `app/` hadn't changed.
-Anything after `8a23b92` is on the branch only (a check on every Plan row, the short date chip, Plan's day and calendar, Study's calendar, Today without the A1 card, the lighter ground, a CI flake fix); pushing it to `main` publishes the website again, so ask first.
+`main` is at `8a23b92` (fast-forwarded with the owner's OK on 2026-10-24); everything after it is on the branch only, and merging is the owner's call.
+The older website is still live at https://willisliao.github.io/WilList/ from `main`; the branch has removed it from the code and from CI, so merging no longer redeploys it, and it goes for good only when GitHub Pages is turned off in the repository's settings (the owner's call).
+
+**This session (night):** the screens the last session hadn't looked at were reviewed and fixed (Today's bar now matches the other tabs; Settings and Your goals have the inline titles they asked for, which `readableColumn()` had been overriding; a due time no longer breaks across lines); every prompt to letter an item is gone at the owner's ask, and an unlettered item has no mark; the website is gone from the code, with the shots' sample week moved into the app (`-plan sample`); the Agent's server contract is written (`docs/AGENT-SERVER.md`); and the Mac app (Mac Catalyst) builds and was looked at through its own snapshots.
+**Still to do:** sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app), the Agent's server itself (until then a release build shows Coming soon), the subscription in App Store Connect, signing and shipping the Mac app, a live test of the Agent with a key, and study time blocks (open).
 
 **The owner's new direction (2026-10-24, late):** iPhone and Mac App Store only (the website is to be deleted), no iCloud (sign in with Google or Facebook, plus Apple as the App Store requires), a profile picture at the top left opening Settings, More becomes an Agent tab (a chat that logs anything from any file, with guardrails, as a subscription), every import option and the Claude key field go, and Study becomes Progress (analytics, forecasts, suggestions).
 Every request and its status is in `handoffs/OWNER-REQUESTS.md`; work through it in that order.
-**Done on the branch:** the tabs are Today, Plan, Progress, Agent; Settings opens from the profile picture; iCloud, Bring in a schedule and the key are gone; Progress and the Agent are built (see below and the devlog).
-**Still to do:** sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app), the Agent's server (until then a release build shows Coming soon), the subscription in App Store Connect, the Mac app, deleting the website, and study time blocks (open).
 
 **The owner's asks on 2026-10-24 (later):** Plan opens on today's date instead of the main goal (first with arrows to pick another day, then, "we already choose date when we enter task", without them); no Plan tomorrow row; a simple calendar under the rows in Plan and in Study; exams and deadlines added in Study must show in Study; no explanations ("give everything a letter", "no more cramming"); no A1 card on Today; and the background "at least 50% lighter".
 All done; see the devlog for how.
@@ -31,20 +31,22 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
 - **Today:** the date in large bold type with how the day stands, then a card with the A1 first (its check, its title, a play button for a focus session, and its A1 mark) and anything from Plan added to Today under it.
-  Below: "N need a letter" (one tap letters them), or Plan tomorrow in the evening until it's done; then the quick checklist (typed dates are read, five sorts, stars, completed).
+  Below: Plan tomorrow in the evening until it's done; then the quick checklist (typed dates are read, five sorts, stars, completed).
+  The profile picture, Search and Sort sit in the navigation bar as on every tab, and the date takes the large title's place.
   There is no A1 card any more (the owner's call, 2026-10-24).
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
-- **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), items needing a letter (**Letter them** opens the sorter), everything lettered that isn't on today's list under **Later** (soonest first, the letter without a number), and a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it).
+- **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), everything that isn't on today's list under **Later** (soonest first, the letter without a number, nothing at all for an item without a letter), and a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it).
   An empty day says "Nothing planned". New task has no Kind picker: the kind is read from the words (the owner's call).
   The owner's rule (2026-10-24): all plans in Plan, only today's in Today.
-- **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Letter them, Review, Adjust), the next 7 days' study load by course colour against the daily budget, and exams and deadlines coming up with whether each is on track.
+- **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Review, Adjust), the next 7 days' study load by course colour against the daily budget, and exams and deadlines coming up with whether each is on track.
 - **Agent:** a chat that takes files, photos and words, proposes what to add on a card to tick and Add (Undo works), follows a calendar link the student types, and answers questions about the plan; plain text only, guardrails in the devlog. Behind a StoreKit 2 subscription (`com.lull.willist.agent.monthly`), and it asks once before sending anything to Anthropic. Requests go to WilList's server (`WLAgentServer` in Info.plist, empty for now, so release builds show Coming soon); debug builds use `ANTHROPIC_API_KEY` or `-agentDemo YES`. Not yet tried against the live API.
 - **Settings** (the profile picture on every tab): your main goal first (it opens Your goals: the main goal large on teal, the other goals, the last 21 days), then to-do and study settings, the day's clocks, calendar links the Agent followed, backup and restore.
 - **Focus:** the whole screen in the task's course colour, the time spent rising from the bottom in a deeper shade like a glass filling, the time left in large bold type, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
-- **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.
+- **Letters are optional** (the owner's call, 2026-10-24): nothing asks for one, and an item without one has no mark. Its details give it one.
+- **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1. Opened from Review in Progress.
 - **Plan tomorrow:** Tracy's evening habit in two steps on a night-indigo field: anything new for tomorrow (one line each, dates read), then which one first.
   It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour; that page rises over the night like a sunrise.
   Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned, and the evening notification opens it.
@@ -55,7 +57,8 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
   On a widget, the ticked line shows done for a moment (the box fills, the words grey and are struck through), then leaves.
 - **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 18 of them), every control is at least 44 points, words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the teal deepens with Increase Contrast.
 - **Search** opens ready to type, keyboard up; its X closes it.
-- **iPad:** every list keeps to a centred readable column.
+- **iPad:** every list keeps to a centred readable column, the Agent's message field too.
+- **Mac:** the same app through Mac Catalyst, with the Mac idiom, in a window; no focus Live Activity there. It builds and was looked at through its own snapshots; it hasn't been signed or shipped.
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
@@ -64,7 +67,8 @@ The next `npm run ios` registers the app group, the widget extension (`com.lull.
 On 2026-10-23 Xcode had lost the owner's credentials ("No Accounts"): sign in again in Xcode, Settings, Accounts, and accept Apple's latest Program License Agreement if Xcode still reports "PLA Update available"; compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
 The iPad was paired and reachable then; the iPhone was not.
 
-**Checked:** 91 Swift core tests (10 for the iCloud merge), 78 website unit tests, lint, the website end-to-end test, 12 UI tests (add and tick, adding the A1 from an empty Today, Plan tomorrow from the evening card, a reminder, Mark done on a reminder from the Home Screen, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
+**Checked (2026-10-24, night):** 101 Swift core tests, lint, the UI tests (see the devlog for the last run), a zero-warning release build for iPhone and a zero-warning Mac Catalyst build, and every changed screen at the default text size on the iPhone 17 simulator, plus the Mac app through its own snapshots (`-snapshot`).
+Earlier: the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.
 With the app open in the background it crashed the app until 2026-10-23 (the handler finished off the main thread); `testMarkDoneFromAReminder` now covers it.
@@ -80,9 +84,10 @@ The widget-style cards were shot and looked at on every tab, Today's empty and e
 Answered on 2026-10-23: `main` merged with the website as it is (done), Lagoon kept (done), no custom lists for now, iCloud sync wanted (built, untried on devices), the app laid out like its widgets in the softer teal (done).
 Still open:
 
-1. Merging anything after `220027f` into `main`: ask first, as it publishes the website.
-2. The website stays the older version for now; bringing it up to the app (focus, the sorter, the calendars, the welcome, sync, the cards on slate, the letter colours) is a later call.
-3. iPad: a sidebar or two columns (Today beside Plan) would use the space better than a centred column.
+1. Merging the branch into `main`: ask first.
+2. Turning GitHub Pages off, which takes the old website down (repository Settings, Pages).
+3. iPad and Mac: a sidebar or two columns (Today beside Plan) would use the space better than a centred column.
+4. Worry Buster, 20 Ideas, Pre-game and the seven questions lived only on the website: bring them to the app, or let them go.
 
 The owner has said there are no fixed rules on what the app should be or which features it has.
 The one hard limit kept is that saved plans (`willist.v1`) must keep loading.
@@ -99,8 +104,9 @@ The one hard limit kept is that saved plans (`willist.v1`) must keep loading.
 - `ios/Shared/`: code the app and the widgets share: `Look` (the teal and the course colours), `Fmt`, `Glance` (what the widgets show), `Focus` (the session and the Live Activity's data), `FocusViews`, `WidgetViews`, `WidgetIntents`, `PlanFile` (the save file in the app group), `Letters`.
 - `ios/WilListWidgets/`: the widget extension: the two widgets and the focus Live Activity.
 - `ios/WilListUITests/`: the UI tests (`CoreFlowsTests`, `AuditTests`, and `WidgetTests`, which runs only when asked). `ios/WilListCore/`: the Swift package with all logic and its tests; `Agent.swift` is the Agent's prompt, tools, requests and guardrails, `Files.swift` turns any file into what Claude reads.
-- `app/`: the website (plain JavaScript). `tests/`: its tests.
-- `scripts/`: lint config, screenshots (`ios-shots.mjs` lists the debug launch arguments that open every screen), device install, the app icon generator (`app-icon.swift`).
+- `scripts/`: lint config, screenshots (`ios-shots.mjs` lists the debug launch arguments that open every screen; the sample week is `-plan sample` in `TestPlan.swift`), device install, the app icon generator (`app-icon.swift`).
+- `docs/AGENT-SERVER.md`: the contract for the Agent's server, which doesn't exist yet.
+- The Mac app is the same target built for Mac Catalyst (`WilList-Mac.entitlements`, `WilListWidgets-Mac.entitlements`).
 - `docs/DESIGN.md`: the design system and the SwiftUI pitfalls already paid for. `docs/PRINCIPLES.md`: Tracy's principles and where each lives.
 - `.claude/skills/`: the two design skills used for every UI change.
 

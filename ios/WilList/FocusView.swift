@@ -180,8 +180,14 @@ extension Store {
     }
 }
 
-/// The Live Activity for a focus session: start, update on pause and resume, end.
+/// The Live Activity for a focus session: start, update on pause and resume, end. A Mac has none:
+/// the session runs on the Focus screen alone.
 enum LiveFocus {
+    #if targetEnvironment(macCatalyst)
+    static func start(_ f: FocusSession, color: Int?) {}
+    static func update(_ f: FocusSession) {}
+    static func end() {}
+    #else
     static func start(_ f: FocusSession, color: Int?) {
         end() // one at a time
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
@@ -205,6 +211,7 @@ enum LiveFocus {
         let now = Set(Activity<FocusAttributes>.activities.map(\.id))
         Task { for a in Activity<FocusAttributes>.activities where now.contains(a.id) { await a.end(nil, dismissalPolicy: .immediate) } }
     }
+    #endif
 }
 
 /// The notice when the planned minutes are up, for when WilList isn't on screen.

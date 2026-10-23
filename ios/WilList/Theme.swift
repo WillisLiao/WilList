@@ -182,7 +182,9 @@ struct ReadableColumn: ViewModifier {
     let inline: Bool
     @State private var width: CGFloat = 0
     /// nil on a phone: the system's own margins, which keep a grouped list's cards inset.
-    private var margin: CGFloat? { width > 700 ? (width - 700) / 2 : nil }
+    /// The column's width on a wide screen.
+    static let width: CGFloat = 700
+    private var margin: CGFloat? { width > Self.width ? (width - Self.width) / 2 : nil }
 
     func body(content: Content) -> some View {
         content

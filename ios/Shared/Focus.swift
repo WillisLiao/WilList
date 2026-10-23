@@ -36,7 +36,7 @@ struct FocusSession: Codable, Equatable, Identifiable {
 }
 
 /// The Live Activity's facts: what is in focus, and its timer.
-struct FocusAttributes: ActivityAttributes {
+struct FocusAttributes {
     struct ContentState: Codable, Hashable {
         /// The planned time spans start...end while running. Paused, end is nil and left holds
         /// the seconds still to go.
@@ -57,6 +57,11 @@ struct FocusAttributes: ActivityAttributes {
         ContentState(start: now.addingTimeInterval(-f.elapsed(at: now)), end: f.end, left: f.remaining(at: now))
     }
 }
+
+// A Mac has no Lock Screen or Dynamic Island, so no Live Activity there.
+#if !targetEnvironment(macCatalyst)
+extension FocusAttributes: ActivityAttributes {}
+#endif
 
 /// Mark done on the Live Activity. It runs in the app, launched in the background if need be,
 /// which hands it to its store (`Focus.finish`).

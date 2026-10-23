@@ -5,9 +5,11 @@ import WilListCore
 /// The plans the UI tests start from, by name: `-plan new` (a first launch), `-plan empty` (the
 /// welcome seen, nothing added), `-plan a1` (two A's for today), `-plan busy` (those, a to-do `t1`
 /// and an item waiting for a letter, so every screen and sheet has something on it). Each lives
-/// in a fresh temporary file, so a test never touches a real plan.
+/// in a fresh temporary file, so a test never touches a real plan, and starts from the default
+/// settings, so nothing an earlier test chose (tomorrow planned, a sort) carries over.
 enum TestPlan {
     static func store(_ name: String) -> Store {
+        if let app = Bundle.main.bundleIdentifier { UserDefaults.standard.removePersistentDomain(forName: app) }
         let file = URL.temporaryDirectory.appending(path: "willist-uitest.json")
         try? FileManager.default.removeItem(at: file)
         let store = Store(file: file)

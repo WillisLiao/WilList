@@ -58,12 +58,15 @@ struct TodayView: View {
         let first = self.first, fromPlan = planItems(besides: first)
         // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
         // its course. After the day's last A, the poster stays, green, to say the A's are done;
-        // before anything has a letter, it asks what matters most today.
+        // before anything has a letter, it asks what matters most today, and in the evening, with
+        // nothing left for today, it turns to tomorrow.
         let finished = doneOn(store.state.items, today)
         let won = first == nil && finished.contains { $0.item.priority == .A }
         let poster = Look.current.hero == .poster
         let asking = poster && first == nil && !won
-        let field = CourseColor.of(store.state.courseColor(first?.item.course))
+        let planned = plannedFor == addDays(today, 1)
+        let tonight = asking && store.evening && !planned
+        let field = tonight ? PlanTomorrow.night : CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
                 // The field is painted in the rows, not as their list backgrounds, which the list
@@ -85,6 +88,8 @@ struct TodayView: View {
                         } else if won {
                             AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
                                    streak: a1Streak(store.state.meta.firstDone, today))
+                        } else if tonight {
+                            Tonight { store.planningTomorrow = true }
                         } else {
                             NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
                         }
@@ -97,7 +102,7 @@ struct TodayView: View {
                     .listRowBackground(Color.clear)
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
-                if store.evening && plannedFor != addDays(today, 1) {
+                if store.evening && !planned && !tonight {
                     nudge("Plan tomorrow", systemImage: "moon.fill") { store.planningTomorrow = true }
                 } else if waiting > 0 && !asking {
                     nudge("\(waiting) waiting for a letter", action: letterThem)

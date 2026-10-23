@@ -34,6 +34,7 @@ Words on a field of colour are always pure white: white dimmed even to 85% falls
 The guided flows open on a field too: the welcome's questions on the green, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, so it previews the morning's poster.
 That last page rises over the night like a sunrise, the list held still beneath it; between steps the band stays put while the new question rises in, and the step count sits in the middle and rolls on.
 Before anything has a letter, Today's poster asks "What matters most today?" on the green, under a dashed A1 mark, with one button: Letter them when things wait for a letter, otherwise Add your A1 (New task opens with A chosen).
+In the evening, with nothing left for today and tomorrow not planned, the poster turns to the night and asks "What matters most tomorrow?", with Plan tomorrow.
 Your goals leads with the main goal set large in white on a green card (or the question that asks for one); a tap writes it, keyboard up.
 
 ## Type

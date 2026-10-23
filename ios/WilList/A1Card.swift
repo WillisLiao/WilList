@@ -280,3 +280,42 @@ struct NoA1: View {
         .padding(.bottom, 28)
     }
 }
+
+/// In the evening, with nothing left for today and tomorrow not planned yet, the poster turns to
+/// the night and asks what matters most tomorrow.
+struct Tonight: View {
+    let plan: () -> Void
+    @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
+    @Environment(\.field) private var field
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: "moon.fill").accessibilityHidden(true)
+                Text("This evening")
+            }
+            .font(.subheadline.weight(.medium))
+            Text("What matters most tomorrow?")
+                .font(.system(size: posterTitle, weight: .bold))
+                .fontDesign(Look.current.titles)
+                .tracking(-0.6)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityAddTraits(.isHeader)
+            Text("Two short steps tonight, and the morning starts with your A1.")
+                .fixedSize(horizontal: false, vertical: true)
+            Button(action: plan) {
+                Text("Plan tomorrow").foregroundStyle(field).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.white)
+            .controlSize(.large)
+            .frame(maxWidth: 440, alignment: .leading)
+            .padding(.top, 10)
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 28)
+    }
+}

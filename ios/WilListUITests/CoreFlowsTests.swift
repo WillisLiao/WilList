@@ -2,7 +2,8 @@ import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// add the day's A1 from Today, set a reminder on one, give one a letter, Mark done on the A1 card
-/// at the top of Today, a focus session on it, the first-run welcome, Plan tomorrow and Search.
+/// at the top of Today, a focus session on it, the first-run welcome, Plan tomorrow (from Plan and
+/// from Today's evening poster) and Search.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -127,6 +128,24 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")
     }
 
+    func testPlanTomorrowFromTheEveningPoster() {
+        let app = launch(plan: "empty", night: true)
+        // In the evening, with nothing left for today, Today turns to tomorrow.
+        XCTAssertTrue(app.staticTexts["What matters most tomorrow?"].waitForExistence(timeout: 5))
+        app.buttons["Plan tomorrow"].tap()
+        let field = app.textFields["Read chapter 5 by Friday"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Plan tomorrow opens on its first step")
+        field.typeText("Buy a lab notebook\n")
+        app.buttons["Next"].tap()
+        choose(app.buttons["Buy a lab notebook"], in: app)
+        app.buttons["Make it my A1"].tap()
+        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+        // Back on Today the line leads the poster: with no date, it counts from now on.
+        XCTAssertTrue(gone(app.staticTexts["What matters most tomorrow?"]))
+        XCTAssertTrue(title("Buy a lab notebook", in: app).exists, "the new A1 is on the poster")
+    }
+
     func testSearchFindsATodo() {
         let app = launch(plan: "busy")
         app.buttons["Search"].tap()
@@ -146,10 +165,11 @@ final class CoreFlowsTests: XCTestCase {
 
     // MARK: helpers
 
-    private func launch(plan: String, tab: String = "today") -> XCUIApplication {
+    /// Starts the app on a known plan; `night` makes it evening, past the planning time.
+    private func launch(plan: String, tab: String = "today", night: Bool = false) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", "NO"]
+        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", night ? "YES" : "NO"]
         app.launch()
         return app
     }

@@ -116,10 +116,17 @@ enum Fmt {
         }
     }
 
-    /// `detail`, its course in the course's colour.
+    /// `detail`, its course in the course's colour; a study session names its course too, like
+    /// the rows around it.
     static func detail(_ row: Row, _ today: Day, in s: AppState) -> Text? {
-        row.session == nil && !(row.item.priority == .D && !row.item.delegateTo.isEmpty)
-            ? subline(row.item, today, in: s) : detail(row, today).map { Text($0) }
+        if row.session == nil && !(row.item.priority == .D && !row.item.delegateTo.isEmpty) { return subline(row.item, today, in: s) }
+        guard let session = row.session, let course = row.item.course else { return detail(row, today).map { Text($0) } }
+        // The time and the course keep together: a line too long breaks before "50 min, MATH201",
+        // not before the course alone.
+        let together = { (words: String) in words.replacingOccurrences(of: " ", with: "\u{00A0}") }
+        let time = together(minutes(session.minutes) + (row.extra > 0 ? " (+\(row.extra) more)" : ""))
+        let name = Text(together(course)).foregroundStyle(CourseColor.of(s.courseColor(course)))
+        return Text("\(session.label), \(time),\u{00A0}\(name)")
     }
 
     /// What a row of the day's list is about: the study session that is due, who has it, or when it is.

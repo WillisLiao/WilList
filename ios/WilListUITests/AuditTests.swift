@@ -33,8 +33,10 @@ final class AuditTests: XCTestCase {
             let keyboard = app.keyboards.firstMatch
             try audit(app) { issue in
                 // The system keyboard isn't ours (Search opens with it up): the empty slots of the
-                // 44-point suggestion bar on top of it have no description.
-                if let element = issue.element, keyboard.exists, keyboard.frame.insetBy(dx: 0, dy: -44).intersects(element.frame) { return true }
+                // 44-point suggestion bar on top of it have no description, and they come and go
+                // while the audit runs, so one may be gone before its frame can be read.
+                if let element = issue.element, keyboard.exists,
+                   !element.exists || keyboard.frame.insetBy(dx: 0, dy: -44).intersects(element.frame) { return true }
                 XCTFail("\(screen.name): \(issue.compactDescription), \(issue.element?.debugDescription ?? "")")
                 return true
             }

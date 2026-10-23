@@ -3,7 +3,7 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-23, evening)
+## Now (2026-10-24)
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
 `main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and again to `220027f` the same evening (Lagoon, iCloud sync, the cards on slate, the letter colours), also with the owner's OK; GitHub Pages is on and the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose; `app/` hasn't changed).
@@ -13,6 +13,8 @@ Anything after `220027f` is on the branch only; pushing it to `main` publishes t
 Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.
 Then: "ABCDE can have different colors", and shown three palettes, "just the typical red most important, then orange yellow greeen blue"; "every tab should have the same dark background like this tab" (the widget gallery); and "background color should be slightly lighter".
 These replace the goal file's "light, one bright colour, red only for problems": the owner's later words win.
+Then, on 2026-10-23: "the app has too many words, each item, thing, description should have minimal words as possible", and "white nav bar keeps changing to background color when pressed or scrolled".
+So every visible string in the app was cut to the fewest words (the rules are in `docs/DESIGN.md`, Words), and the tab bar is now WilList's own solid white capsule: iOS 26's glass tab bar can't be made solid (pitfall 27).
 
 **What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, every tab on the widget gallery's slate (`#667C8F` to `#52667A`, words on it white) and every sheet on a light blue-grey (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, the letters in red, orange, yellow, green and blue from A to E, and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience.
@@ -21,12 +23,12 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
 - **Today:** the date in large bold type with how the day stands, then your A1 on a pale teal card: the letter and "Do this first", the title, Start (focus) and Mark done, and the streak.
   Mark done draws a line through the title, its words fade, and the next A rises into its place; Undo brings the last A back the same way.
-  After the last one the card says "Your A’s are done.", with the tick's burst, what got done and the streak.
+  After the last one the card says "A’s done", with the tick's burst, what got done and the streak.
   Before anything has a letter, the card asks "What matters most today?", with Letter them or Add your A1 (the widgets ask too); in the evening, with nothing left for today, a pale night card asks "What matters most tomorrow?" with Plan tomorrow.
-  Below: "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
+  Below: "N need a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
-- **Plan** (was Goals): main goal (Your goals opens on it, large in white on a teal card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
+- **Plan** (was Goals): main goal (Goals opens on it, large in white on a teal card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
   An empty Plan says "Give everything a letter" and shows the five letters in their colours with their names.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.

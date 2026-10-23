@@ -57,10 +57,16 @@ Your goals leads with the main goal set large in white on a teal card (or the qu
 
 ## Words
 
+As few words as do the job: on 2026-10-23 the owner said "each item, thing, description should have minimal words as possible".
+
 - Plain verbs, the user's words: "Remind me", "Add a due date", "Mark done", "Plan tomorrow", "Bring in a schedule".
-- Tracy's terms keep a plain explanation beside them: "A  Must do: serious consequences if not done".
-- No explanatory footers unless they help the user decide or act. Say a status only when it needs attention (no "On track").
-- Errors say what happened and what to do: "Notifications are off for WilList. Turn them on in the Settings app to get reminders."
+- Labels drop what the screen already says: "Starred on top", not "Move starred to-dos to top"; "7 to do, 1 overdue, 1 done" on Today, not "1 done today.".
+- Tracy's terms keep two plain words beside them: "A  Must do: serious consequences".
+- No explanatory footers. A footer is there only when it changes what the user does next ("50 min short. Raise daily study in More.").
+- Say a status only when it needs attention, in as few words as it takes: "2 sessions behind", "Missed yesterday", never "On track".
+- An empty card gets a short bold title and its one button, never a paragraph: "Give everything a letter", "No more cramming", "What matters most today?".
+- Errors say what to do: "Turn on notifications for WilList in Settings."
+- Fragments, not sentences, in labels and statuses; no full stop after a fragment ("3-day streak", "Dashed line: 2 h a day").
 - Never the em dash.
 - Typographic apostrophes and quotes in everything the app says: "What’s", “this”, never the typewriter ' and ".
 
@@ -74,6 +80,9 @@ Each screen has one job and one primary action.
 | Plan | Your main goal, the day in ABCDE order with the A1 first, items needing a letter, then Plan tomorrow and Bring in a schedule | Give each item a letter |
 | Study | Today's study sessions, this week's load, exams and deadlines coming up | Tick a session |
 | More | Settings, calendar links, the Claude key, backups | (none) |
+
+The four tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
+The chosen tab is in the deep teal on a pale teal pill.
 
 Search (magnifying glass) sits on Today, Plan and Study and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
@@ -144,7 +153,7 @@ No decorative or entrance animation.
 4. **"Expression too complex"**: split long expressions; do mutating calls before `#expect` or `#require`, never inside them.
 5. **`store.change { $0.addTodo(...) }`** must discard results it doesn't use: `{ _ = $0.addTodo(...) }`.
 6. **Joining `Text`:** use interpolation, `Text("\(a)   \(b)")`. `Text + Text` is deprecated on iOS 26.
-7. **iOS 26 only APIs** (`glassEffect`, `tabBarMinimizeBehavior`) go through the gated helpers `floating()` and `minimizingTabBar()` in `Theme.swift`; the deployment target is iOS 18.
+7. **iOS 26 only APIs** (`glassEffect`, `scrollEdgeEffectStyle`) go through gated helpers (`floating()`, `HardTopEdge`) in `Theme.swift`; the deployment target is iOS 18.
 8. **Notifications:** iOS keeps at most 64 pending, so `Reminders.sync` schedules the soonest 60 and re-syncs whenever the plan changes (`.task(id: Reminders.due(...))` in `RootView`). Permission is asked only when someone sets a reminder or turns on the badge, never at launch.
 9. **Simulator:** a permission prompt from an earlier run keeps reappearing even after reinstalling; `xcrun simctl erase <device>` clears it. The first launch after an install takes a few seconds; `npm run ios:shots` waits five.
 10. **Wide-screen margins:** `.safeAreaPadding` on a `NavigationStack` reaches neither its bar nor its lists, so the column is `.contentMargins(.horizontal, ..., for: .scrollContent)` on each list.
@@ -183,3 +192,8 @@ No decorative or entrance animation.
     Mark done on a reminder crashed WilList whenever it was running in the background; the method stays on the main actor, and `testMarkDoneFromAReminder` presses the reminder's Mark done on the simulator's Home Screen.
 26. **A see-through card on the ground:** a wash of teal laid straight on the blue-grey ground turns muddy, and painting white over the wash hides it.
     `HeroCard` paints the wash first and white behind it (`.background(wash).background(.white)`), so the card is opaque and pale teal everywhere.
+27. **The system tab bar can't stay white:** on iOS 26 the floating glass tab bar takes on the colour of whatever is under it, the slate or a card, and changes as you press or scroll.
+    `toolbarBackground(_:for: .tabBar)` and `UITabBarAppearance` backgrounds are ignored there.
+    WilList draws its own `TabBar` (in `WilListApp.swift`), a solid white capsule laid over the `TabView`; each tab hides the system's with `underTabBar()`.
+    The room for it is left by each screen's `toastHost()`, inside its navigation stack: a `safeAreaInset` outside a `NavigationStack` reaches neither its list nor its toast, so Undo sat behind the bar and the last rows couldn't scroll clear.
+    UI tests tap its buttons by identifier (`tab-today`), not through `app.tabBars`.

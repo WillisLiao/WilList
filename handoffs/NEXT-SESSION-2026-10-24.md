@@ -5,6 +5,8 @@ Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.m
 Done since the last version of this file: the owner answered the open decisions.
 `main` was merged at `5bd0878` and again at `220027f` (everything below), and the website is live at https://willisliao.github.io/WilList/; Lagoon is the one look, now laid out like its widgets at the owner's ask (every part on a white card, every tab on the gallery's deep slate and sheets on a light blue-grey, the softer teal `#347583`, system type, the A1 on a pale teal card, the letters red, orange, yellow, green and blue from A to E); there are no custom lists for now; and the iPhone and iPad now sync through iCloud (`CloudSync`, `PlanMerge`), not yet tried with a real account.
 Also: Mark done on a reminder no longer crashes the app (a UI test presses it on the Home Screen), and the Lock Screen widgets were checked on the real Lock Screen, where the ring now says what it counts.
+Since then (2026-10-23 into 10-24), at the owner's ask: every visible string was cut to the fewest words ("each item, thing, description should have minimal words as possible"), and the tab bar is WilList's own solid white capsule, because iOS 26's glass tab bar takes on the slate's colour when pressed or scrolled and can't be made solid (DESIGN pitfall 27).
+The app was installed on the owner's wired iPhone 15 Pro on 2026-10-23, before those two changes.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
 ## Start here
@@ -17,17 +19,18 @@ Work at the default text size; the owner asked not to spend time on the largest 
 ## Ask the owner first
 
 - Merging anything after `220027f` into `main`: it publishes the website again.
-- Installing on the devices (`npm run ios`) needs team `45MSS5RXML` signed in to Xcode (it had lost the credentials on 2026-10-23); this build registers the app group, the widget extension, Live Activities, the iCloud container and push.
+- Installing on the devices (`npm run ios`): team `45MSS5RXML` is signed in again and the Program License Agreement was accepted on 2026-10-23; this build registers the app group, the widget extension, Live Activities, the iCloud container and push.
 - The iPad layout: a sidebar or two columns instead of a centred column.
 
 ## Work, roughly in order of value
 
-- **iCloud sync on two real devices**, once the owner's Apple ID is back: install on the iPhone and the iPad, then check the first sync joins both plans, a tick on one shows on the other within seconds with the app in the background, and an edit made on both while offline merges.
+- **iCloud sync on two real devices**, now that the owner's Apple ID is back: install on the iPhone and the iPad, then check the first sync joins both plans, a tick on one shows on the other within seconds with the app in the background, and an edit made on both while offline merges.
   CloudKit's dashboard (icloud.developer.apple.com) shows the `Plan` record in the `WilList` zone of the private database.
   Push needs the `aps-environment` entitlement, already in `WilList.entitlements`.
-- **Show the owner the slate tabs and letter colours on a device** and ask how they feel there; the simulator shots looked right, but the slate's lightness is a taste call worth seeing in hand (it can't get much lighter without small white words falling under 4.5:1).
+- **Install the latest build on the iPhone and iPad** and ask the owner how the white tab bar and the shorter words feel in hand; the slate's lightness is a taste call too (it can't get much lighter without small white words falling under 4.5:1).
+- **Words, a second pass:** the first pass cut every footer and sentence it could; look again for anything still longer than it needs to be, the website included only if the owner asks.
 - **The A1 card on the slate** reads a little greyer than the white cards around it; it is the pale teal A1 widget the owner liked, so only change it if the owner says so (variations side by side: white with the red chip, or filled teal).
-- **Look at Lagoon with fresh eyes again** after the next real change: on the evening of 2026-10-23 every tab, Today's empty, evening and first-run states, the welcome's three steps, Plan tomorrow's steps, the to-do and item sheets, New exam or test, Bring in a schedule, Search, Your goals, and Today and Plan on the iPad were shot and looked at, and nothing read as a flaw at the default text size.
+- **Look at Lagoon with fresh eyes again** after the next real change: on the evening of 2026-10-23 every tab, Today's empty, evening and first-run states, the welcome's three steps, Plan tomorrow's steps, the to-do and item sheets, New exam or test, Bring in a schedule, Search, Goals, and Today and Plan on the iPad were shot and looked at, and nothing read as a flaw at the default text size.
   Show the owner side by side when it's a taste call.
 - **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.

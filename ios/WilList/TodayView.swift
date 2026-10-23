@@ -243,7 +243,9 @@ struct TodayView: View {
     private func summary(_ toDo: Int) -> String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
         let doneToday = completed.filter { $0.doneAt == today }.count + doneOn(store.state.items, today).count
-        var parts = [toDo == 0 ? (doneToday == 0 ? "Add what you need to do, one line each" : "All clear") : "\(toDo) to do"]
+        // An empty day says so plainly: the card below asks what matters most, and the line under
+        // "Add a to-do" shows how to write one.
+        var parts = [toDo == 0 ? (doneToday == 0 ? "Nothing for today yet" : "All clear") : "\(toDo) to do"]
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done today") }
         return parts.joined(separator: ", ") + "."

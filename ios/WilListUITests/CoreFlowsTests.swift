@@ -15,8 +15,7 @@ final class CoreFlowsTests: XCTestCase {
     func testAddATodoAndTickItOff() {
         let app = launch(plan: "empty")
         add("Buy stamps", in: app)
-        app.buttons["Mark done"].firstMatch.tap()
-        XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.buttons["Mark done"].firstMatch, shows: app.staticTexts["Completed"]))
         XCTAssertTrue(app.buttons["Done"].exists, "the to-do's circle is filled")
     }
 
@@ -24,24 +23,22 @@ final class CoreFlowsTests: XCTestCase {
         let app = launch(plan: "empty")
         // Before anything has a letter, Today asks what matters most, and adding it starts with an A.
         XCTAssertTrue(app.staticTexts["What matters most today?"].waitForExistence(timeout: wait))
-        app.buttons["Add your A1"].tap()
         let field = app.textFields["What and when"]
-        XCTAssertTrue(field.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.buttons["Add your A1"], shows: field))
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'A:'")).firstMatch.isSelected, "A is chosen")
         field.typeText("Write the essay intro\n")
-        app.navigationBars.buttons["Done"].tap()
-        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: wait), "it leads the day on the A1 card")
+        XCTAssertTrue(tap(app.navigationBars.buttons["Done"], shows: app.buttons["markA1Done"]), "it leads the day on the A1 card")
         XCTAssertTrue(title("Write the essay intro", in: app).exists)
     }
 
     func testSetAReminderOnATodo() {
         let app = launch(plan: "empty")
         add("Call the dentist", in: app)
-        app.staticTexts["Call the dentist"].tap()
         let remind = app.buttons["Remind me"]
-        XCTAssertTrue(remind.waitForExistence(timeout: wait))
-        remind.tap()
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tomorrow'")).firstMatch.tap()
+        XCTAssertTrue(tap(app.staticTexts["Call the dentist"], shows: remind))
+        let tomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tomorrow'")).firstMatch
+        XCTAssertTrue(tap(remind, shows: tomorrow))
+        tomorrow.tap()
         allowNotifications()
         XCTAssertTrue(app.staticTexts["Remind me at 9:00\u{202F}AM"].waitForExistence(timeout: wait)
                       || app.staticTexts["Remind me at 9:00 AM"].exists)
@@ -69,13 +66,12 @@ final class CoreFlowsTests: XCTestCase {
     func testGiveATodoALetter() {
         let app = launch(plan: "empty")
         add("Email the TA", in: app)
-        app.staticTexts["Email the TA"].tap()
         let give = app.buttons["Give it a letter"]
-        XCTAssertTrue(give.waitForExistence(timeout: wait))
-        give.tap()
-        app.buttons.matching(NSPredicate(format: "label CONTAINS 'Must do'")).firstMatch.tap()
+        XCTAssertTrue(tap(app.staticTexts["Email the TA"], shows: give))
+        let mustDo = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Must do'")).firstMatch
+        XCTAssertTrue(tap(give, shows: mustDo))
         // Back on Today it is the A1, on the card.
-        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(mustDo, shows: app.buttons["markA1Done"]))
         XCTAssertTrue(title("Email the TA", in: app).exists)
     }
 
@@ -90,23 +86,18 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(gone(title("Read chapter 4", in: app)), "the essay intro is back in the card")
         XCTAssertTrue(title("Write the essay intro", in: app).exists)
         // Done again: the next A moves up into the card and the finished one leaves Today.
-        app.buttons["markA1Done"].tap()
-        XCTAssertTrue(title("Read chapter 4", in: app).waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.buttons["markA1Done"], shows: title("Read chapter 4", in: app)))
         XCTAssertTrue(gone(title("Write the essay intro", in: app)))
         // The last A done, the card says so.
-        app.buttons["markA1Done"].tap()
-        XCTAssertTrue(app.staticTexts["Your A’s are done."].waitForExistence(timeout: wait), "the card says the A’s are done")
+        XCTAssertTrue(tap(app.buttons["markA1Done"], shows: app.staticTexts["Your A’s are done."]), "the card says the A’s are done")
     }
 
     func testFocusOnTheA1() {
         let app = launch(plan: "a1")
-        app.buttons["Start"].tap()
-        XCTAssertTrue(app.staticTexts["One thing. Stay with it until it’s done."].waitForExistence(timeout: wait))
-        app.buttons["Pause"].tap()
-        XCTAssertTrue(app.buttons["Resume"].waitForExistence(timeout: wait))
-        app.buttons["focusDone"].tap()
+        XCTAssertTrue(tap(app.buttons["Start"], shows: app.staticTexts["One thing. Stay with it until it’s done."]))
+        XCTAssertTrue(tap(app.buttons["Pause"], shows: app.buttons["Resume"]))
         // The focus screen closes on Today, where the next A has moved up into the card.
-        XCTAssertTrue(gone(title("Write the essay intro", in: app)))
+        XCTAssertTrue(tap(app.buttons["focusDone"], hides: title("Write the essay intro", in: app)))
         XCTAssertTrue(title("Read chapter 4", in: app).exists)
     }
 
@@ -117,38 +108,32 @@ final class CoreFlowsTests: XCTestCase {
         first.tap()
         first.typeText("Write the lab report\n")
         app.textFields["And next?"].typeText("Email Prof. Chen\n")
-        app.buttons["Next"].tap()
+        XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         choose(app.buttons["Write the lab report"], in: app)
-        app.buttons["Make it my A1"].tap()
-        app.buttons["Start"].tap()
-        XCTAssertTrue(app.buttons["markA1Done"].waitForExistence(timeout: wait), "Today opens on the A1 card")
+        XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.buttons["Start"]))
+        XCTAssertTrue(tap(app.buttons["Start"], shows: app.buttons["markA1Done"]), "Today opens on the A1 card")
         XCTAssertTrue(title("Write the lab report", in: app).exists)
         // The other line waits for a letter, one tap away.
-        app.buttons["1 waiting for a letter"].tap()
-        XCTAssertTrue(app.staticTexts["Email Prof. Chen"].waitForExistence(timeout: wait))
-        app.buttons["B, Should do. Mild consequences"].tap()
-        XCTAssertTrue(app.staticTexts["All lettered"].waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.buttons["1 waiting for a letter"], shows: app.staticTexts["Email Prof. Chen"]))
+        XCTAssertTrue(tap(app.buttons["B, Should do. Mild consequences"], shows: app.staticTexts["All lettered"]))
         XCTAssertTrue(app.staticTexts["Your A1 is \u{201C}Write the lab report\u{201D}."].exists)
-        app.buttons["Done"].tap()
-        XCTAssertTrue(gone(app.buttons["1 waiting for a letter"]))
+        XCTAssertTrue(tap(app.buttons["Done"], hides: app.buttons["1 waiting for a letter"]))
     }
 
     func testPlanTomorrowPicksTheA1() {
         let app = launch(plan: "a1", tab: "plan")
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch.tap()
+        let planTomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch
         let field = app.textFields["Read chapter 5 by Friday"]
-        XCTAssertTrue(field.waitForExistence(timeout: wait), "Plan tomorrow opens on its first step")
+        XCTAssertTrue(tap(planTomorrow, shows: field), "Plan tomorrow opens on its first step")
         field.typeText("Buy a lab notebook\n")
-        app.buttons["Next"].tap()
+        XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         // Tomorrow's list, its A1 already chosen; the other A becomes the A1 instead.
         choose(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch, in: app)
-        app.buttons["Make it my A1"].tap()
-        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: wait), "it ends on tomorrow's A1")
+        XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]), "it ends on tomorrow's A1")
         XCTAssertTrue(title("Read chapter 4", in: app).exists, "the chosen one is tomorrow's A1")
         XCTAssertTrue(app.staticTexts["1 still waits for a letter."].exists, "the line written waits for a letter")
-        app.buttons["Done"].tap()
-        app.tabBars.buttons["Today"].tap()
-        XCTAssertTrue(title("Read chapter 4", in: app).waitForExistence(timeout: wait), "Today's card shows the new A1")
+        XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["Tomorrow starts with"]))
+        XCTAssertTrue(tap(app.tabBars.buttons["Today"], shows: title("Read chapter 4", in: app)), "Today's card shows the new A1")
         XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")
     }
 
@@ -156,32 +141,26 @@ final class CoreFlowsTests: XCTestCase {
         let app = launch(plan: "empty", night: true)
         // In the evening, with nothing left for today, Today turns to tomorrow.
         XCTAssertTrue(app.staticTexts["What matters most tomorrow?"].waitForExistence(timeout: wait))
-        app.buttons["Plan tomorrow"].tap()
         let field = app.textFields["Read chapter 5 by Friday"]
-        XCTAssertTrue(field.waitForExistence(timeout: wait), "Plan tomorrow opens on its first step")
+        XCTAssertTrue(tap(app.buttons["Plan tomorrow"], shows: field), "Plan tomorrow opens on its first step")
         field.typeText("Buy a lab notebook\n")
-        app.buttons["Next"].tap()
+        XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         choose(app.buttons["Buy a lab notebook"], in: app)
-        app.buttons["Make it my A1"].tap()
-        XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: wait))
-        app.buttons["Done"].tap()
+        XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]))
         // Back on Today the line leads the card: with no date, it counts from now on.
-        XCTAssertTrue(gone(app.staticTexts["What matters most tomorrow?"]))
+        XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["What matters most tomorrow?"]))
         XCTAssertTrue(title("Buy a lab notebook", in: app).exists, "the new A1 is on the card")
     }
 
     func testSearchFindsATodo() {
         let app = launch(plan: "busy")
-        app.buttons["Search"].tap()
         // Ready to type as soon as it opens: typing fails unless the field has the keyboard.
         let field = app.searchFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.buttons["Search"], shows: field))
         field.typeText("stamps")
-        app.buttons["Buy stamps"].tap()
         let details = app.navigationBars["To-do"]
-        XCTAssertTrue(details.waitForExistence(timeout: wait))
-        details.buttons["Done"].tap()
-        XCTAssertTrue(gone(details), "the to-do's details close")
+        XCTAssertTrue(tap(app.buttons["Buy stamps"], shows: details))
+        XCTAssertTrue(tap(details.buttons["Done"], hides: details), "the to-do's details close")
         // The X beside the field closes Search.
         XCTAssertTrue(tap(app.buttons["Close"]) { gone(field) }, "the X closes Search")
         XCTAssertTrue(app.textFields["Add a to-do"].exists)
@@ -202,7 +181,7 @@ final class CoreFlowsTests: XCTestCase {
     private func add(_ line: String, in app: XCUIApplication) {
         let field = app.textFields["Add a to-do"]
         XCTAssertTrue(field.waitForExistence(timeout: wait))
-        field.tap()
+        XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
         field.typeText("\(line)\n")
         XCTAssertTrue(app.staticTexts[line].waitForExistence(timeout: wait))
     }
@@ -225,6 +204,17 @@ final class CoreFlowsTests: XCTestCase {
         return happened()
     }
 
+    /// Taps, tried once more if `result` hasn't appeared (see above): every tap that opens or
+    /// changes a screen goes through here, as a lost one failed a run on 2026-10-23 too.
+    private func tap(_ button: XCUIElement, shows result: XCUIElement) -> Bool {
+        tap(button) { result.waitForExistence(timeout: wait) }
+    }
+
+    /// Taps, tried once more if `result` hasn't gone.
+    private func tap(_ button: XCUIElement, hides result: XCUIElement) -> Bool {
+        tap(button) { gone(result) }
+    }
+
     /// A to-do or item title as it shows. A title set large may join its last two words with a
     /// no-break space (`Fmt.noWidow`), so it matches either way. (A regular expression did too, but
     /// took 20 seconds on a busy CI machine.)
@@ -244,7 +234,6 @@ final class CoreFlowsTests: XCTestCase {
     private func choose(_ row: XCUIElement, in app: XCUIApplication) {
         XCTAssertTrue(gone(app.keyboards.firstMatch), "the keyboard goes down")
         XCTAssertTrue(row.waitForExistence(timeout: wait), "the row is there")
-        row.tap()
-        XCTAssertTrue(row.wait(for: \.isSelected, toEqual: true, timeout: wait), "the row tapped is the one chosen")
+        XCTAssertTrue(tap(row) { row.wait(for: \.isSelected, toEqual: true, timeout: wait) }, "the row tapped is the one chosen")
     }
 }

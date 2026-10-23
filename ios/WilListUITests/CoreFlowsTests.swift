@@ -154,9 +154,11 @@ final class CoreFlowsTests: XCTestCase {
 
     func testSearchFindsATodo() {
         let app = launch(plan: "busy")
-        // Ready to type as soon as it opens: typing fails unless the field has the keyboard.
+        // Ready to type as soon as it opens: typing fails unless the field has the keyboard, which a
+        // slow CI simulator hands it a moment after the field shows (it failed a run on 2026-10-24).
         let field = app.searchFields.firstMatch
         XCTAssertTrue(tap(app.buttons["Search"], shows: field))
+        wait(for: [expectation(for: NSPredicate(format: "hasKeyboardFocus == true"), evaluatedWith: field)], timeout: wait)
         field.typeText("stamps")
         let details = app.navigationBars["To-do"]
         XCTAssertTrue(tap(app.buttons["Buy stamps"], shows: details))

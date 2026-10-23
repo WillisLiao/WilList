@@ -9,7 +9,7 @@ Read it first; update the top section at the end of every substantial session.
 `main` is 38 commits behind and still holds the older website-only version.
 Merging into `main` also runs the GitHub Pages deploy (Pages isn't enabled on the repo yet), so the owner decides when; ask first.
 
-**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, with a green accent (`#12884A`) and a colour for each course.
+**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, with a green accent (`#0F8044`, deepened from `#12884A` on 2026-10-23 so white words and the status bar read on it) and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience; the colour work below is the first answer.
 
 - **First run:** three short steps, each question in white on the green field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
@@ -17,6 +17,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Today:** your A1 as the poster of the day: a field of its course's colour (green without a course) across the top, running up under the status bar, with the date, the title in 44 pt bold serif, **Start** (focus) and **Mark done**.
   Mark done draws a line through the title, its words fade, and the next A rises into its place while the field blends into the next course's colour.
   After the last one the poster stays green and says "Your A’s are done.", with what got done and the streak.
+  Before anything has a letter, the poster asks "What matters most today?", with Letter them or Add your A1 (the widgets ask too).
   Below: "N waiting for a letter" (one tap letters them); the quick checklist (typed dates are read, five sorts, stars, completed); then anything from Plan and Study added to Today.
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, teal, raspberry, ochre, slate, green), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
@@ -48,7 +49,7 @@ Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 Signing is blocked until the owner accepts Apple's latest Program License Agreement in the developer account (Xcode reports "PLA Update available"); compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
 
-**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 9 UI tests (add and tick, a reminder, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
+**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 10 UI tests (add and tick, adding the A1 from an empty Today, a reminder, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 The poster's Mark done and the colour change to the next course were checked frame by frame in screen recordings.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.

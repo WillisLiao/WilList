@@ -40,7 +40,9 @@ final class AuditTests: XCTestCase {
                 XCTFail("\(screen.name): \(issue.compactDescription), \(issue.element?.debugDescription ?? "")")
                 return true
             }
-            app.terminate()
+            // No terminate(): the next launch closes this one. On CI, with the focus Live Activity
+            // up, the runner lost track of the app it had just closed, waited a minute and failed
+            // (2026-10-23, "Failed to terminate com.lull.willist:0").
         }
     }
 

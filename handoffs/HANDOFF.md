@@ -3,7 +3,7 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-23, morning)
+## Now (2026-10-23, afternoon)
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed, CI green (Swift core tests, the app build with its UI tests, the website tests).
 `main` is 38 commits behind and still holds the older website-only version.

@@ -40,7 +40,8 @@ Your goals leads with the main goal set large in white on a green card (or the q
 
 - Screen titles: New York (the system serif), bold. Set once for every navigation bar in `AppDelegate`, and used by hand for Today's date header.
 - The A1 card title and the main goal also use the serif, so the most important words on the screen share one voice.
-- A title set large never leaves its last word alone on a line: `Fmt.noWidow` joins the last two words with a no-break space ("Write the / essay intro"). Don't add an accessibility label to fix the spoken text: VoiceOver reads the no-break space as a space, and a label on the Text splits it into two elements, read twice.
+- A title set large never leaves its last word alone on a line: `Fmt.noWidow` joins the last two words with a no-break space ("Write the / essay intro").
+  Don't add an accessibility label to fix the spoken text: VoiceOver reads the no-break space as a space, and a label on the Text splits it into two elements, read twice.
 - Everything else: SF system text styles (`.body`, `.subheadline`, `.footnote`), so Dynamic Type works.
 - Sentence case everywhere. No all-caps labels.
 

@@ -117,5 +117,5 @@ extension FocusAttributes {
 
 extension Color {
     /// The app's teal lifted for the black of the Dynamic Island.
-    static let brandOnDark = Color(hex: 0x3CC8D8)
+    static let brandOnDark = Color(hex: 0x7FC3CF)
 }

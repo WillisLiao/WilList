@@ -7,11 +7,12 @@ Read it first; update the top section at the end of every substantial session.
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
 `main` was fast-forwarded to `5bd0878` on 2026-10-23 with the owner's OK, and GitHub Pages is on: the website is live at https://willisliao.github.io/WilList/ (still the older website, as the owner chose).
-Everything after `5bd0878` (Lagoon, iCloud sync) is on the branch only; merging it into `main` publishes the website again, so ask first.
+Everything after `5bd0878` (Lagoon, iCloud sync, the widget-style cards) is on the branch only; merging it into `main` publishes the website again, so ask first.
 
 **The owner's answers (2026-10-23):** merge into `main` with the website as it is; keep the Lagoon look; no custom lists for now; sync the iPhone and iPad through iCloud.
+Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.
 
-**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look: one teal (`#057785`, `#04606B` with Increase Contrast), the system's own type, and a colour for each course.
+**What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, floating on a soft blue-grey ground (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience.
 
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
@@ -59,15 +60,16 @@ With the app open in the background it crashed the app until 2026-10-23 (the han
 
 The Lock Screen widgets were added to the simulator's real Lock Screen through its own editor and look right there.
 Mark done on the Lagoon card was checked frame by frame in a screen recording.
+The widget-style cards were shot and looked at on every tab, Today's empty and evening states, the first run, the welcome, Plan tomorrow, Focus, every sheet, the widgets, and Today, Plan, Study and More on the iPad.
 
 **Not yet checked on a real device:** iCloud sync between two devices, reminders arriving and their buttons, the badge, quick actions, the chime's volume, the widgets on a real Home and Lock Screen (the simulator holds a ticked line one to two seconds; a device may differ), the Live Activity and its Mark done.
 
 ## Open decisions for the owner
 
-Answered on 2026-10-23: `main` merged with the website as it is (done), Lagoon kept (done), no custom lists for now, iCloud sync wanted (built, untried on devices).
+Answered on 2026-10-23: `main` merged with the website as it is (done), Lagoon kept (done), no custom lists for now, iCloud sync wanted (built, untried on devices), the app laid out like its widgets in the softer teal (done).
 Still open:
 
-1. Merging the work since `5bd0878` (Lagoon, iCloud sync) into `main`: ask first, as it publishes the website.
+1. Merging the work since `5bd0878` (Lagoon, iCloud sync, the widget-style cards) into `main`: ask first, as it publishes the website.
 2. The website stays the older version for now; bringing it up to the app (the A1 card, focus, the sorter, the welcome, sync) is a later call.
 3. iPad: a sidebar or two columns (Today beside Plan) would use the space better than a centred column.
 

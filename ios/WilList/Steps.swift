@@ -209,7 +209,8 @@ struct A1Choice: View {
 
 /// The last page of a flow: a symbol and a few lines in the middle, its buttons at the bottom.
 /// When the lines don't fit (the largest text sizes), the middle scrolls instead of cutting words off.
-/// With a field, the whole page is that colour and its words white.
+/// With a field, the whole page is that colour and its words white; without, it lies on whatever
+/// the sheet is laid on.
 struct FinishPage<Middle: View, Buttons: View>: View {
     var field: Color?
     let symbol: String
@@ -232,7 +233,7 @@ struct FinishPage<Middle: View, Buttons: View>: View {
         .frame(maxWidth: 560)
         .frame(maxWidth: .infinity)
         .foregroundStyle(field == nil ? Color.primary : .white)
-        .background(field ?? .white)
+        .background(field ?? .clear)
         .task {
             try? await Task.sleep(for: .milliseconds(450))
             arrived = true

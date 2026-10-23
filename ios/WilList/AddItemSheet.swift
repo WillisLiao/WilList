@@ -71,6 +71,7 @@ struct AddItemSheet: View {
                     }
                 }
             }
+            .ground()
             .navigationTitle("New \(type.name.lowercased())")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

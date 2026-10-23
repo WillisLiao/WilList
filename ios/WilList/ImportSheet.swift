@@ -88,6 +88,7 @@ struct ImportSheet: View {
                 }
             }
         }
+        .ground()
     }
 
 
@@ -107,6 +108,7 @@ struct ImportSheet: View {
                 Button("Try something else") { phase = .choose }
             }
         }
+        .ground()
     }
 
     private var review: some View {
@@ -139,6 +141,7 @@ struct ImportSheet: View {
                 if let cost { Text("Reading it cost about \(cost.formatted(.currency(code: "USD").precision(.fractionLength(2...3)))) on your Anthropic account.") }
             }
         }
+        .ground()
         .safeAreaInset(edge: .bottom) {
             Button {
                 let chosen = keep.sorted().map { found[$0] }

@@ -2,14 +2,22 @@ import SwiftUI
 import UIKit
 import WilListCore
 
-// How WilList looks: Lagoon, the owner's pick of four on 2026-10-23. One teal for everything that
-// acts or is done, the system's own type, and the A1 on a pale teal card.
+// How WilList looks: Lagoon, the owner's pick of four on 2026-10-23, laid out like its widgets
+// (the owner liked those best): every part on a card of its own, floating on a soft blue-grey
+// ground. One soft teal for everything that acts or is done, the system's own type, and the A1
+// on a pale teal card.
 
 extension Color {
-    /// The one bright colour: ticks, the A, the primary button, set values, links. Deep enough to
-    /// read at 4.5:1 on white and on the A1's pale card, and to carry white words; darker still
-    /// with Increase Contrast.
-    static let brand = Color(hex: 0x057785, highContrast: 0x04606B)
+    /// The one colour: ticks, the A, the primary button, set values, links. The softer teal the
+    /// owner picked from a picture, still 5.2:1 on white and 4.6:1 on the A1's pale card, and
+    /// carrying white words; darker with Increase Contrast.
+    static let brand = Color(hex: 0x347583, highContrast: 0x285E69)
+
+    /// What every screen's cards float on, as the widgets float on a Home Screen.
+    static let ground = Color(hex: 0xDAE2E7)
+
+    /// The teal for words straight on the ground, deeper so they still read at 4.5:1 there.
+    static let brandOnGround = Color(hex: 0x285E69, highContrast: 0x1F4B54)
 
     nonisolated init(hex: UInt32) {
         self.init(red: Double(hex >> 16 & 0xFF) / 255, green: Double(hex >> 8 & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)

@@ -181,15 +181,17 @@ struct ReadableColumn: ViewModifier {
 }
 
 /// The A1 card's ground: a pale wash of its colour (the teal, or the night for the evening's
-/// question), paler still for an empty card.
+/// question) on white, paler still for an empty card, so it floats on the ground like the A1 widget.
 struct HeroCard: ViewModifier {
     var color: Color = .brand
     var empty = false
 
     func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         content
             .padding(18)
-            .background(color.opacity(empty ? 0.06 : 0.09), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .background(color.opacity(empty ? 0.06 : 0.09), in: shape)
+            .background(Color.white, in: shape)
     }
 }
 
@@ -205,6 +207,9 @@ struct WordsWhenLarge: LabelStyle {
 
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
+
+    /// A list's cards on the soft ground (`Color.ground`), as the widgets sit on a Home Screen.
+    func ground() -> some View { scrollContentBackground(.hidden).background(Color.ground) }
 
     func heroCard(_ color: Color = .brand, empty: Bool = false) -> some View { modifier(HeroCard(color: color, empty: empty)) }
 

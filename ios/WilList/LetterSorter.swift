@@ -36,7 +36,10 @@ struct LetterSorter: View {
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
-        .background(Color.white)
+        // The letters are cards on the ground, as everywhere else; words straight on it take the
+        // deeper teal.
+        .background(Color.ground)
+        .tint(Color.brandOnGround)
         .sensoryFeedback(.selection, trigger: at)
     }
 
@@ -147,7 +150,8 @@ struct LetterSorter: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
-            .background(current ? Color.brand.opacity(0.09) : Color(.secondarySystemBackground), in: shape)
+            .background(Color.brand.opacity(current ? 0.09 : 0), in: shape)
+            .background(Color.white, in: shape)
             .overlay { if letter == suggested && !current { shape.strokeBorder(Color.brand.opacity(0.45), lineWidth: 1.5) } }
             .contentShape(shape)
         }
@@ -184,6 +188,7 @@ struct LetterSorter: View {
         } buttons: {
             Button { dismiss() } label: { Text("Done").frame(maxWidth: .infinity) }
                 .buttonStyle(.borderedProminent)
+                .tint(Color.brand)
         }
     }
 

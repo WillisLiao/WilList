@@ -113,6 +113,7 @@ struct MoreView: View {
                     LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "")
                 }
             }
+            .ground()
             .readableColumn()
             .navigationTitle("More")
             .sheet(isPresented: $addingFeed) { AddFeedSheet() }
@@ -196,6 +197,7 @@ struct AddFeedSheet: View {
                     DisclosureGroup("Outlook") { Text("Settings, Calendar, Shared calendars, Publish a calendar. Copy the ICS link.") }
                 }
             }
+            .ground()
             .navigationTitle("Calendar link")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

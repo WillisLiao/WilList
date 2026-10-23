@@ -49,7 +49,8 @@ struct SearchView: View {
                     }
                 }
             }
-            .listStyle(.plain)
+            .listStyle(.insetGrouped)
+            .ground()
             .background(CloseWhenCancelled())
             .overlay {
                 if !words.isEmpty && todos.isEmpty && items.isEmpty {

@@ -44,6 +44,7 @@ struct GoalsList: View {
                 StreakDots(firstDone: store.state.meta.firstDone, today: store.today)
             }
         }
+        .ground()
         .readableColumn()
         .navigationTitle("Your goals")
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
@@ -130,6 +131,7 @@ struct PurposeEditor: View {
                     Text("Your one major definite purpose: the goal that would help you most if you reached it.")
                 }
             }
+            .ground()
             .navigationTitle("Main goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -174,6 +176,7 @@ struct GoalEditor: View {
                 Section("Who can help") { TextField("People to ask", text: $goal.people, axis: .vertical) }
                 Section("Your reward") { TextField("How you’ll celebrate", text: $goal.reward, axis: .vertical) }
             }
+            .ground()
             .navigationTitle(goal.id.isEmpty ? "New goal" : "Goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -53,7 +53,7 @@ struct PlanList: View {
                                 Text("Letter them").tapArea()
                             }
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(Color.brand)
+                            .foregroundStyle(Color.brandOnGround)
                             .buttonStyle(.borderless)
                         }
                     }
@@ -62,7 +62,9 @@ struct PlanList: View {
                 Section { planningRows }
                     .id("bottom")
             }
-            .listStyle(.plain)
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(.compact)
+            .ground()
             .readableColumn()
             #if DEBUG
             // `-scroll letters` or `-sheet add|import` on launch, for screenshots.
@@ -140,8 +142,10 @@ struct PlanList: View {
             }
         }
         .heroCard(empty: true)
+        // A card of its own on the ground, not one inside a section's.
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
     }
 
     private var emptyMessage: String {

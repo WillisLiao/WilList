@@ -12,6 +12,7 @@ The owner's two strongest pieces of feedback were "I'm lost when I look at the a
 Everything below serves calm, obvious screens and a satisfying tick.
 
 The look is Lagoon, the owner's pick of four on 2026-10-23 (Meadow, Frog, Notebook and Lagoon, shown side by side): one teal, the system's own type, and the A1 on a pale teal card.
+Later that day the owner said they liked the widget gallery better than the app, so the app is laid out like its widgets: every part on a white card of its own with rounded corners, floating on a soft blue-grey ground, in the softer teal from that picture.
 
 ## Colour
 
@@ -19,11 +20,13 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 
 | Token | Value | Used for, and only for |
 |---|---|---|
-| Paper | system white (plain `List`), system grouped grey in `Form`s | Backgrounds. Main tabs use plain white lists; settings and detail sheets use grouped forms. |
+| Ground | `Color.ground`, `#DAE2E7`, through `.ground()` in `Theme.swift` | What every list, form and sheet is laid on, as the widgets lie on a Home Screen. The guided flows and Focus keep their fields of colour. |
+| Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card, and the A1 card and the question cards are opaque cards of their own. |
 | Ink | `Color.primary` | Titles and body text. |
 | Grey | `Color.secondary`, `Color(.tertiaryLabel)` for empty circles and clear buttons | Secondary lines, metadata. |
-| Teal | `AccentColor` asset and `Color.brand` in `ios/Shared/Look.swift`, `#057785` (5.3:1 with white either way round, 4.7:1 on the A1's pale card; Lagoon was first drawn in `#0A8796`, which fell to 3.8:1 there); `#04606B` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links, tappable rows and toolbar buttons. |
-| Pale teal | teal at 9% (the A1 card and the A1 widgets), 6% (an empty card), 12% (the Letter button) | Emphasis that must stay quiet. |
+| Teal | `AccentColor` asset and `Color.brand` in `ios/Shared/Look.swift`, `#347583`, the softer teal the owner picked from the widget gallery (5.2:1 with white either way round, 4.6:1 on the A1's pale card); `#285E69` with Increase Contrast | Ticks, the A letter, the one primary button per screen, set values (a reminder that is on), links, tappable rows and toolbar buttons. |
+| Teal on the ground | `Color.brandOnGround`, `#285E69` (`#1F4B54` with Increase Contrast) | Words straight on the ground, where the teal falls to 4.0:1 and this holds 5.5:1: "Letter them" beside a section's title, the letter sorter's Close and Skip for now. |
+| Pale teal | teal at 9% over white (the A1 card, the A1 widgets, the chosen letter), 6% (an empty card), 12% (the Letter button) | Emphasis that must stay quiet. |
 | Red | `Color.red` | Problems only: overdue, a day over the study budget, behind or short of time. |
 | Course colours | `CourseColor.all` in `ios/Shared/Look.swift`: blue, tangerine, plum, green, raspberry, ochre, slate, then the teal; each holds white text at 4.5:1 | A course's own colour, like a highlighter per class. The plan keeps each course's number (`settings.courseColors`, given by `AppState.colorCourses`), so a course keeps its colour on every device and the website. |
 
@@ -69,6 +72,9 @@ Each screen has one job and one primary action.
 Search (magnifying glass) sits on Today, Plan and Study and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
 
+Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 card, each nudge (letters waiting, Plan tomorrow) on a card of its own, then the to-dos with Add a to-do at their top, then each group.
+Section titles and footers stay on the ground between the cards, in the system grey.
+
 On a wide screen (iPad) every list keeps to a centred 700 pt column (`readableColumn()`).
 There the highlighted tab names the screen, so a tab's own title steps aside, and a pushed screen's title sits centred above the column.
 
@@ -82,7 +88,7 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in More). The row waits 450 ms filled, then glides away.
 - **LetterMark:** letters differ by intensity, not hue. A is filled teal with a white letter, B is outlined in ink, C is grey, D is dashed (someone else does it), E is struck through. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
 - **StarButton:** grey outline, filled teal when important.
-- **A1 card** (`A1Card.swift`, at the top of Today under the date): pale teal, corner radius 22, with the letter and "Do this first", the title in `.title2` semibold, at most two lines under it, "Start" (bordered) beside a wide "Mark done", and "3 days in a row you started with an A" when there is a streak.
+- **A1 card** (`A1Card.swift`, at the top of Today under the date): pale teal over white (`heroCard()`), corner radius 22, with the letter and "Do this first", the title in `.title2` semibold, at most two lines under it, "Start" (bordered) beside a wide "Mark done", and "3 days in a row you started with an A" when there is a streak.
   Mark done fills the button's check and says Done at once, draws a line through the title left to right, and fades its words.
   Then the card takes the next A's height in one step while it is empty, and the next A's words rise into place; the toast offers Undo, which brings the last A back the same way.
   After the day's last A (nothing lettered left for today), the card stays and says "Your A’s are done." with a check and its burst, how many things got done today and the streak; the last card fades out whole first, so nothing ghosts through.
@@ -168,3 +174,5 @@ No decorative or entrance animation.
     The poster's change isn't animated; the card brings its words in itself, `.transaction(value: row.key) { $0.animation = nil }` keeps any other animated change (Undo) off them, and the field's colours never animate.
 25. **An async notification delegate off the main actor:** a `nonisolated async` `userNotificationCenter(_:didReceive:)` finishes off the main thread, and UIKit stops the app when the completion handler it calls then runs there.
     Mark done on a reminder crashed WilList whenever it was running in the background; the method stays on the main actor, and `testMarkDoneFromAReminder` presses the reminder's Mark done on the simulator's Home Screen.
+26. **A see-through card on the ground:** a wash of teal laid straight on the blue-grey ground turns muddy, and painting white over the wash hides it.
+    `HeroCard` paints the wash first and white behind it (`.background(wash).background(.white)`), so the card is opaque and pale teal everywhere.

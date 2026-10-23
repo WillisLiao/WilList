@@ -66,8 +66,9 @@ struct TodayView: View {
         let tonight = asking && store.evening && !planned
         NavigationStack {
             List {
+                // The date sits straight on the ground; the A1 and everything under it are cards.
                 header(first: first, fromPlan: fromPlan)
-                    .padding(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
+                    .padding(EdgeInsets(top: 12, leading: 4, bottom: 16, trailing: -4))
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
@@ -83,16 +84,16 @@ struct TodayView: View {
                         NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
                     }
                 }
-                .padding(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
                 .listRowSeparator(.hidden)
                 .listRowInsets(EdgeInsets())
                 .listRowBackground(Color.clear)
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && !planned && !tonight {
-                    nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true }
+                    Section { nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true } }
                 } else if waiting > 0 && !asking {
-                    nudge("\(waiting) waiting for a letter", action: letterThem)
+                    Section { nudge("\(waiting) waiting for a letter", action: letterThem) }
                 }
+                // The checklist on one card, Add a to-do at its top, as on the Today widget.
                 Section {
                     addRow
                     // A list with no to-dos yet shows what a line can say.
@@ -103,13 +104,12 @@ struct TodayView: View {
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 4, leading: 66, bottom: 4, trailing: 20))
                     }
+                    if sort != .due { rows(open, movable: sort == .manual) }
                 }
                 if sort == .due {
                     ForEach(dueGroups, id: \.name) { group in
                         Section(group.name) { rows(group.todos, movable: false) }
                     }
-                } else {
-                    Section { rows(open, movable: sort == .manual) }
                 }
                 if !fromPlan.isEmpty {
                     Section("From Plan and Study") {
@@ -134,7 +134,9 @@ struct TodayView: View {
                     }
                 }
             }
-            .listStyle(.plain)
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(.compact)
+            .ground()
             .readableColumn()
             .scrollDismissesKeyboard(.interactively)
             .toolbar(.hidden, for: .navigationBar)
@@ -209,8 +211,7 @@ struct TodayView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 4, trailing: 20))
+        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
     }
 
     private var tools: some View {

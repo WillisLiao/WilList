@@ -26,7 +26,8 @@ struct StudyView: View {
         }
         guard names.keys.contains(where: { $0 != nil }) else { return nil }
         return Fmt.meta(names.sorted { ($0.key ?? .max) < ($1.key ?? .max) }.map { color, name in
-            Text("\(Text(Image(systemName: "circle.fill")).font(.system(size: 9)).baselineOffset(1).foregroundStyle(CourseColor.of(color))) \(name)")
+            // No-break spaces, so a dot never ends a line without its name.
+            Text("\(Text(Image(systemName: "circle.fill")).font(.system(size: 9)).baselineOffset(1).foregroundStyle(CourseColor.of(color)))\u{00A0}\(name.replacingOccurrences(of: " ", with: "\u{00A0}"))")
         })
     }
 
@@ -67,7 +68,9 @@ struct StudyView: View {
                     }
                 }
             }
-            .listStyle(.plain)
+            .listStyle(.insetGrouped)
+            .listSectionSpacing(.compact)
+            .ground()
             .readableColumn()
             .navigationTitle("Study")
             .toolbar {
@@ -104,8 +107,10 @@ struct StudyView: View {
             .controlSize(.large)
         }
         .heroCard(empty: true)
+        // A card of its own on the ground, not one inside a section's.
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 12, trailing: 16))
+        .listRowInsets(EdgeInsets())
+        .listRowBackground(Color.clear)
     }
 
     private func sessionRow(_ row: Row) -> some View {

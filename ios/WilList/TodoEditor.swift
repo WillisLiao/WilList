@@ -78,6 +78,7 @@ struct TodoEditor: View {
                 Text(created(todo))
             }
         }
+        .ground()
         .confirmationDialog("Delete \u{201C}\(todo.title)\u{201D}?", isPresented: $asking, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { delete(todo) }
         }

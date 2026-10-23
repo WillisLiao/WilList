@@ -3,6 +3,7 @@
 The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
 Done since the last version of this file: the A1 as the poster of the day, a colour for each course (the poster, Focus and its Live Activity, the widget, course names, the week chart), the welcome and Plan tomorrow on fields of colour, "Your A’s are done." after the last A, the field reaching the edges on an iPad, and the owner's word that there are no fixed rules.
+Later the same day: step pages that change cleanly and a sunrise into Plan tomorrow's last page, Your goals led by the main goal on a green card, Today asking "What matters most today?" before anything has a letter (and turning night in the evening to ask about tomorrow), a deeper green (`#0F8044`) that holds 5:1 and gets a white status bar, no lone word on a large title's last line, Focus filling like a glass instead of a ring, and the tick's burst on "Your A’s are done.".
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
 ## Start here
@@ -20,7 +21,7 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Work, roughly in order of value
 
-- **Ask the owner how the colour lands** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: Plan's and Study's session rows don't name their course yet (a coloured mark could tie them to the chart and the poster), and the field could change colour with a wipe instead of a blend.
+- **Ask the owner how the colour, the evening poster and the focus tide land** (before-and-after pictures were sent on 2026-10-23), then keep going where colour means something: Plan's and Study's session rows don't name their course yet (a coloured mark could tie them to the chart and the poster), and the field could change colour with a wipe instead of a blend.
   Shoot every change and look at it; show the owner side by side when it's a taste call.
 - **The colour change between courses** blends through a muddy middle for a tenth of a second (the colours mix in RGB); a quicker hand-over or a different blend may look cleaner.
 
@@ -28,6 +29,8 @@ Work at the default text size; the owner asked not to spend time on the largest 
   In the simulator, `xcrun simctl push <device> com.lull.willist payload.json` with `"category": "task"` and an `"id"` delivers a reminder, and XCUITest on SpringBoard can press its buttons.
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.
 - **iPad:** a sidebar or two columns (Today beside Plan) would use the space far better than a centred column; ask the owner.
+- **The Lock Screen Live Activity** still shows a bar and the Dynamic Island a ring; ActivityKit can only animate system timer views, so the focus tide can't follow there as it is.
+- **The app icon** is drawn from `#12884A` (`scripts/app-icon.swift`); the accent is now `#0F8044`. The gradient hides the difference, but regenerate it if the icon is touched again.
 - **The website,** only if the owner says so.
 
 ## Notes
@@ -36,7 +39,8 @@ Work at the default text size; the owner asked not to spend time on the largest 
 - Course colours are stored in the plan (`settings.courseColors`); `AppState.colorCourses` runs on every change and when a plan is loaded, so a plan from the website gets colours on its first load.
 
 - The simulator used here is in Chinese (Taiwan), so SpringBoard's buttons have Chinese labels; `WidgetTests` accepts both.
-- The Claude Code iOS Simulator tool reported Xcode as not selected although `xcode-select -p` was right; XCUITest and `simctl` worked instead.
+- The Claude Code iOS Simulator tool reports Xcode as not selected; the fix needs the owner's password (`sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`). XCUITest probes (a temporary test that attaches `XCUIScreen` shots, exported with `xcrun xcresulttool export attachments`) and `simctl` work meanwhile.
+- `@AppStorage` values such as `plannedFor` live in the app's preferences on the simulator, not in the plan: pass `-plannedFor x` to shots that need tomorrow unplanned. UI tests start from default settings (`TestPlan` clears them).
 
 ## Before you finish
 

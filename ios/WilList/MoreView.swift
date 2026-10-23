@@ -103,7 +103,9 @@ struct MoreView: View {
                 } header: {
                     Text("Your data")
                 } footer: {
-                    Text(restoreError ?? "Everything stays on this device.")
+                    Text(restoreError ?? (CloudSync.shared.available
+                        ? "Your plan is the same on every iPhone and iPad signed in to your iCloud."
+                        : "Everything stays on this device. Sign in to iCloud in the Settings app to have your plan on your iPhone and iPad."))
                 }
 
                 Section {

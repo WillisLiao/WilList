@@ -81,6 +81,16 @@ final class Store {
         let data = try? JSONEncoder().encode(state), url = file
         writer.async { try? data?.write(to: url, options: .atomic) }
         reloadWidgets()
+        CloudSync.shared.planChanged()
+    }
+
+    /// Takes in the plan as merged with the other devices' (CloudSync). Undo would bring back what
+    /// another device changed, so it goes.
+    func takeSynced(_ synced: AppState) {
+        guard synced != state else { return }
+        change { $0 = synced }
+        undoState = nil
+        if toast?.canUndo == true { toast = nil }
     }
 
     /// Takes in changes made outside the app, such as a tick on a widget. Called when the app comes
@@ -92,6 +102,7 @@ final class Store {
         state = saved
         undoState = nil
         if toast?.canUndo == true { toast = nil } // its Undo would do nothing now
+        CloudSync.shared.planChanged()
     }
 
     /// The widgets show the new plan a moment after the last change.

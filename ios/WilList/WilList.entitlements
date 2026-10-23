@@ -7,5 +7,17 @@
 	<array>
 		<string>group.com.lull.willist</string>
 	</array>
+	<!-- The plan syncs between the student's devices through their private iCloud database. -->
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.com.lull.willist</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+	<!-- iCloud says when the other device changed the plan. -->
+	<key>aps-environment</key>
+	<string>development</string>
 </dict>
 </plist>

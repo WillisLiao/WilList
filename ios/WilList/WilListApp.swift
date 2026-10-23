@@ -25,6 +25,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         // Mark done on the focus Live Activity runs here, with the app in the background if need be.
         Focus.finish = { done in Store.shared.finishFocus(done: done) }
         if Store.shared.focus == nil { LiveFocus.end() }
+        // iCloud wakes the app when another device changed the plan.
+        CloudSync.shared.start()
+        application.registerForRemoteNotifications()
         return true
     }
 

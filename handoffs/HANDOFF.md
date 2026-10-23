@@ -11,7 +11,8 @@ Everything after `5bd0878` (Lagoon, iCloud sync, the widget-style cards) is on t
 
 **The owner's answers (2026-10-23):** merge into `main` with the website as it is; keep the Lagoon look; no custom lists for now; sync the iPhone and iPad through iCloud.
 Later, shown the widget gallery, the owner said "i like this design more" and, asked which part, answered both: the app's parts on cards floating on a soft background, and the softer teal in that picture.
-Then: "ABCDE can have different colors", and shown three palettes, "just the typical red most important, then orange yellow greeen blue"; and "every tab should have the same dark background like this tab" (the widget gallery).
+Then: "ABCDE can have different colors", and shown three palettes, "just the typical red most important, then orange yellow greeen blue"; "every tab should have the same dark background like this tab" (the widget gallery); and "background color should be slightly lighter".
+These replace the goal file's "light, one bright colour, red only for problems": the owner's later words win.
 
 **What the app is today:** a native SwiftUI iPhone and iPad app (iOS 18 and later), four tabs, light, in the Lagoon look laid out like its widgets: every part on a white card with rounded corners, every tab on the widget gallery's slate (`#667C8F` to `#52667A`, words on it white) and every sheet on a light blue-grey (`#DAE2E7`), one softer teal (`#347583`, `#285E69` with Increase Contrast), the system's own type, the letters in red, orange, yellow, green and blue from A to E, and a colour for each course.
 The owner said on 2026-10-23 that there are no fixed rules, for anything, and asked for a visually captivating experience.
@@ -26,6 +27,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
 - **Plan** (was Goals): main goal (Your goals opens on it, large in white on a teal card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
+  An empty Plan says "Give everything a letter" and shows the five letters in their colours with their names.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
 - **Focus:** the whole screen in the task's course colour, the time spent rising from the bottom in a deeper shade like a glass filling, the time left in large bold type, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.

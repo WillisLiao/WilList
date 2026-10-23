@@ -25,7 +25,8 @@ Work at the default text size; the owner asked not to spend time on the largest 
 - **iCloud sync on two real devices**, once the owner's Apple ID is back: install on the iPhone and the iPad, then check the first sync joins both plans, a tick on one shows on the other within seconds with the app in the background, and an edit made on both while offline merges.
   CloudKit's dashboard (icloud.developer.apple.com) shows the `Plan` record in the `WilList` zone of the private database.
   Push needs the `aps-environment` entitlement, already in `WilList.entitlements`.
-- **Show the owner the widget-style cards on a device** and ask how they feel there; the simulator shots looked right, but the ground's tint and the cards' spacing are a taste call worth seeing in hand.
+- **Show the owner the slate tabs and letter colours on a device** and ask how they feel there; the simulator shots looked right, but the slate's lightness is a taste call worth seeing in hand (it can't get much lighter without small white words falling under 4.5:1).
+- **The A1 card on the slate** reads a little greyer than the white cards around it; it is the pale teal A1 widget the owner liked, so only change it if the owner says so (variations side by side: white with the red chip, or filled teal).
 - **Look at Lagoon with fresh eyes again** after the next real change: on the evening of 2026-10-23 every tab, Today's empty, evening and first-run states, the welcome's three steps, Plan tomorrow's steps, the to-do and item sheets, New exam or test, Bring in a schedule, Search, Your goals, and Today and Plan on the iPad were shot and looked at, and nothing read as a flaw at the default text size.
   Show the owner side by side when it's a taste call.
 - **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.

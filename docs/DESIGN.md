@@ -154,3 +154,9 @@ No decorative or entrance animation.
 18. **Line breaks after an apostrophe:** at the largest size on a 375 pt phone, iOS evened out a title's lines by breaking "What’s" after its apostrophe, curly or straight.
     Big titles avoid contractions ("What is your main goal?").
     Check titles on the iPhone SE simulator at the largest size.
+19. **Words that re-wrap while a row grows:** when a list row changes size inside an animation (the A1 handing over to "Your A’s are done."), a `Text` without a fixed height is first cut short ("started with…") and then re-wraps on the way, its words crossing.
+    Give every line on a poster `.fixedSize(horizontal: false, vertical: true)`.
+20. **Repainting a list row's colour:** a `List` doesn't repaint `listRowBackground` when only its colour changes, so the poster's field stayed blue when the next A belonged to another course.
+    Paint the field inside the row with `.background`, padded out past the row's edges.
+21. **A label on a `Text` splits it:** `.accessibilityLabel` on a `Text` that also has traits or actions gave two elements, a button and the text, which VoiceOver reads twice.
+    Leave the text as it is when it reads right (a no-break space reads as a space).

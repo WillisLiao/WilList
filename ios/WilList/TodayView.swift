@@ -103,7 +103,7 @@ struct TodayView: View {
                 }
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && !planned && !tonight {
-                    nudge("Plan tomorrow", systemImage: "moon.fill") { store.planningTomorrow = true }
+                    nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true }
                 } else if waiting > 0 && !asking {
                     nudge("\(waiting) waiting for a letter", action: letterThem)
                 }
@@ -225,7 +225,7 @@ struct TodayView: View {
     }
 
     /// A one-line nudge under the A1 card: what's waiting for a letter, or planning tomorrow.
-    private func nudge(_ title: String, systemImage: String? = nil, action: @escaping () -> Void) -> some View {
+    private func nudge(_ title: String, systemImage: String? = nil, tint: Color = .brand, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let systemImage { Image(systemName: systemImage).font(.footnote) }
@@ -233,7 +233,7 @@ struct TodayView: View {
                 Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
             }
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(Color.brand)
+            .foregroundStyle(tint)
             .multilineTextAlignment(.leading)
             // The whole row answers a tap, not just the words.
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)

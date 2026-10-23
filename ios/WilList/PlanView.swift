@@ -233,7 +233,8 @@ struct PlanList: View {
     private var planningRows: some View {
         Group {
             Button { store.planningTomorrow = true } label: {
-                planningRow("moon") {
+                // The moon in the evening's colour, as on Plan tomorrow itself.
+                planningRow("moon.fill", tint: PlanTomorrow.night) {
                     Text("Plan tomorrow").foregroundStyle(Color.primary)
                     if store.evening {
                         Text("It’s evening. Pick tomorrow’s first thing now.").font(.subheadline).foregroundStyle(Color.secondary)
@@ -249,9 +250,9 @@ struct PlanList: View {
     }
 
     /// An icon where the day's rows have their check, and the words in the same column as theirs.
-    private func planningRow(_ symbol: String, @ViewBuilder words: () -> some View) -> some View {
+    private func planningRow(_ symbol: String, tint: Color = .secondary, @ViewBuilder words: () -> some View) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: symbol).foregroundStyle(Color.secondary).frame(width: 44)
+            Image(systemName: symbol).foregroundStyle(tint).frame(width: 44)
             VStack(alignment: .leading, spacing: 2) { words() }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }

@@ -48,7 +48,7 @@ struct FocusView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .outlinedOnField()
                 }
                 Button { store.finishFocus(done: true) } label: {
                     Label("Mark done", systemImage: "checkmark")

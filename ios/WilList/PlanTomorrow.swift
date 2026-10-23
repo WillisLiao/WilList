@@ -116,8 +116,7 @@ struct PlanTomorrow: View {
                 Button { sorting = LetterSorter.Batch(ids: waiting.map(\.id)) } label: {
                     Text("Letter them").foregroundStyle(.white).frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.bordered)
-                .tint(.white)
+                .outlinedOnField()
             }
             Button { dismiss() } label: { Text("Done").foregroundStyle(field).frame(maxWidth: .infinity) }
                 .buttonStyle(.borderedProminent)

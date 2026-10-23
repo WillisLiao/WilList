@@ -39,7 +39,7 @@ struct LetterSorter: View {
         // The letters are cards on the sheet's ground, as everywhere else; words straight on it
         // take the deeper teal.
         .background(Color.sheet)
-        .tint(Color.brandOnSheet)
+        .tint(Color.brandDeep)
         .sensoryFeedback(.selection, trigger: at)
     }
 

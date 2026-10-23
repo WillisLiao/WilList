@@ -16,8 +16,9 @@ extension Color {
     /// What a sheet's cards lie on: a light blue-grey, so a sheet stands apart from the tab under it.
     static let sheet = Color(hex: 0xDAE2E7)
 
-    /// The teal for words straight on a sheet's ground, deeper so they still read at 4.5:1 there.
-    static let brandOnSheet = Color(hex: 0x285E69, highContrast: 0x1F4B54)
+    /// The teal for words on a pale ground (a sheet's blue-grey, a button's teal wash), deeper so
+    /// they still read at 4.5:1 there: 5.5:1 on a sheet, 5.1:1 on a wash over the A1 card.
+    static let brandDeep = Color(hex: 0x285E69, highContrast: 0x1F4B54)
 
     nonisolated init(hex: UInt32) {
         self.init(red: Double(hex >> 16 & 0xFF) / 255, green: Double(hex >> 8 & 0xFF) / 255, blue: Double(hex & 0xFF) / 255)
@@ -55,8 +56,10 @@ enum CourseColor {
 
 extension LinearGradient {
     /// What every tab is laid on, as the widgets lie on a Home Screen: the slate of the widget
-    /// gallery, a shade deeper so white words straight on it read at 4.5:1 or better all the way down.
-    static let ground = LinearGradient(colors: [Color(hex: 0x5F768A), Color(hex: 0x3D4E5F)], startPoint: .top, endPoint: .bottom)
+    /// gallery, a shade deeper so white words on it read at 4.5:1 or better from Today's summary
+    /// line down (4.3:1 at the very top, where only large titles sit). The owner asked for it a
+    /// little lighter than the first try (`#5F768A` to `#3D4E5F`).
+    static let ground = LinearGradient(colors: [Color(hex: 0x667C8F), Color(hex: 0x52667A)], startPoint: .top, endPoint: .bottom)
 }
 
 extension EnvironmentValues {

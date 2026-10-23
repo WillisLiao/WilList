@@ -107,7 +107,7 @@ struct StudyView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             Button { importing = true } label: {
-                Text("Bring in a schedule").frame(maxWidth: .infinity)
+                Text("Bring in a schedule").foregroundStyle(Color.brandDeep).frame(maxWidth: .infinity)
             }
             .buttonStyle(.bordered)
             .controlSize(.large)

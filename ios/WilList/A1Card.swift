@@ -90,8 +90,9 @@ struct A1Card: View {
             (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))) {
                 // Start: a focus session on it, with the timer on the Lock Screen too.
                 Button { store.startFocus(row) } label: {
+                    // The deeper teal: the teal itself reads at only 3.7:1 on its own wash.
                     Label("Start", systemImage: "play.fill")
-                        .foregroundStyle(Color.brand)
+                        .foregroundStyle(Color.brandDeep)
                         .lineLimit(1)
                         .padding(.horizontal, 2)
                         .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : nil)

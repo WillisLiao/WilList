@@ -98,6 +98,15 @@ private func state(_ items: Item...) -> AppState {
     #expect(rows[0].label == "A1")
 }
 
+@Test func theSameLetterAgainKeepsItsPlace() {
+    var s = state(mk("Essay", .task), mk("Lab", .task))
+    s.setLetter(s.items[0].id, .A)
+    s.setLetter(s.items[1].id, .A)
+    s.makeA1(s.items[1].id, today: monday)
+    s.setLetter(s.items[1].id, .A)
+    #expect(dayRows(s.items, monday).map(\.item.title) == ["Lab", "Essay"])
+}
+
 @Test func settingALetterMovesItOutOfTheTray() {
     var s = state(mk("Email professor", .task))
     s.setLetter(s.items[0].id, .A)

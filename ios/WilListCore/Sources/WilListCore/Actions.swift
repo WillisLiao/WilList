@@ -105,7 +105,8 @@ extension AppState {
     public func index(of id: String) -> Int? { items.firstIndex { $0.id == id } }
 
     public mutating func setLetter(_ id: String, _ letter: Letter?, today: Day? = nil) {
-        guard let i = index(of: id) else { return }
+        // The same letter again keeps its place: A2 stays A2 rather than being shuffled by date.
+        guard let i = index(of: id), items[i].priority != letter else { return }
         let wasIdle = items[i].priority == .D || items[i].priority == .E
         items[i].priority = letter
         items[i].order = defaultOrder(items[i])

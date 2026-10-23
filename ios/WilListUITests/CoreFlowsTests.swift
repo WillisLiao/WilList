@@ -1,9 +1,9 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// add the day's A1 from Today, set a reminder on one, give one a letter, Mark done on the A1 card
-/// at the top of Today, a focus session on it, the first-run welcome, Plan tomorrow (from Plan and
-/// from Today's evening poster) and Search.
+/// add the day's A1 from Today, set a reminder on one and Mark done on the reminder when it comes,
+/// give one a letter, Mark done on the A1 card at the top of Today, a focus session on it, the
+/// first-run welcome, Plan tomorrow (from Plan and from Today's evening poster) and Search.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -45,6 +45,25 @@ final class CoreFlowsTests: XCTestCase {
         allowNotifications()
         XCTAssertTrue(app.staticTexts["Remind me at 9:00\u{202F}AM"].waitForExistence(timeout: wait)
                       || app.staticTexts["Remind me at 9:00 AM"].exists)
+    }
+
+    func testMarkDoneFromAReminder() {
+        let app = launch(plan: "reminder")
+        allowNotifications()
+        XCTAssertTrue(app.staticTexts["Return the lab goggles"].waitForExistence(timeout: wait))
+        // The reminder comes while the app waits in the background, where Mark done once stopped it.
+        XCUIDevice.shared.press(.home)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let banner = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'Return the lab goggles'")).firstMatch
+        XCTAssertTrue(banner.waitForExistence(timeout: 90), "the reminder comes")
+        banner.press(forDuration: 1.5)
+        let done = springboard.buttons["Mark done"]
+        XCTAssertTrue(done.waitForExistence(timeout: wait))
+        done.tap()
+        app.activate()
+        XCTAssertTrue(app.staticTexts["Completed"].waitForExistence(timeout: wait), "the to-do is done")
+        XCTAssertTrue(app.buttons["Done"].exists, "the to-do's circle is filled")
     }
 
     func testGiveATodoALetter() {

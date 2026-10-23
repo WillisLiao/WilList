@@ -44,14 +44,15 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 
     // Mark done, snooze, or open the task the reminder is about. The evening notice opens Plan tomorrow.
-    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+    // On the main actor from start to end: UIKit stops the app if the system's completion handler,
+    // called when this returns, runs anywhere else (Mark done on a reminder crashed it).
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         if response.notification.request.identifier == Reminders.planTomorrow {
-            await MainActor.run { Store.shared.planningTomorrow = true }
+            Store.shared.planningTomorrow = true
             return
         }
         guard let id = response.notification.request.content.userInfo["id"] as? String else { return }
-        let action = response.actionIdentifier
-        await MainActor.run { Store.shared.answerReminder(id, action: action) }
+        Store.shared.answerReminder(id, action: response.actionIdentifier)
     }
 
     private static func titleFont(_ style: UIFont.TextStyle) -> UIFont {

@@ -49,10 +49,11 @@ Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 Signing is blocked until the owner accepts Apple's latest Program License Agreement in the developer account (Xcode reports "PLA Update available"); compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
 
-**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 11 UI tests (add and tick, adding the A1 from an empty Today, Plan tomorrow from the evening poster, a reminder, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
+**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 12 UI tests (add and tick, adding the A1 from an empty Today, Plan tomorrow from the evening poster, a reminder, Mark done on a reminder from the Home Screen, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 The poster's Mark done and the colour change to the next course were checked frame by frame in screen recordings.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.
+With the app open in the background it crashed the app until 2026-10-23 (the handler finished off the main thread); `testMarkDoneFromAReminder` now covers it.
 
 **Not yet checked on a real device:** reminders arriving and their buttons, the badge, quick actions, the chime's volume, the widgets on a real Home and Lock Screen (the simulator holds a ticked line one to two seconds; a device may differ), the Live Activity and its Mark done.
 

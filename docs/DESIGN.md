@@ -167,3 +167,5 @@ No decorative or entrance animation.
     A state change inside the row, or a value the parent passes in, resizes it at once, and the row's contents sit centred in the new height while they animate, so everything in the row jumps halfway.
 24. **An animated data change animates everything in the row:** with the next A's arrival inside `withAnimation`, the old and new titles crossfaded, the old one coming back from transparent, and the field's blue went orange through a vivid blue and a grey mauve.
     The poster's change isn't animated; the card brings its words in itself, `.transaction(value: row.key) { $0.animation = nil }` keeps any other animated change (Undo) off them, and the field's colours never animate.
+25. **An async notification delegate off the main actor:** a `nonisolated async` `userNotificationCenter(_:didReceive:)` finishes off the main thread, and UIKit stops the app when the completion handler it calls then runs there.
+    Mark done on a reminder crashed WilList whenever it was running in the background; the method stays on the main actor, and `testMarkDoneFromAReminder` presses the reminder's Mark done on the simulator's Home Screen.

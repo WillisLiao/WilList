@@ -18,7 +18,7 @@ Work at the default text size; the owner asked not to spend time on the largest 
 
 ## Ask the owner first
 
-- Merging anything after `220027f` into `main`: it publishes the website again.
+- Merging anything after `8a23b92` into `main`: it publishes the website again.
 - Installing on the devices (`npm run ios`): team `45MSS5RXML` is signed in again and the Program License Agreement was accepted on 2026-10-23; this build registers the app group, the widget extension, Live Activities, the iCloud container and push.
 - The iPad layout: a sidebar or two columns instead of a centred column.
 

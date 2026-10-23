@@ -207,12 +207,15 @@ struct AsDone: View {
     let streak: Int
     @ScaledMetric(relativeTo: .largeTitle) private var posterTitle: CGFloat = 44
     @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 40))
                 .symbolEffect(.bounce, value: shown)
+                // The tick's ring and sparks, at the size of the day's biggest win.
+                .background { if !reduceMotion { TickBurst(done: shown, color: .white).scaleEffect(1.9) } }
                 .accessibilityHidden(true)
             Text("Your A’s are done.")
                 .font(.system(size: posterTitle, weight: .bold))
@@ -223,6 +226,9 @@ struct AsDone: View {
             Text([done > 0 ? "\(done) done today." : nil,
                   streak > 0 ? "\(streak) \(streak == 1 ? "day" : "days") in a row you started with an A." : nil]
                 .compactMap { $0 }.joined(separator: " "))
+                // Its full height from the start: otherwise, while the row grows, it is cut short
+                // and re-wraps on the way, its words crossing.
+                .fixedSize(horizontal: false, vertical: true)
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -65,9 +65,11 @@ struct CheckButton: View {
     }
 }
 
-/// A ring and six sparks thrown off the box as it fills, gone before the row moves away.
-private struct TickBurst: View {
+/// A ring and six sparks thrown off the box as it fills, gone before the row moves away. Drawn
+/// white, and larger, when the poster says the day's A's are done.
+struct TickBurst: View {
     let done: Bool
+    var color: Color = .brand
 
     private struct Frame {
         var spread = 0.0
@@ -78,11 +80,11 @@ private struct TickBurst: View {
         KeyframeAnimator(initialValue: Frame(), trigger: done) { f in
             ZStack {
                 Circle()
-                    .stroke(Color.brand, lineWidth: 2 * (1 - f.spread) + 0.5)
+                    .stroke(color, lineWidth: 2 * (1 - f.spread) + 0.5)
                     .frame(width: 24 + 16 * f.spread, height: 24 + 16 * f.spread)
                 ForEach(0..<6, id: \.self) { i in
                     Circle()
-                        .fill(Color.brand)
+                        .fill(color)
                         .frame(width: 4 - 1.5 * f.spread, height: 4 - 1.5 * f.spread)
                         .offset(y: -(13 + 14 * f.spread))
                         .rotationEffect(.degrees(Double(i) * 60 + 30))

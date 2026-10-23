@@ -128,7 +128,8 @@ struct A1Card: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity)
+                    // Centred under the buttons, which stop at a phone's width on an iPad.
+                    .frame(maxWidth: 440)
             }
         }
         .opacity(gone == row.key ? 0 : 1)

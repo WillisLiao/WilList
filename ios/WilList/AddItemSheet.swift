@@ -7,20 +7,17 @@ struct AddItemSheet: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
     var preset: ItemType?
-    /// The letter chosen as it opens: A when Today asks for the day's A1.
-    var startLetter: Letter?
     #if DEBUG
     @State private var text = UserDefaults.standard.string(forKey: "draft") ?? ""
     #else
     @State private var text = ""
     #endif
     @State private var chosenLetter: Letter??
-    @State private var chosenType: ItemType?
     @State private var added: [String] = []
     @FocusState private var focused: Bool
 
     private var parsed: Parsed { quickAdd(text, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder) }
-    private var type: ItemType { chosenType ?? (parsed.type == .task ? preset ?? .task : parsed.type) }
+    private var type: ItemType { parsed.type == .task ? preset ?? .task : parsed.type }
     private var letter: Letter? { chosenLetter ?? parsed.priority ?? suggestedLetter(type, weightPct: parsed.weightPct) }
     private var empty: Bool { text.trimmingCharacters(in: .whitespaces).isEmpty }
 
@@ -87,7 +84,6 @@ struct AddItemSheet: View {
             }
             .sensoryFeedback(.success, trigger: added.count)
             .onAppear {
-                if let startLetter, chosenLetter == nil { chosenLetter = .some(startLetter) }
                 #if DEBUG
                 if UserDefaults.standard.string(forKey: "draft") != nil { return } // screenshots without the keyboard
                 #endif
@@ -108,9 +104,6 @@ struct AddItemSheet: View {
     private var understood: some View {
         let p = parsed
         return Section {
-            Picker("Kind", selection: Binding(get: { type }, set: { chosenType = $0 })) {
-                ForEach(ItemType.allCases, id: \.self) { Text($0.name).tag($0) }
-            }
             if p.title != text.trimmingCharacters(in: .whitespaces) { LabeledContent("Title", value: p.title) }
             if let d = p.date {
                 LabeledContent("When", value: [Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)), Fmt.time(p.time)].compactMap { $0 }.joined(separator: ", "))
@@ -155,7 +148,6 @@ struct AddItemSheet: View {
         added.insert(it.title, at: 0)
         text = ""
         chosenLetter = nil
-        chosenType = nil
         focused = true
     }
 }

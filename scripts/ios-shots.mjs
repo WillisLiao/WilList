@@ -1,16 +1,16 @@
 // Screenshots of the iPhone app in the iOS Simulator, with a full sample planner loaded.
 //   npm run ios:shots                          the four tabs, into shots/ios
-//   npm run ios:shots -- plan -open goals      one tab, with debug launch arguments
+//   npm run ios:shots -- more -open goals      one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
 //   -tab today|plan|study|more       which tab opens
-//   -open goals                      Plan: push Goals
+//   -open goals                      More: push Goals
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
-//   -night YES                       it's evening: Today and Plan offer Plan tomorrow (NO, the default here)
-//   -scroll letters|bottom           Plan: scroll to Needs a letter or the bottom rows
+//   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
+//   -scroll letters|calendar|bottom  Plan: scroll to Needs a letter, the calendar or the bottom row
 //   -sheet add|import|search|letters open that sheet (add and import from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)

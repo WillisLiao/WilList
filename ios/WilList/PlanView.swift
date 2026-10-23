@@ -1,27 +1,18 @@
 import SwiftUI
 import WilListCore
 
-/// Plan: your main goal, the day in ABCDE order (A1 first, the same A1 that tops Today), and
-/// anything still waiting for a letter. Plan tomorrow and the full list of goals are one tap away.
+/// Plan: today in ABCDE order (the A1 first, the same A1 that leads Today), anything still
+/// waiting for a letter, what comes later, and a month showing what's planned on each day.
 struct PlanView: View {
-    // `-open goals` on launch opens Your goals (screenshots).
-    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [PlanPage.goals] : []
-
     var body: some View {
-        NavigationStack(path: $path) {
-            PlanList()
-                .navigationDestination(for: PlanPage.self) { _ in GoalsList() }
-        }
+        NavigationStack { PlanList() }
     }
 }
 
-enum PlanPage: Hashable { case goals }
-
-/// The main goal, the day in ABCDE order with the A1 first, what's waiting for a letter, and the
-/// ways to plan ahead.
 struct PlanList: View {
     @Environment(Store.self) private var store
-    @Environment(\.dynamicTypeSize) private var typeSize
+    /// The day tapped on the calendar, listed in full under it.
+    @State private var picked: Day?
     @State private var adding = false
     @State private var importing = false
     @State private var editing: Item?
@@ -33,13 +24,20 @@ struct PlanList: View {
     private var rows: [Row] { dayRows(store.state.items, today) }
     private var waiting: [Item] { unsorted(store.state.items, today) }
     private var later: [Item] { laterItems(store.state.items, today) }
+    /// What's planned on each day: the open items due or set for it, by letter.
+    private var byDay: [Day: [Item]] {
+        Dictionary(grouping: store.state.items.filter { $0.type != .event && $0.recur == nil && $0.date != nil && isOpen($0, today) }) { $0.date! }
+            .mapValues { $0.sorted { letterKey($0) < letterKey($1) } }
+    }
 
     var body: some View {
         ScrollViewReader { proxy in
             List {
-                goalRow
+                dayHeader
                 Section {
-                    if rows.isEmpty { emptyCard }
+                    if rows.isEmpty {
+                        Text("Nothing planned").foregroundStyle(.secondary).frame(minHeight: 44)
+                    }
                     ForEach(rows) { itemRow($0) }
                         .onMove(perform: move)
                 }
@@ -68,7 +66,15 @@ struct PlanList: View {
                         Text("Later").onGround()
                     }
                 }
-                Section { planningRows }
+                let byDay = byDay
+                Section {
+                    MonthCalendar(selection: $picked, today: today) { d in
+                        (byDay[d] ?? []).map { MonthCalendar.Mark(title: $0.title, fill: $0.priority?.color ?? Color(.systemGray5), ink: $0.priority?.ink ?? .primary) }
+                    }
+                    ForEach(picked.flatMap { byDay[$0] } ?? []) { plainRow($0) }
+                }
+                .id("calendar")
+                Section { importRow }
                     .id("bottom")
             }
             .listStyle(.insetGrouped)
@@ -76,7 +82,7 @@ struct PlanList: View {
             .ground()
             .readableColumn()
             #if DEBUG
-            // `-scroll letters` or `-sheet add|import` on launch, for screenshots.
+            // `-scroll letters|calendar|bottom` or `-sheet add|import` on launch, for screenshots.
             .onAppear {
                 UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) }
                 adding = UserDefaults.standard.string(forKey: "sheet") == "add"
@@ -110,95 +116,15 @@ struct PlanList: View {
 
     // MARK: rows
 
-    private var goalRow: some View {
-        let goal = store.state.mdp, others = store.state.goals.count
-        return NavigationLink(value: PlanPage.goals) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(goal.isEmpty ? "Set your main goal" : goal)
-                    .font(.headline)
-                    .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
-                    // Two lines hold even a long goal, except at the largest text sizes.
-                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
-                if !goal.isEmpty {
-                    Text(others == 0 ? "Main goal" : "Main goal and \(others) more")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, 4)
-        }
-        .listRowSeparator(.hidden)
-    }
-
-    /// The A1's place when there is nothing to do first: what goes here, and the one way to fill it.
-    private var emptyCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
-                LetterMark(letter: nil, label: "A1", large: true)
-                Text("Do this first")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            if let emptyMessage {
-                Text(emptyMessage)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                // Nothing in the plan yet: the method itself, set like Today's question card.
-                Text("Give everything a letter")
-                    .font(.title2.weight(.semibold))
-                    .accessibilityAddTraits(.isHeader)
-                legend.padding(.vertical, 4)
-            }
-            // With items waiting below, their Letter buttons are the way to fill this card.
-            if waiting.isEmpty {
-                Button { adding = true } label: {
-                    Text("Add a task").frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .padding(.top, 4)
-            }
-        }
-        .heroCard(empty: true)
-        // A card of its own on the ground, not one inside a section's.
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets())
-        .listRowBackground(Color.clear)
-    }
-
-    /// What the empty card says when the plan has something in it; nil when it has nothing yet.
-    private var emptyMessage: String? {
-        if !waiting.isEmpty { return "Letter the items below." }
-        return nextUp.map { "Nothing today. Next: \($0.title), \(Fmt.day($0.day, today, inSentence: true))." }
-    }
-
-    /// Tracy's five letters and what each means, for a plan with nothing in it yet: the method at a
-    /// glance instead of a paragraph about it.
-    private var legend: some View {
-        HStack(alignment: .top, spacing: 4) {
-            ForEach(Letter.allCases, id: \.self) { letter in
-                VStack(spacing: 6) {
-                    LetterMark(letter: letter, large: true)
-                    Text(letter.name)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Letter.allCases.map { "\($0.rawValue), \($0.name)" }.joined(separator: ". "))
-    }
-
-    /// The soonest lettered thing still to come, for a day with nothing on it.
-    private var nextUp: (title: String, day: Day)? {
-        store.state.items
-            .filter { isOpen($0, today) && ($0.priority.map { $0 <= .C } ?? false) }
-            .compactMap { it in (it.sessions.first { !$0.done }?.date ?? it.date).map { (title: it.title, day: $0) } }
-            .filter { diffDays(today, $0.day) > 0 }
-            .min { $0.day < $1.day }
+    /// Today's date, straight on the ground under the tab's title.
+    private var dayHeader: some View {
+        Text(Fmt.long(today))
+            .font(.title3.weight(.semibold))
+            .onGround()
+            .accessibilityAddTraits(.isHeader)
+            .listRowSeparator(.hidden)
+            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+            .listRowBackground(Color.clear)
     }
 
     private func itemRow(_ row: Row) -> some View {
@@ -276,31 +202,19 @@ struct PlanList: View {
         .accessibilityLabel(item.priority.map { "Letter \($0.rawValue), \($0.name). Change" } ?? "Give it a letter")
     }
 
-    private var planningRows: some View {
-        Group {
-            Button { store.planningTomorrow = true } label: {
-                // The moon in the evening's colour, as on Plan tomorrow itself.
-                planningRow("moon.fill", tint: PlanTomorrow.night) {
-                    Text("Plan tomorrow").foregroundStyle(Color.primary)
-                }
+    /// Its icon where the day's rows have their check, its words in the same column as theirs.
+    private var importRow: some View {
+        Button { importing = true } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "square.and.arrow.down").foregroundStyle(.secondary).frame(width: 44)
+                Text("Bring in a schedule")
+                    .foregroundStyle(Color.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Button { importing = true } label: {
-                planningRow("square.and.arrow.down") { Text("Bring in a schedule").foregroundStyle(Color.primary) }
-            }
+            .frame(minHeight: 44)
         }
         .padding(.vertical, 4)
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
-    }
-
-    /// An icon where the day's rows have their check, and the words in the same column as theirs.
-    private func planningRow(_ symbol: String, tint: Color = .secondary, @ViewBuilder words: () -> some View) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: symbol).foregroundStyle(tint).frame(width: 44)
-            VStack(alignment: .leading, spacing: 2) { words() }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
-        }
-        .frame(minHeight: 44)
     }
 
     /// The line under a row: its detail, then small marks for steps, a reminder and Today.

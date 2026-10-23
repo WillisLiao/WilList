@@ -45,7 +45,8 @@ struct WidgetGallery: View {
         }
         .padding(.top, 64)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .background(LinearGradient.ground)
+        // The deep slate of a Home Screen, where the widgets really sit, not the app's light ground.
+        .background(LinearGradient(colors: [Color(hex: 0x667C8F), Color(hex: 0x52667A)], startPoint: .top, endPoint: .bottom))
     }
 
     private func home(_ family: WidgetFamily, a1: Bool = false, @ViewBuilder content: () -> some View) -> some View {

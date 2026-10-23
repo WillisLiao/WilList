@@ -37,60 +37,44 @@ struct TodayView: View {
     @State private var deleting: Todo?
     @State private var editingItem: Item?
     @State private var sorting: LetterSorter.Batch?
-    @State private var adding = false
 
     private var today: Day { store.today }
     private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
     private var completed: [Todo] {
         store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
     }
-    /// The day's first thing, on its card at the top.
-    private var first: Row? { doRows(store.state.items, today).first }
-    /// Items from Plan and Study added to Today, still to do today. The A1 has its card.
-    private func planItems(besides a1: Row?) -> [Item] {
-        store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.item.id }
+    /// The day's A1, first on Today, then the items from Plan and Study added to Today, still to
+    /// do today.
+    private var planItems: [Item] {
+        let a1 = doRows(store.state.items, today).first?.item
+        let added = store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.id }
             .sorted { letterKey($0) < letterKey($1) }
+        return (a1.map { [$0] } ?? []) + added
     }
     /// Items still waiting for a letter.
     private var waiting: Int { unsorted(store.state.items, today).count }
 
     var body: some View {
-        let first = self.first, fromPlan = planItems(besides: first)
-        // The A1 on its card under the date. After the day's last A, the card stays to say the A's
-        // are done; before anything has a letter, it asks what matters most today, and in the
-        // evening, with nothing left for today, it turns to tomorrow.
-        let finished = doneOn(store.state.items, today)
-        let won = first == nil && finished.contains { $0.item.priority == .A }
-        let asking = first == nil && !won
+        let fromPlan = planItems
         let planned = plannedFor == addDays(today, 1)
-        let tonight = asking && store.evening && !planned
         NavigationStack {
             List {
-                // The date sits straight on the ground; the A1 and everything under it are cards.
-                header(first: first, fromPlan: fromPlan)
+                // The date sits straight on the ground; everything under it is on cards.
+                header(fromPlan: fromPlan)
                     .padding(EdgeInsets(top: 12, leading: 4, bottom: 16, trailing: -4))
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                Group {
-                    if let first {
-                        A1Card(row: first) { editingItem = $0 }
-                    } else if won {
-                        AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
-                               streak: a1Streak(store.state.meta.firstDone, today))
-                    } else if tonight {
-                        Tonight { store.planningTomorrow = true }
-                    } else {
-                        NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
+                // The day's A1 leads, with what was added from Plan and Study under it.
+                if !fromPlan.isEmpty {
+                    Section {
+                        ForEach(Array(fromPlan.enumerated()), id: \.element.id) { k, item in planRow(item, first: k == 0) }
                     }
                 }
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets())
-                .listRowBackground(Color.clear)
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
-                if store.evening && !planned && !tonight {
+                if store.evening && !planned {
                     Section { nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true } }
-                } else if waiting > 0 && !asking {
+                } else if waiting > 0 {
                     Section { nudge("\(waiting) \(waiting == 1 ? "needs" : "need") a letter", action: letterThem) }
                 }
                 // The checklist on one card, Add a to-do at its top, as on the Today widget.
@@ -101,13 +85,6 @@ struct TodayView: View {
                 if sort == .due {
                     ForEach(dueGroups, id: \.name) { group in
                         Section { rows(group.todos, movable: false) } header: { Text(group.name).onGround() }
-                    }
-                }
-                if !fromPlan.isEmpty {
-                    Section {
-                        ForEach(fromPlan) { planRow($0) }
-                    } header: {
-                        Text("Planned").onGround()
                     }
                 }
                 if showCompleted && !completed.isEmpty {
@@ -138,7 +115,6 @@ struct TodayView: View {
             .sheet(isPresented: $searching) { SearchView() }
             .sheet(item: $editingItem) { ItemEditor(item: $0) }
             .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
-            .sheet(isPresented: $adding) { AddItemSheet(startLetter: .A) }
             .confirmationDialog("Delete \u{201C}\(deleting?.title ?? "")\u{201D}?", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }), titleVisibility: .visible) {
                 Button("Delete", role: .destructive) { deleting.map(delete) }
             }
@@ -172,7 +148,7 @@ struct TodayView: View {
     // MARK: header
 
     /// The date, how the day stands, Search and Sort.
-    private func header(first: Row?, fromPlan: [Item]) -> some View {
+    private func header(fromPlan: [Item]) -> some View {
         // A new list has nothing to search or sort yet.
         let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
         return VStack(alignment: .leading, spacing: 2) {
@@ -180,14 +156,14 @@ struct TodayView: View {
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
             HStack(spacing: 0) {
-                Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
+                Text(summary(open.count + fromPlan.count))
                     .font(.subheadline)
                 Spacer(minLength: 8)
                 if hasTools { tools }
             }
         }
         .onGround()
-        .tint(.white)
+        .tint(.groundInk)
     }
 
     /// A one-line nudge under the A1 card: what's waiting for a letter, or planning tomorrow.
@@ -239,7 +215,7 @@ struct TodayView: View {
     private func summary(_ toDo: Int) -> String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
         let doneToday = completed.filter { $0.doneAt == today }.count + doneOn(store.state.items, today).count
-        // An empty day says so plainly: the card below asks what matters most.
+        // An empty day says so plainly.
         var parts = [toDo == 0 ? (doneToday == 0 ? "Nothing yet" : "All clear") : "\(toDo) to do"]
         if overdue > 0 { parts.append("\(overdue) overdue") }
         if doneToday > 0 { parts.append("\(doneToday) done") }
@@ -341,9 +317,11 @@ ForEach(list) { todo in
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    /// An item added to Today from Plan or Study: tick it off here, or take it off Today.
-    private func planRow(_ item: Item) -> some View {
+    /// The A1, or an item added to Today from Plan or Study: tick it off here, or take it off
+    /// Today. The A1 (`first`, when it is one) has Start, for a focus session on it.
+    private func planRow(_ item: Item, first: Bool) -> some View {
         let checked = ticking.contains(item.id)
+        let row = dayRows(store.state.items, today, realToday: today).first { $0.item.id == item.id }
         return HStack(spacing: 10) {
             CheckButton(done: checked) { finish(item) }
             VStack(alignment: .leading, spacing: 2) {
@@ -357,8 +335,16 @@ ForEach(list) { todo in
             .padding(.vertical, 6)
             .contentShape(Rectangle())
             .onTapGesture { editingItem = item }
+            if first, let row, row.label == "A1" {
+                // A focus session on it, with the timer on the Lock Screen too.
+                Button("Start", systemImage: "play.fill") { store.startFocus(row) }
+                    .labelStyle(.iconOnly)
+                    .foregroundStyle(Color.brand)
+                    .tapArea()
+                    .buttonStyle(.borderless)
+            }
             if item.priority != nil {
-                LetterMark(letter: item.priority, label: dayRows(store.state.items, today, realToday: today).first { $0.item.id == item.id }?.label)
+                LetterMark(letter: item.priority, label: row?.label)
                     .padding(.trailing, 8)
             }
         }

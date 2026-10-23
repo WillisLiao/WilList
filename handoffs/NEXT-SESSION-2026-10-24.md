@@ -1,13 +1,15 @@
 # Next session: keep raising the bar
 
 The goal and the loop are in `handoffs/GOAL.md`; paste it to start.
+**Read `handoffs/OWNER-REQUESTS.md` first:** on 2026-10-24 the owner changed the product's direction (iPhone and Mac only, no website, no iCloud, Google, Facebook and Apple sign-in, an Agent tab as a subscription, Progress instead of Study), and it lists every request with its status. Where this file disagrees with it, it wins.
 Read `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md` and `docs/PRINCIPLES.md` first.
 Done since the last version of this file: the owner answered the open decisions.
 `main` was merged at `5bd0878` and again at `220027f` (everything below), and the website is live at https://willisliao.github.io/WilList/; Lagoon is the one look, now laid out like its widgets at the owner's ask (every part on a white card, every tab on the gallery's deep slate and sheets on a light blue-grey, the softer teal `#347583`, system type, the A1 on a pale teal card, the letters red, orange, yellow, green and blue from A to E); there are no custom lists for now; and the iPhone and iPad now sync through iCloud (`CloudSync`, `PlanMerge`), not yet tried with a real account.
 Also: Mark done on a reminder no longer crashes the app (a UI test presses it on the Home Screen), and the Lock Screen widgets were checked on the real Lock Screen, where the ring now says what it counts.
 Since then (2026-10-23 into 10-24), at the owner's ask: every visible string was cut to the fewest words ("each item, thing, description should have minimal words as possible"), and the tab bar is WilList's own solid white capsule, because iOS 26's glass tab bar takes on the slate's colour when pressed or scrolled and can't be made solid (DESIGN pitfall 27).
 Then, from the owner's own use on the iPhone: a new A comes after the A's already there (drag in Plan to re-rank, which the owner likes as it is); Plan keeps every planned item, with everything not on today's list under Later; the due date and time are picked in one row; every Plan row has its check; and the A1 card's buttons stack when the card is too narrow (the owner uses Display Zoom set to Larger Text, about 320 points wide).
-The latest build is on the iPhone 15 Pro and the iPad; `main` is at `8a23b92`, the branch is ahead with the last two fixes.
+Later on 2026-10-24, again at the owner's ask: Plan opens on a day you can change (arrows, a Today pill, and a month calendar under the rows), the main goal moved to the top of More, the Plan tomorrow row and every explanation went, Study shows exams added without a date and has its own calendar, Today has no A1 card (the A1 is Today's first row, with a play button for focus), and the ground is the old slate mixed 55% with white, with dark words on it.
+`main` is at `8a23b92`; the branch is ahead with all of that.
 The simulator has no Display Zoom: two text sizes up on the iPhone SE is the closest match, so check narrow layouts there.
 Work at the default text size; the owner asked not to spend time on the largest accessibility sizes.
 
@@ -29,14 +31,14 @@ Work at the default text size; the owner asked not to spend time on the largest 
 - **iCloud sync on two real devices**, now that the owner's Apple ID is back: install on the iPhone and the iPad, then check the first sync joins both plans, a tick on one shows on the other within seconds with the app in the background, and an edit made on both while offline merges.
   CloudKit's dashboard (icloud.developer.apple.com) shows the `Plan` record in the `WilList` zone of the private database.
   Push needs the `aps-environment` entitlement, already in `WilList.entitlements`.
-- **Install the latest build on the iPhone and iPad** and ask the owner how the white tab bar and the shorter words feel in hand; the slate's lightness is a taste call too (it can't get much lighter without small white words falling under 4.5:1).
+- **Install the latest build on the iPhone and iPad** and ask the owner how Plan's day and calendar, Today without the card and the lighter ground feel in hand.
+- **Plan on a past day** shows what was still open by then, which may read oddly; ask the owner whether past days should show what got done instead, or not be choosable.
+- **The calendars under Display Zoom** (about 320 points wide): check on the iPhone SE two text sizes up that seven columns of days still fit and the dots stay under their days.
 - **Words, a second pass:** the first pass cut every footer and sentence it could; look again for anything still longer than it needs to be, the website included only if the owner asks.
-- **The A1 card on the slate** reads a little greyer than the white cards around it; it is the pale teal A1 widget the owner liked, so only change it if the owner says so (variations side by side: white with the red chip, or filled teal).
 - **Look at Lagoon with fresh eyes again** after the next real change: on the evening of 2026-10-23 every tab, Today's empty, evening and first-run states, the welcome's three steps, Plan tomorrow's steps, the to-do and item sheets, New exam or test, Bring in a schedule, Search, Goals, and Today and Plan on the iPad were shot and looked at, and nothing read as a flaw at the default text size.
   Show the owner side by side when it's a taste call.
 - **On a real device:** the widget tick's timing (the simulator holds a ticked line one to two seconds), Mark done and snooze on a reminder, the Live Activity.
 - **VoiceOver order** on a device: the simulator can't run VoiceOver, and the audit doesn't check reading order.
-- **The A1 card's height** changes in one step when the next A's title has another number of lines (DESIGN pitfalls 23 and 24); worth smoothing only if it reads as a flaw on a device.
 - **The Lock Screen Live Activity** still shows a bar and the Dynamic Island a ring; ActivityKit can only animate system timer views.
 - **The website,** only if the owner says so.
 

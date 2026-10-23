@@ -142,17 +142,15 @@ struct ToastHost: ViewModifier {
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom) {
             VStack(spacing: 0) {
-                // The toast's animation stays with the toast. On the whole screen it animated everything
-                // that changed with it, and the list crossfaded Today's A1 card when Mark done said so.
+                // The toast's animation stays with the toast: on the whole screen it animated everything
+                // that changed with it.
                 ZStack {
                     if let toast = store.toast {
                         HStack(spacing: 16) {
                             Text(toast.text).lineLimit(2)
                             Spacer(minLength: 0)
                             if toast.canUndo {
-                                // Animated, unless it brings back another A1: the list would resize the A1's
-                                // row slowly behind words already in place. The card brings its A in itself.
-                                Button("Undo") { withAnimation(store.undoChangesA1 ? nil : .default) { store.undo() } }.bold()
+                                Button("Undo") { withAnimation { store.undo() } }.bold()
                             }
                         }
                         .padding(.horizontal, 20)
@@ -198,17 +196,14 @@ struct HardTopEdge: ViewModifier {
     }
 }
 
-/// The A1 card's ground: a pale wash of its colour (the teal, or the night for the evening's
-/// question) on white, paler still for an empty card, so it floats on the ground like the A1 widget.
+/// A card of its own on the ground (Study before anything is in it): a pale teal wash on white,
+/// like the A1 widget.
 struct HeroCard: ViewModifier {
-    var color: Color = .brand
-    var empty = false
-
     func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
         content
             .padding(18)
-            .background(color.opacity(empty ? 0.06 : 0.09), in: shape)
+            .background(Color.brand.opacity(0.06), in: shape)
             .background(Color.white, in: shape)
     }
 }
@@ -254,11 +249,10 @@ extension View {
             .overlay(Capsule().strokeBorder(.white, lineWidth: 1.5))
     }
 
-    /// Words straight on a tab's slate ground (a section's title, its footer): white, as words on
-    /// a field of colour always are.
-    func onGround() -> some View { foregroundStyle(.white) }
+    /// Words straight on a tab's slate ground (a section's title, its footer), in its deep ink.
+    func onGround() -> some View { foregroundStyle(Color.groundInk) }
 
-    func heroCard(_ color: Color = .brand, empty: Bool = false) -> some View { modifier(HeroCard(color: color, empty: empty)) }
+    func heroCard() -> some View { modifier(HeroCard()) }
 
     /// On a wide screen (iPad), a list keeps to a readable column in the middle, and its title
     /// moves up beside the tabs, out of the column's way.

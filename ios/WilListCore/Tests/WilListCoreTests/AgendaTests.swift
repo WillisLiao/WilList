@@ -124,6 +124,14 @@ private func state(_ items: Item...) -> AppState {
     #expect(!s.items[1].done && s.items[1].doneDates == [addDays(monday, 6)])
 }
 
+@Test func studyListsWorkWithoutADate() {
+    var s = AppState()
+    s.items.append(mk("Bio exam", .exam, priority: .A))
+    s.items.append(mk("Chem final", .exam, date: addDays(monday, 10), priority: .A))
+    // An exam added without its day yet still shows in Study, after the dated ones.
+    #expect(readiness(s.items, monday).map(\.item.title) == ["Chem final", "Bio exam"])
+}
+
 @Test func theLetterAddedLastComesLast() {
     var s = AppState()
     for (title, date) in [("Essay", nil), ("Lab", nil), ("Quiz prep", Optional(monday))] {

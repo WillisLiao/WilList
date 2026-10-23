@@ -10,10 +10,11 @@ This file carries everything an agent needs, so a fresh machine with no personal
 ## Read first, every session
 
 1. `handoffs/HANDOFF.md`: the living snapshot of where things stand. Read it before anything else.
-2. The newest `handoffs/NEXT-SESSION-*.md`: the work that is ready to pick up.
-3. `docs/DESIGN.md`: the app's design system and the SwiftUI pitfalls already paid for.
-4. `docs/PRINCIPLES.md`: every Tracy principle and where it lives in the app. Keep all of them.
-5. The newest file in `devlogs/` if you need the history behind a decision.
+2. `handoffs/OWNER-REQUESTS.md`: every request the owner has made and where it stands. The newest direction (2026-10-24) changes the product: iPhone and Mac only, no website, no iCloud, sign-in with Google, Facebook and Apple, an Agent tab and a Progress tab.
+3. The newest `handoffs/NEXT-SESSION-*.md`: the work that is ready to pick up.
+4. `docs/DESIGN.md`: the app's design system and the SwiftUI pitfalls already paid for.
+5. `docs/PRINCIPLES.md`: every Tracy principle and where it lives in the app. Keep all of them.
+6. The newest file in `devlogs/` if you need the history behind a decision.
 
 ## Setup on a new Mac
 

@@ -55,11 +55,16 @@ enum CourseColor {
 }
 
 extension LinearGradient {
-    /// What every tab is laid on, as the widgets lie on a Home Screen: the slate of the widget
-    /// gallery, a shade deeper so white words on it read at 4.5:1 or better from Today's summary
-    /// line down (4.3:1 at the very top, where only large titles sit). The owner asked for it a
-    /// little lighter than the first try (`#5F768A` to `#3D4E5F`).
-    static let ground = LinearGradient(colors: [Color(hex: 0x667C8F), Color(hex: 0x52667A)], startPoint: .top, endPoint: .bottom)
+    /// What every tab is laid on, as the widgets lie on a Home Screen: a light slate, the deep one
+    /// of the widget gallery (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on
+    /// 2026-10-24 for it at least half again as light. White cards still stand off it.
+    static let ground = LinearGradient(colors: [Color(hex: 0xBAC5CD), Color(hex: 0xB1BAC3)], startPoint: .top, endPoint: .bottom)
+}
+
+extension Color {
+    /// Words straight on the ground (titles, section names, footers): a deep slate, 8:1 on its
+    /// top and 7:1 on its foot.
+    static let groundInk = Color(hex: 0x1E2B37)
 }
 
 extension EnvironmentValues {

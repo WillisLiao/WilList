@@ -115,12 +115,6 @@ final class Store {
         }
     }
 
-    /// Whether Undo would put something else first on Today, where the A1 card is.
-    var undoChangesA1: Bool {
-        guard let before = undoState else { return false }
-        return doRows(before.items, today).first?.key != doRows(state.items, today).first?.key
-    }
-
     func undo() {
         guard let before = undoState else { return }
         change { $0 = before }

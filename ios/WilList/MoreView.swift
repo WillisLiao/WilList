@@ -3,9 +3,14 @@ import UniformTypeIdentifiers
 import UserNotifications
 import WilListCore
 
-/// Settings, calendar links, the Claude key and backups.
+enum MorePage: Hashable { case goals }
+
+/// Your goals, settings, calendar links, the Claude key and backups.
 struct MoreView: View {
     @Environment(Store.self) private var store
+    @Environment(\.dynamicTypeSize) private var typeSize
+    // `-open goals` on launch opens Goals (screenshots).
+    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [MorePage.goals] : []
     @State private var addingFeed = false
     @State private var importing = false
     @State private var key = Keychain.apiKey ?? ""
@@ -19,8 +24,10 @@ struct MoreView: View {
     @AppStorage("badge") private var badge = Badge.off
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Form {
+                Section { goalRow }
+
                 Section {
                     ForEach(store.state.feeds) { feed in
                         VStack(alignment: .leading, spacing: 2) {
@@ -109,6 +116,7 @@ struct MoreView: View {
             .ground()
             .readableColumn()
             .navigationTitle("More")
+            .navigationDestination(for: MorePage.self) { _ in GoalsList() }
             .sheet(isPresented: $addingFeed) { AddFeedSheet() }
             .sheet(isPresented: $importing) { ImportSheet() }
             .fileImporter(isPresented: $restoring, allowedContentTypes: [.json]) { restore($0) }
@@ -144,6 +152,24 @@ struct MoreView: View {
         let url = URL.temporaryDirectory.appending(path: "WilList backup \(store.today).json")
         try? JSONEncoder().encode(store.state).write(to: url)
         return url
+    }
+
+    /// The main goal, written down, first: the way into all of your goals.
+    private var goalRow: some View {
+        let goal = store.state.mdp, others = store.state.goals.count
+        return NavigationLink(value: MorePage.goals) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(goal.isEmpty ? "Set your main goal" : goal)
+                    .font(.headline)
+                    .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
+                    // Two lines hold even a long goal, except at the largest text sizes.
+                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                Text(others == 0 ? "Main goal" : "Main goal and \(others) more")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 4)
+        }
     }
 
     private func restore(_ result: Result<URL, Error>) {

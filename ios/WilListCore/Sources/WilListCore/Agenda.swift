@@ -237,13 +237,14 @@ public func vitalFew(_ items: [Item], _ today: Day, horizon: Int = 45) -> [Vital
 }
 
 /// Every exam, deadline, presentation and reading in the next `horizon` days that you haven't
-/// dropped, soonest first, with how far along each one is.
+/// dropped, soonest first, with how far along each one is. One without a date yet comes last:
+/// it is still ahead.
 public func readiness(_ items: [Item], _ today: Day, horizon: Int = 45) -> [Vital] {
     items.filter { it in
-        guard plannedTypes.contains(it.type), it.priority != .E, isOpen(it, today), let d = it.date else { return false }
-        return (0...horizon).contains(diffDays(today, d))
+        guard plannedTypes.contains(it.type), it.priority != .E, isOpen(it, today) else { return false }
+        return it.date.map { (0...horizon).contains(diffDays(today, $0)) } ?? true
     }
-    .sorted { a, b in a.date != b.date ? a.date! < b.date! : letterKey(a) < letterKey(b) }
+    .sorted { a, b in a.date != b.date ? (a.date ?? "9999") < (b.date ?? "9999") : letterKey(a) < letterKey(b) }
     .map { it in
         let s = it.sessions
         let done = s.filter(\.done).count

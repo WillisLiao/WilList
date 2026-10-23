@@ -125,7 +125,8 @@ struct FirstWidgetView: View {
             Button(intent: FinishRowIntent(key: line.id)) {
                 Image(systemName: line.done ? Look.current.box.done : Look.current.box.empty)
                     .font(.body)
-                    .foregroundStyle(line.done ? (solid ? Color.white : Color.brand) : (solid ? Color.white.opacity(0.7) : Color(.tertiaryLabel)))
+                    // On a field, pure white either way: 70% white fell below 3:1 on the course colours.
+                    .foregroundStyle(solid ? Color.white : line.done ? Color.brand : Color(.tertiaryLabel))
                     .contentTransition(.symbolEffect(.replace))
                     .widgetAccentable(line.done)
                     .frame(width: 24, height: 26)

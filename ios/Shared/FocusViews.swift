@@ -22,9 +22,10 @@ struct FocusLockView: View {
                     .font(.headline)
                     .lineLimit(2)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                // Pure white paused too, as every word on a field: the pause mark says it is paused,
+                // and dimmed white falls below 3:1 on the lighter course colours.
                 FocusClock(state: state, over: over)
                     .font(.system(size: 34, weight: .semibold, design: .rounded))
-                    .opacity(state.end == nil ? 0.7 : 1)
                     .frame(maxWidth: 130, alignment: .trailing)
             }
             HStack(spacing: 14) {

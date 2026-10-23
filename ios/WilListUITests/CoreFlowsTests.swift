@@ -3,7 +3,7 @@ import XCTest
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// add the day's A1 from Today, set a reminder on one and Mark done on the reminder when it comes,
 /// give one a letter, Mark done on the A1 card at the top of Today, a focus session on it, the
-/// first-run welcome, Plan tomorrow (from Plan and from Today's evening poster) and Search.
+/// first-run welcome, Plan tomorrow (from Plan and from Today's evening card) and Search.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -93,9 +93,9 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["markA1Done"].tap()
         XCTAssertTrue(title("Read chapter 4", in: app).waitForExistence(timeout: wait))
         XCTAssertTrue(gone(title("Write the essay intro", in: app)))
-        // The last A done, the poster says so.
+        // The last A done, the card says so.
         app.buttons["markA1Done"].tap()
-        XCTAssertTrue(app.staticTexts["Your A’s are done."].waitForExistence(timeout: wait), "the poster says the A’s are done")
+        XCTAssertTrue(app.staticTexts["Your A’s are done."].waitForExistence(timeout: wait), "the card says the A’s are done")
     }
 
     func testFocusOnTheA1() {
@@ -152,7 +152,7 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")
     }
 
-    func testPlanTomorrowFromTheEveningPoster() {
+    func testPlanTomorrowFromTheEveningCard() {
         let app = launch(plan: "empty", night: true)
         // In the evening, with nothing left for today, Today turns to tomorrow.
         XCTAssertTrue(app.staticTexts["What matters most tomorrow?"].waitForExistence(timeout: wait))
@@ -165,9 +165,9 @@ final class CoreFlowsTests: XCTestCase {
         app.buttons["Make it my A1"].tap()
         XCTAssertTrue(app.staticTexts["Tomorrow starts with"].waitForExistence(timeout: wait))
         app.buttons["Done"].tap()
-        // Back on Today the line leads the poster: with no date, it counts from now on.
+        // Back on Today the line leads the card: with no date, it counts from now on.
         XCTAssertTrue(gone(app.staticTexts["What matters most tomorrow?"]))
-        XCTAssertTrue(title("Buy a lab notebook", in: app).exists, "the new A1 is on the poster")
+        XCTAssertTrue(title("Buy a lab notebook", in: app).exists, "the new A1 is on the card")
     }
 
     func testSearchFindsATodo() {

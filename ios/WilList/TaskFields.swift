@@ -15,7 +15,7 @@ struct StepsList: View {
         ForEach($steps) { $step in
             HStack(spacing: 12) {
                 Button { withAnimation(.snappy) { step.done.toggle() } } label: {
-                    Image(systemName: step.done ? Look.current.box.done : Look.current.box.empty)
+                    Image(systemName: step.done ? "checkmark.circle.fill" : "circle")
                         .font(.title3)
                         .foregroundStyle(step.done ? Color.brand : Color(.tertiaryLabel))
                         .contentTransition(.symbolEffect(.replace))

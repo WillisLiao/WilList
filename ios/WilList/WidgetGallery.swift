@@ -18,7 +18,7 @@ struct WidgetGallery: View {
         let tick = UserDefaults.standard.string(forKey: "gallery") == "ticked"
         VStack(spacing: 18) {
             if UserDefaults.standard.string(forKey: "gallery") == "focus" {
-                // A course's colour (the first, blue), and no course (the green).
+                // A course's colour (the first, blue), and no course (the teal).
                 let a = FocusAttributes(title: "Problem set 5", label: "A1", minutes: 50, color: 0)
                 let b = FocusAttributes(title: "Read chapter 4 for psych and write a one-page summary", label: "B2", minutes: 25)
                 let start = Date.now.addingTimeInterval(-8 * 60)
@@ -36,10 +36,10 @@ struct WidgetGallery: View {
                 home(.systemMedium) { TodayWidgetView(glance: empty, family: .systemMedium) }
             } else {
                 HStack(spacing: 22) {
-                    home(.systemSmall, hero: glance) { FirstWidgetView(glance: glance.markingDone(tick ? glance.first?.id : nil), family: .systemSmall) }
-                    home(.systemSmall, hero: empty) { FirstWidgetView(glance: empty, family: .systemSmall) }
+                    home(.systemSmall, a1: true) { FirstWidgetView(glance: glance.markingDone(tick ? glance.first?.id : nil), family: .systemSmall) }
+                    home(.systemSmall, a1: true) { FirstWidgetView(glance: empty, family: .systemSmall) }
                 }
-                home(.systemMedium, hero: glance) { FirstWidgetView(glance: glance.markingDone(tick ? glance.next.first?.id : nil), family: .systemMedium) }
+                home(.systemMedium, a1: true) { FirstWidgetView(glance: glance.markingDone(tick ? glance.next.first?.id : nil), family: .systemMedium) }
                 home(.systemMedium) { TodayWidgetView(glance: glance.markingDone(tick ? glance.todos.first?.id : nil), family: .systemMedium) }
             }
         }
@@ -48,7 +48,7 @@ struct WidgetGallery: View {
         .background(LinearGradient(colors: [Color(hex: 0x8FA7B8), Color(hex: 0x5D7183)], startPoint: .top, endPoint: .bottom))
     }
 
-    private func home(_ family: WidgetFamily, hero: Glance? = nil, @ViewBuilder content: () -> some View) -> some View {
+    private func home(_ family: WidgetFamily, a1: Bool = false, @ViewBuilder content: () -> some View) -> some View {
         let size: CGSize = switch family {
         case .systemSmall: CGSize(width: 170, height: 170)
         case .systemMedium: CGSize(width: 364, height: 170)
@@ -57,7 +57,7 @@ struct WidgetGallery: View {
         return content()
             .padding(16)
             .frame(width: size.width, height: size.height)
-            .background { if let hero { Look.heroGround(hero) } else { Color.white } }
+            .background { if a1 { A1WidgetGround() } else { Color.white } }
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 

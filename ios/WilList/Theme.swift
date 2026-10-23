@@ -50,7 +50,7 @@ struct CheckButton: View {
         Button(action: action) {
             ZStack {
                 if !reduceMotion { TickBurst(done: done) }
-                Image(systemName: done ? Look.current.box.done : Look.current.box.empty)
+                Image(systemName: done ? "checkmark.circle.fill" : "circle")
                     .font(.title2)
                     .foregroundStyle(done ? Color.brand : Color(.tertiaryLabel))
                     .contentTransition(.symbolEffect(.replace))
@@ -66,10 +66,9 @@ struct CheckButton: View {
 }
 
 /// A ring and six sparks thrown off the box as it fills, gone before the row moves away. Drawn
-/// white, and larger, when the poster says the day's A's are done.
+/// larger when the card says the day's A's are done.
 struct TickBurst: View {
     let done: Bool
-    var color: Color = .brand
 
     private struct Frame {
         var spread = 0.0
@@ -80,11 +79,11 @@ struct TickBurst: View {
         KeyframeAnimator(initialValue: Frame(), trigger: done) { f in
             ZStack {
                 Circle()
-                    .stroke(color, lineWidth: 2 * (1 - f.spread) + 0.5)
+                    .stroke(Color.brand, lineWidth: 2 * (1 - f.spread) + 0.5)
                     .frame(width: 24 + 16 * f.spread, height: 24 + 16 * f.spread)
                 ForEach(0..<6, id: \.self) { i in
                     Circle()
-                        .fill(color)
+                        .fill(Color.brand)
                         .frame(width: 4 - 1.5 * f.spread, height: 4 - 1.5 * f.spread)
                         .offset(y: -(13 + 14 * f.spread))
                         .rotationEffect(.degrees(Double(i) * 60 + 30))
@@ -137,7 +136,7 @@ struct ToastHost: ViewModifier {
     func body(content: Content) -> some View {
         content.safeAreaInset(edge: .bottom) {
           // The toast's animation stays with the toast. On the whole screen it animated everything
-          // that changed with it, and the list crossfaded Today's poster when Mark done said so.
+          // that changed with it, and the list crossfaded Today's A1 card when Mark done said so.
           ZStack {
             if let toast = store.toast {
                 HStack(spacing: 16) {
@@ -181,19 +180,16 @@ struct ReadableColumn: ViewModifier {
     }
 }
 
-/// The ground of the A1 card in the current look: pale, filled solid, or outlined. An empty card
-/// (nothing to do first yet) stays pale in every look.
+/// The A1 card's ground: a pale wash of its colour (the teal, or the night for the evening's
+/// question), paler still for an empty card.
 struct HeroCard: ViewModifier {
+    var color: Color = .brand
     var empty = false
-    @Environment(\.field) private var field
 
     func body(content: Content) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 22, style: .continuous)
-        let hero = empty ? .pale : Look.current.hero
         content
             .padding(18)
-            .background(hero == .solid || hero == .poster ? field : hero == .outline ? Color.white : Color.brand.opacity(empty ? 0.06 : 0.09), in: shape)
-            .overlay { if hero == .outline { shape.strokeBorder(Color.brand, lineWidth: 1.5) } }
+            .background(color.opacity(empty ? 0.06 : 0.09), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 }
 
@@ -210,7 +206,7 @@ struct WordsWhenLarge: LabelStyle {
 extension View {
     func toastHost() -> some View { modifier(ToastHost()) }
 
-    func heroCard(empty: Bool = false) -> some View { modifier(HeroCard(empty: empty)) }
+    func heroCard(_ color: Color = .brand, empty: Bool = false) -> some View { modifier(HeroCard(color: color, empty: empty)) }
 
     /// On a wide screen (iPad), a list keeps to a readable column in the middle, and its title
     /// moves up beside the tabs, out of the column's way.

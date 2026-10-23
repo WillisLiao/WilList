@@ -58,7 +58,7 @@ Done means: `swift test`, `npm test`, `npm run lint` and `npm run test:e2e` pass
 - Keep every Tracy principle in `docs/PRINCIPLES.md`.
 - Simplicity first: the owner has said more than once that the app felt busy and confusing. Each screen has one job, one primary action, and as few words as do the job.
 - Logging and ticking off must be fast and satisfying (tick, chime, haptic, the row glides away).
-- There are no fixed visual rules: on 2026-10-23 the owner said "there are no rules, for anything" and asked for a visually captivating experience. Today the app is light, with a green accent, course colours on what belongs to a course, and red only for problems; change any of it when it makes the app better.
+- There are no fixed visual rules: on 2026-10-23 the owner said "there are no rules, for anything" and asked for a visually captivating experience. Today the app is light, in the Lagoon look the owner picked on 2026-10-23 (one teal, system type, the A1 on a pale teal card), with course colours on what belongs to a course and red only for problems; change any of it when it makes the app better.
 - Phone first, keyboard access, reduced motion respected, VoiceOver labels on every control.
 - Website only: no native `alert`, `confirm` or `prompt`; fonts stay self-hosted.
 - The save file format is shared with the website (`willist.v1`): only add optional fields, decode leniently, never break older saves.

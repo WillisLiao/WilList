@@ -75,7 +75,7 @@ private struct FirstWidgetEntry: View {
     var body: some View {
         FirstWidgetView(glance: glance, family: family)
             .containerBackground(for: .widget) {
-                if family == .systemSmall || family == .systemMedium { Look.heroGround(glance) }
+                if family == .systemSmall || family == .systemMedium { A1WidgetGround() }
             }
             .widgetURL(URL(string: "willist://today"))
     }

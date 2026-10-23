@@ -105,7 +105,6 @@ struct PlanList: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(goal.isEmpty ? "Set your main goal" : goal)
                     .font(.headline)
-                    .fontDesign(Look.current.titles)
                     .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
                     // Two lines hold even a long goal, except at the largest text sizes.
                     .lineLimit(typeSize.isAccessibilitySize ? nil : 2)

@@ -67,7 +67,7 @@ struct ItemEditor: View {
                         if let w = item.weightPct { LabeledContent("Share of grade", value: "\(w.formatted())%") }
                         ForEach(item.sessions) { s in
                             HStack {
-                                Image(systemName: s.done ? Look.current.box.done : Look.current.box.empty)
+                                Image(systemName: s.done ? "checkmark.circle.fill" : "circle")
                                     .foregroundStyle(s.done ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(s.label)

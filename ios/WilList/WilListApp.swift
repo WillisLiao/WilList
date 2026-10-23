@@ -15,8 +15,8 @@ struct WilListApp: App {
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // Screen titles in the look's face (New York for Meadow), like the date on Today. Set once the
-    // app has launched: touching UIKit appearance any earlier (in App.init) loses the accent colour.
+    // Screen titles in bold, like the date on Today. Set once the app has launched: touching UIKit
+    // appearance any earlier (in App.init) loses the accent colour.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let bar = UINavigationBar.appearance()
         bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle)]
@@ -56,14 +56,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
     }
 
     private static func titleFont(_ style: UIFont.TextStyle) -> UIFont {
-        let design: UIFontDescriptor.SystemDesign = switch Look.current.titles {
-        case .serif: .serif
-        case .rounded: .rounded
-        default: .default
-        }
         let base = UIFont.preferredFont(forTextStyle: style).fontDescriptor
-        let d = (base.withDesign(design) ?? base).withSymbolicTraits(.traitBold) ?? base
-        return UIFont(descriptor: d, size: 0)
+        return UIFont(descriptor: base.withSymbolicTraits(.traitBold) ?? base, size: 0)
     }
 }
 
@@ -88,17 +82,18 @@ struct RootView: View {
             Tab("More", systemImage: "ellipsis", value: .more) { MoreView() }
         }
         .minimizingTabBar()
-        .lookTint()
+        // The accent colour is the teal already; tinting with it too turns the toolbar buttons teal.
+        .tint(.brand)
         // The first launch writes the first plan, then opens Today on its A1.
         .fullScreenCover(isPresented: $welcoming) {
-            WelcomeView { tab = .today }.lookTint()
+            WelcomeView { tab = .today }.tint(.brand)
         }
         .fullScreenCover(isPresented: Binding(get: { store.planningTomorrow }, set: { store.planningTomorrow = $0 })) {
-            PlanTomorrow().lookTint()
+            PlanTomorrow().tint(.brand)
         }
         // A focus session covers everything until Mark done or Stop.
         .fullScreenCover(isPresented: Binding(get: { store.focus != nil }, set: { _ in })) {
-            FocusView().lookTint()
+            FocusView().tint(.brand)
         }
         #if DEBUG
         // `-gallery YES` on launch shows every widget at its real size (screenshots).

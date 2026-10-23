@@ -56,56 +56,37 @@ struct TodayView: View {
 
     var body: some View {
         let first = self.first, fromPlan = planItems(besides: first)
-        // The A1 as the poster of the day: the header and the A1 share one field, in the colour of
-        // its course. After the day's last A, the poster stays, green, to say the A's are done;
-        // before anything has a letter, it asks what matters most today, and in the evening, with
-        // nothing left for today, it turns to tomorrow.
+        // The A1 on its card under the date. After the day's last A, the card stays to say the A's
+        // are done; before anything has a letter, it asks what matters most today, and in the
+        // evening, with nothing left for today, it turns to tomorrow.
         let finished = doneOn(store.state.items, today)
         let won = first == nil && finished.contains { $0.item.priority == .A }
-        let poster = Look.current.hero == .poster
-        let asking = poster && first == nil && !won
+        let asking = first == nil && !won
         let planned = plannedFor == addDays(today, 1)
         let tonight = asking && store.evening && !planned
-        let field = tonight ? PlanTomorrow.night : CourseColor.of(store.state.courseColor(first?.item.course))
         NavigationStack {
             List {
-                if poster {
-                    // The poster is one row, the date and what comes first together, so its field is
-                    // one piece that a new colour can rise up. The field is painted in the row, not as
-                    // its list background, which the list doesn't repaint when only its colour changes.
-                    VStack(spacing: 0) {
-                        header(first: first, fromPlan: fromPlan, poster: true)
-                            .padding(EdgeInsets(top: 12, leading: 20, bottom: 0, trailing: 12))
-                        if let first {
-                            A1Card(row: first) { editingItem = $0 }
-                        } else if won {
-                            AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
-                                   streak: a1Streak(store.state.meta.firstDone, today))
-                        } else if tonight {
-                            Tonight { store.planningTomorrow = true }
-                        } else {
-                            NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
-                        }
-                    }
-                    .environment(\.field, field)
-                    .background { RisingField(color: field) }
+                header(first: first, fromPlan: fromPlan)
+                    .padding(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                } else {
-                    header(first: first, fromPlan: fromPlan, poster: false)
-                        .padding(EdgeInsets(top: 12, leading: 20, bottom: 16, trailing: 12))
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
+                Group {
                     if let first {
                         A1Card(row: first) { editingItem = $0 }
-                            .padding(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
+                    } else if won {
+                        AsDone(done: finished.count + completed.filter { $0.doneAt == today }.count,
+                               streak: a1Streak(store.state.meta.firstDone, today))
+                    } else if tonight {
+                        Tonight { store.planningTomorrow = true }
+                    } else {
+                        NoA1(waiting: waiting, letterThem: letterThem) { adding = true }
                     }
                 }
+                .padding(EdgeInsets(top: 0, leading: 16, bottom: 12, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
                 // In the evening, until tomorrow is planned, planning comes first: it letters too.
                 if store.evening && !planned && !tonight {
                     nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true }
@@ -194,37 +175,20 @@ struct TodayView: View {
 
     // MARK: header
 
-    /// The date, how the day stands, Search and Sort. Above the poster it steps back to the date
-    /// alone, small and white on the green, so the A1's title is the largest thing on the screen
-    /// (the list below already shows what's left and what's overdue).
-    @ViewBuilder
-    private func header(first: Row?, fromPlan: [Item], poster: Bool) -> some View {
+    /// The date, how the day stands, Search and Sort.
+    private func header(first: Row?, fromPlan: [Item]) -> some View {
         // A new list has nothing to search or sort yet.
         let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
-        if poster {
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(Fmt.long(today))
+                .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
             HStack(spacing: 0) {
-                Text(Fmt.long(today))
-                    .font(.headline)
-                    .foregroundStyle(Color.white)
-                    .accessibilityAddTraits(.isHeader)
+                Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 Spacer(minLength: 8)
-                if hasTools { tools.tint(.white) }
-            }
-            // As tall as the tools, so with none yet the row still fills with the field.
-            .frame(minHeight: 44)
-        } else {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(Fmt.long(today))
-                    .font(.largeTitle.bold())
-                    .fontDesign(Look.current.titles)
-                    .accessibilityAddTraits(.isHeader)
-                HStack(spacing: 0) {
-                    Text(summary(open.count + fromPlan.count + (first == nil ? 0 : 1)))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 8)
-                    if hasTools { tools }
-                }
+                if hasTools { tools }
             }
         }
     }

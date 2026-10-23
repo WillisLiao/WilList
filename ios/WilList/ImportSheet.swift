@@ -120,7 +120,7 @@ struct ImportSheet: View {
                         if keep.contains(i) { keep.remove(i) } else { keep.insert(i) }
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: keep.contains(i) ? Look.current.box.done : Look.current.box.empty)
+                            Image(systemName: keep.contains(i) ? "checkmark.circle.fill" : "circle")
                                 .font(.title3)
                                 .foregroundStyle(keep.contains(i) ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
                             VStack(alignment: .leading, spacing: 2) {

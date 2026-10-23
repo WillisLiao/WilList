@@ -9,7 +9,7 @@ struct GoalsList: View {
 
     var body: some View {
         List {
-            // The main goal leads the page, as the A1 leads Today: set large on the green.
+            // The main goal leads the page, as the A1 leads Today: set large on the teal.
             Button { editingPurpose = true } label: { MainGoal(goal: store.state.mdp) }
                 .buttonStyle(.plain)
                 .accessibilityHint("Changes your main goal")
@@ -52,7 +52,7 @@ struct GoalsList: View {
     }
 }
 
-/// The main goal in white on the green, or the question that asks for one.
+/// The main goal in white on the teal, or the question that asks for one.
 private struct MainGoal: View {
     let goal: String
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
@@ -66,7 +66,6 @@ private struct MainGoal: View {
             }
             Text(goal.isEmpty ? "What one goal would change the most for you?" : Fmt.noWidow(goal))
                 .font(.system(size: size, weight: .bold))
-                .fontDesign(Look.current.titles)
                 .tracking(-0.5)
                 .fixedSize(horizontal: false, vertical: true)
             Text("The goal that would help you most if you reached it.")
@@ -125,7 +124,6 @@ struct PurposeEditor: View {
                 Section {
                     TextField("Graduate with honours and land a design internship", text: $text, axis: .vertical)
                         .font(.title3)
-                        .fontDesign(Look.current.titles)
                         .lineLimit(3...8)
                         .focused($writing)
                 } footer: {

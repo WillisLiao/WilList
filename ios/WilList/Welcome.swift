@@ -69,7 +69,6 @@ struct WelcomeView: View {
     private var mainGoal: some View {
         TextField("Finish the term with a 3.7 GPA", text: $goal, axis: .vertical)
             .font(.title3)
-            .fontDesign(Look.current.titles)
             .lineLimit(2...5)
             .padding(16)
             .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))

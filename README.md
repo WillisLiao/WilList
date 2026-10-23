@@ -24,7 +24,7 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 ## iPhone and iPad app
 
 `ios/` is a native SwiftUI app for iOS 18 and later (with Liquid Glass on iOS 26).
-It is always light: white, with one bright green for ticking off, the A's and the main button, and red only for problems.
+It is always light: white, with one teal for ticking off, the A's and the main button, a colour for each course, and red only for problems.
 It has four tabs:
 
 | | |

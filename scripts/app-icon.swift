@@ -1,5 +1,5 @@
 // Draws the iPhone app icon: the website's W that ends in a tick (app/icons/icon.svg), white on
-// the app's green, plus the dark and tinted versions iOS shows on a dark or tinted Home Screen.
+// the app's teal, plus the dark and tinted versions iOS shows on a dark or tinted Home Screen.
 //   swift scripts/app-icon.swift
 import AppKit
 
@@ -23,7 +23,7 @@ func draw(_ name: String, ground: (top: UInt32, bottom: UInt32)?, mark: CGColor)
                         bitmapInfo: (ground == nil ? CGImageAlphaInfo.premultipliedLast : .noneSkipLast).rawValue)!
     let s = CGFloat(side)
     if let ground {
-        // A slight fall of light from the top, so the flat green reads as a surface.
+        // A slight fall of light from the top, so the flat teal reads as a surface.
         let gradient = CGGradient(colorsSpace: nil, colors: [rgb(ground.top), rgb(ground.bottom)] as CFArray, locations: [0, 1])!
         ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: s), end: .zero, options: [])
     }
@@ -43,9 +43,9 @@ func draw(_ name: String, ground: (top: UInt32, bottom: UInt32)?, mark: CGColor)
     print("\(out)/\(name)")
 }
 
-// Light: white on the app's green (#0F8044 at the middle of the gradient).
-draw("AppIcon.png", ground: (0x13924E, 0x0B6E3A), mark: rgb(0xFFFFFF))
-// Dark: iOS lays a transparent icon on its own dark ground; a lighter green holds up on it.
-draw("AppIcon-dark.png", ground: nil, mark: rgb(0x3DCB80))
+// Light: white on the app's teal (#057785 at the middle of the gradient).
+draw("AppIcon.png", ground: (0x078A99, 0x046471), mark: rgb(0xFFFFFF))
+// Dark: iOS lays a transparent icon on its own dark ground; a lighter teal holds up on it.
+draw("AppIcon-dark.png", ground: nil, mark: rgb(0x3CC8D8))
 // Tinted: iOS colours a grey icon itself.
 draw("AppIcon-tinted.png", ground: nil, mark: rgb(0xFFFFFF))

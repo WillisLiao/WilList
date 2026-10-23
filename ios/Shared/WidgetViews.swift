@@ -11,10 +11,6 @@ struct FirstWidgetView: View {
     let glance: Glance
     let family: WidgetFamily
 
-    private var solid: Bool { Look.current.filled }
-    private var field: Color { CourseColor.of(glance.first?.color) }
-    private var ink: Color { solid ? .white : .primary }
-    private var grey: Color { solid ? .white : .secondary }
 
     var body: some View {
         switch family {
@@ -23,9 +19,9 @@ struct FirstWidgetView: View {
         case .accessoryRectangular:
             rectangular
         case .systemMedium:
-            medium.environment(\.colorScheme, .light).environment(\.field, field)
+            medium.environment(\.colorScheme, .light)
         default:
-            small.environment(\.colorScheme, .light).environment(\.field, field)
+            small.environment(\.colorScheme, .light)
         }
     }
 
@@ -56,7 +52,7 @@ struct FirstWidgetView: View {
                     .padding(.top, 8)
                 // With rows to follow there's room for the title alone; without, say what it's about.
                 if glance.next.isEmpty, let detail = first.detail {
-                    Text(detail).font(.footnote).foregroundStyle(grey).lineLimit(2).padding(.top, 2)
+                    Text(detail).font(.footnote).foregroundStyle(.secondary).lineLimit(2).padding(.top, 2)
                 }
                 Spacer(minLength: 8)
                 ForEach(glance.next.prefix(2)) { nextRow($0) }
@@ -83,26 +79,20 @@ struct FirstWidgetView: View {
 
     private func header(_ first: Glance.Line) -> some View {
         HStack(spacing: 6) {
-            LetterMark(letter: first.letter, label: first.label, onBrand: solid)
+            LetterMark(letter: first.letter, label: first.label)
                 .widgetAccentable()
             Text(first.overdue ? "Overdue" : "Do this first")
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(first.overdue && !solid ? Color.red : grey)
+                .foregroundStyle(first.overdue ? Color.red : Color.secondary)
                 .lineLimit(1)
         }
     }
 
     private func title(_ text: String, lines: Int, size: Font.TextStyle = .headline) -> some View {
         Text(text)
-            .font(.system(size, design: Look.current.titles, weight: .semibold))
-            .foregroundStyle(ink)
+            .font(.system(size, weight: .semibold))
             .lineLimit(lines)
             .minimumScaleFactor(0.85)
-            .background {
-                if Look.current.hero == .outline {
-                    RoundedRectangle(cornerRadius: 3).fill(Color.brand.opacity(0.2)).padding(.horizontal, -3)
-                }
-            }
     }
 
     private func doneButton(_ first: Glance.Line, wide: Bool) -> some View {
@@ -111,10 +101,10 @@ struct FirstWidgetView: View {
                 .contentTransition(.symbolEffect(.replace))
                 .font(.subheadline.weight(.semibold))
                 .labelStyle(.titleAndIcon)
-                .foregroundStyle(solid ? field : Color.white)
+                .foregroundStyle(Color.white)
                 .padding(.horizontal, wide ? 0 : 14)
                 .frame(maxWidth: wide ? .infinity : nil, minHeight: 34)
-                .background(solid ? Color.white : Color.brand, in: Capsule())
+                .background(Color.brand, in: Capsule())
         }
         .buttonStyle(.plain)
         .widgetAccentable()
@@ -123,10 +113,9 @@ struct FirstWidgetView: View {
     private func nextRow(_ line: Glance.Line) -> some View {
         HStack(spacing: 8) {
             Button(intent: FinishRowIntent(key: line.id)) {
-                Image(systemName: line.done ? Look.current.box.done : Look.current.box.empty)
+                Image(systemName: line.done ? "checkmark.circle.fill" : "circle")
                     .font(.body)
-                    // On a field, pure white either way: 70% white fell below 3:1 on the course colours.
-                    .foregroundStyle(solid ? Color.white : line.done ? Color.brand : Color(.tertiaryLabel))
+                    .foregroundStyle(line.done ? Color.brand : Color(.tertiaryLabel))
                     .contentTransition(.symbolEffect(.replace))
                     .widgetAccentable(line.done)
                     .frame(width: 24, height: 26)
@@ -136,11 +125,11 @@ struct FirstWidgetView: View {
             // A widget drops a strikethrough given its own colour, so the words turn grey instead.
             Text(line.title)
                 .font(.subheadline)
-                .foregroundStyle(line.done ? grey : ink)
+                .foregroundStyle(line.done ? Color.secondary : Color.primary)
                 .strikethrough(line.done)
                 .lineLimit(1)
             Spacer(minLength: 4)
-            LetterMark(letter: line.letter, label: line.label, onBrand: solid)
+            LetterMark(letter: line.letter, label: line.label)
         }
     }
 
@@ -151,20 +140,18 @@ struct FirstWidgetView: View {
             if glance.doneToday > 0 {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(solid ? Color.white : field)
+                    .foregroundStyle(Color.brand)
                     .widgetAccentable()
             } else {
                 // The empty slot, as on Today: the A1 mark drawn dashed.
-                LetterMark(letter: nil, label: "A1", onBrand: solid).accessibilityHidden(true)
+                LetterMark(letter: nil, label: "A1").accessibilityHidden(true)
             }
             // Before anything has a letter, the question Today asks.
             Text(glance.doneToday > 0 ? "All done for today" : "What matters most today?")
                 .font(.headline)
-                .fontDesign(Look.current.titles)
-                .foregroundStyle(ink)
             Text(glance.doneToday > 0 ? "\(glance.doneToday) finished." : "Give it an A in WilList.")
                 .font(.footnote)
-                .foregroundStyle(grey)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
     }
@@ -192,7 +179,6 @@ struct TodayWidgetView: View {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(Fmt.date(glance.today).formatted(.dateTime.weekday(.wide)))
                     .font(.headline)
-                    .fontDesign(Look.current.titles)
                 if left > 0 {
                     Text("\(left) to do").font(.footnote).foregroundStyle(.secondary).contentTransition(.numericText(value: Double(left)))
                 }
@@ -218,7 +204,7 @@ struct TodayWidgetView: View {
     private func row(_ todo: Glance.Line) -> some View {
         HStack(spacing: 10) {
             Button(intent: TickTodoIntent(todo: todo.id)) {
-                Image(systemName: todo.done ? Look.current.box.done : Look.current.box.empty)
+                Image(systemName: todo.done ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
                     .foregroundStyle(todo.done ? Color.brand : Color(.tertiaryLabel))
                     .contentTransition(.symbolEffect(.replace))
@@ -271,14 +257,7 @@ struct TodayWidgetView: View {
     }
 }
 
-extension Look {
-    /// The A1 card's ground, filling a widget: its course's colour, pale, or plain white
-    /// (Notebook's outline is the widget's own edge).
-    @ViewBuilder static func heroGround(_ glance: Glance) -> some View {
-        switch current.hero {
-        case .poster, .solid: CourseColor.of(glance.first?.color)
-        case .outline: Color.white
-        case .pale: ZStack { Color.white; Color.brand.opacity(0.09) }
-        }
-    }
+/// The ground of the A1 widgets on the Home Screen: the A1 card's pale teal, as on Today.
+struct A1WidgetGround: View {
+    var body: some View { ZStack { Color.white; Color.brand.opacity(0.09) } }
 }

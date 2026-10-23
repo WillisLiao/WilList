@@ -6,7 +6,7 @@ import WilListCore
 /// One step of a guided flow: where you are and a way out at the top, a big title with a line
 /// under it in white on a field of colour, the step itself on white, and one button at the bottom.
 struct StepPage<Content: View>: View {
-    /// The colour the top of the page sits on, and its button: the green, or night for the evening.
+    /// The colour the top of the page sits on, and its button: the teal, or night for the evening.
     var field: Color = .brand
     let step: Int
     let of: Int
@@ -62,7 +62,6 @@ struct StepPage<Content: View>: View {
                         }
                         Text(title)
                             .font(.largeTitle.bold())
-                            .fontDesign(Look.current.titles)
                             .foregroundStyle(.white)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
@@ -124,7 +123,7 @@ struct LinesEntry: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(lines.indices, id: \.self) { i in
                 HStack(spacing: 12) {
-                    Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                    Image(systemName: "circle").font(.title3).foregroundStyle(Color(.tertiaryLabel))
                         .accessibilityHidden(true)
                     Text(lines[i]).frame(maxWidth: .infinity, alignment: .leading)
                     Button {
@@ -179,7 +178,7 @@ struct A1Choice: View {
                         if chosen {
                             LetterMark(letter: .A, label: "A1")
                         } else {
-                            Image(systemName: Look.current.box.empty).font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                            Image(systemName: "circle").font(.title3).foregroundStyle(Color(.tertiaryLabel))
                         }
                     }
                     .frame(width: 36)

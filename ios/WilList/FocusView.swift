@@ -80,7 +80,6 @@ struct FocusView: View {
                 LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true, onBrand: true)
                 Text(Fmt.noWidow(f.title))
                     .font(.title.bold())
-                    .fontDesign(Look.current.titles)
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -100,10 +99,10 @@ struct FocusView: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// The time left, large, in the posters' serif.
+    /// The time left, large.
     private func clock(_ f: FocusSession, left: TimeInterval) -> some View {
         Text(left == 0 ? "Break" : Self.clock(left))
-            .font(.system(size: 96, weight: .bold, design: Look.current.titles))
+            .font(.system(size: 96, weight: .bold))
             .monospacedDigit()
             .tracking(-1)
             .foregroundStyle(.white)

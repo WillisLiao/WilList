@@ -87,7 +87,7 @@ struct PlanTomorrow: View {
     /// The evening's colour: planning happens at night.
     static let night = Color(hex: 0x262C66)
 
-    /// The last page is drawn the way Today will look in the morning: on the A1's course colour.
+    /// The last page is drawn on the A1's course colour, as its focus session will be.
     private var finished: some View {
         let field = rows.first.map { CourseColor.of(store.state.courseColor($0.item.course)) } ?? Self.night
         return FinishPage(field: field, symbol: "sunrise.fill") {
@@ -97,14 +97,12 @@ struct PlanTomorrow: View {
                     .foregroundStyle(.white)
                 Text(Fmt.noWidow(a1.item.title))
                     .font(.largeTitle.bold())
-                    .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)
                 Text("It’ll be at the top of Today and on your widgets in the morning.")
                     .foregroundStyle(.white)
             } else {
                 Text("Nothing planned for tomorrow")
                     .font(.title.bold())
-                    .fontDesign(Look.current.titles)
                     .accessibilityAddTraits(.isHeader)
                 Text("Add what you need to do in Plan and give the most important an A.")
                     .foregroundStyle(.white)

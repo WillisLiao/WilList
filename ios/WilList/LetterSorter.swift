@@ -86,7 +86,6 @@ struct LetterSorter: View {
             }
             Text(item.title)
                 .font(.title.bold())
-                .fontDesign(Look.current.titles)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, 14)
@@ -175,7 +174,6 @@ struct LetterSorter: View {
         return FinishPage(symbol: "checkmark.circle.fill") {
             Text(left == 0 ? "All lettered" : "Done for now")
                 .font(.title.bold())
-                .fontDesign(Look.current.titles)
                 .accessibilityAddTraits(.isHeader)
             if let a1 {
                 Text("Your A1 is \u{201C}\(a1.item.title)\u{201D}.")

@@ -4,7 +4,6 @@
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
-//   LOOK=frog npm run ios:shots                a design variation from ios/Shared/Look.swift (files get -frog)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
 //   -tab today|plan|study|more       which tab opens
@@ -21,7 +20,6 @@
 //   -gallery YES|lock|focus|ticked   every widget at its real size, the focus Live Activity, or a tick on each
 //   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
 //   -focusSpent 30                   with -focus YES: 30 minutes of it already spent
-//   -look frog                       a look from ios/Shared/Look.swift (or LOOK=frog)
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never
 // answered; `xcrun simctl erase <device>` clears it.
@@ -92,13 +90,12 @@ fs.rmSync(path.join(container, 'Library', 'Application Support', 'willist.v1.jso
 const support = run('xcrun', ['simctl', 'get_app_container', device.udid, BUNDLE, 'group.com.lull.willist']).trim();
 fs.mkdirSync(support, { recursive: true });
 fs.mkdirSync(OUT, { recursive: true });
-const { EMPTY, FIRST, LOOK } = process.env;
+const { EMPTY, FIRST } = process.env;
 const blank = emptyState();
 blank.meta.onboarded = true;
 const data = FIRST ? null : EMPTY ? JSON.stringify(normalize(blank)) : sample();
 const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : '')
-  + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '') + (LOOK ? `-${LOOK}` : '');
-if (LOOK) argv.push('-look', LOOK);
+  + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '');
 // A focus session left running by an earlier shot would cover the screen.
 if (!argv.includes('-focus')) argv.push('-focus', 'NO');
 // Shots look the same at any hour.

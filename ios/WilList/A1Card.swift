@@ -22,11 +22,49 @@ struct A1Card: View {
     /// The next A's words, about to rise into the card. The card moves them itself: the change that
     /// brings the next A isn't animated, since the list would animate everything in the row.
     @State private var rising = false
-    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// The width Start and Mark done need side by side at the default text size; it grows with the text.
+    @ScaledMetric private var buttonsOnOneLine: CGFloat = 300
+    @State private var buttonsWidth: CGFloat = 0
 
     private var today: Day { store.today }
     private var done: Bool { doneKey == row.key }
+
+    /// Start: a focus session on it, with the timer on the Lock Screen too.
+    private func startButton(fill: Bool) -> some View {
+        Button { store.startFocus(row) } label: {
+            // The deeper teal: the teal itself reads at only 3.7:1 on its own wash.
+            Label("Start", systemImage: "play.fill")
+                .foregroundStyle(Color.brandDeep)
+                .lineLimit(1)
+                .padding(.horizontal, 2)
+                .frame(maxWidth: fill ? .infinity : nil)
+        }
+        .buttonStyle(.bordered)
+        .tint(Color.brand)
+        .accessibilityHint("Starts a focus timer for \(Fmt.minutes(row.session?.minutes ?? store.state.settings.taskMin))")
+    }
+
+    private var markDoneButton: some View {
+        Button(action: finish) {
+            // The words change at once and the check fills; crossfaded, the two words overlap.
+            Label {
+                Text(done ? "Done" : "Mark done").lineLimit(1).contentTransition(.identity)
+            } icon: {
+                Image(systemName: done ? "checkmark.circle.fill" : "checkmark")
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .foregroundStyle(Color.white)
+            .frame(maxWidth: .infinity)
+            // The next A's button starts fresh, without the last one's check fading where it was.
+            .id(row.key)
+            .transition(.identity)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color.brand)
+        .accessibilityIdentifier("markA1Done")
+        .sensoryFeedback(.success, trigger: done) { _, new in new }
+    }
 
     var body: some View {
         let streak = a1Streak(store.state.meta.firstDone, today)
@@ -86,39 +124,15 @@ struct A1Card: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             // The next A's words rise from inside the card, not from over the buttons.
             .clipped()
-            // Side by side; one above the other at the largest text sizes, so no word breaks.
-            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))) {
-                // Start: a focus session on it, with the timer on the Lock Screen too.
-                Button { store.startFocus(row) } label: {
-                    // The deeper teal: the teal itself reads at only 3.7:1 on its own wash.
-                    Label("Start", systemImage: "play.fill")
-                        .foregroundStyle(Color.brandDeep)
-                        .lineLimit(1)
-                        .padding(.horizontal, 2)
-                        .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : nil)
-                }
-                .buttonStyle(.bordered)
-                .tint(Color.brand)
-                .accessibilityHint("Starts a focus timer for \(Fmt.minutes(row.session?.minutes ?? store.state.settings.taskMin))")
-                Button(action: finish) {
-                    // The words change at once and the check fills; crossfaded, the two words overlap.
-                    Label {
-                        Text(done ? "Done" : "Mark done").contentTransition(.identity)
-                    } icon: {
-                        Image(systemName: done ? "checkmark.circle.fill" : "checkmark")
-                            .contentTransition(.symbolEffect(.replace))
-                    }
-                    .foregroundStyle(Color.white)
-                    .frame(maxWidth: .infinity)
-                    // The next A's button starts fresh, without the last one's check fading where it was.
-                    .id(row.key)
-                    .transition(.identity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.brand)
-                .accessibilityIdentifier("markA1Done")
-                .sensoryFeedback(.success, trigger: done) { _, new in new }
+            // Side by side when the card is wide enough for both on one line each; otherwise one
+            // above the other, so no word breaks or is cut. The type size alone can't tell: Display
+            // Zoom narrows the screen instead. (ViewThatFits judged them to fit and cut "Mark done".)
+            let stacked = buttonsWidth > 0 && buttonsWidth < buttonsOnOneLine
+            (stacked ? AnyLayout(VStackLayout(spacing: 10)) : AnyLayout(HStackLayout(spacing: 10))) {
+                startButton(fill: stacked)
+                markDoneButton
             }
+            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { buttonsWidth = $0 }
             .controlSize(.large)
             .labelStyle(WordsWhenLarge())
             // On an iPad the buttons stop at a phone's width rather than stretching across.

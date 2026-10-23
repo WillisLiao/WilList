@@ -158,6 +158,16 @@ extension AppState {
         return true
     }
 
+    /// Ticks off an item that isn't on the day's list: the whole item, or a repeat's next time.
+    public mutating func completeLater(_ id: String, today: Day) {
+        guard let i = index(of: id) else { return }
+        guard items[i].recur != nil else { complete(itemId: id, today: today); return }
+        let it = items[i]
+        guard let next = (1...400).lazy.map({ addDays(today, $0) }).first(where: { occursOn(it, $0) && !it.doneDates.contains($0) }) else { return }
+        meta.doneCount += 1
+        items[i].doneDates.append(next)
+    }
+
     /// Swaps rank with the neighbouring item in the same letter.
     public mutating func move(_ rows: [Row], key: String, by dir: Int) {
         guard let idx = rows.firstIndex(where: { $0.key == key }) else { return }

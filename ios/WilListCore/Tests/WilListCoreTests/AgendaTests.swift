@@ -112,6 +112,18 @@ private func state(_ items: Item...) -> AppState {
     #expect(Set(laterItems(s.items, monday).map(\.title)) == ["Medical ad reading", "Chem final"])
 }
 
+@Test func tickingOffSomethingLater() {
+    var s = AppState()
+    s.items.append(mk("Chem final", .exam, date: addDays(monday, 30), priority: .A))
+    s.items.append(mk("Call home", .task, date: monday, priority: .B, recur: Recur(.weekly, days: [0])))
+    let final = s.items[0].id, call = s.items[1].id
+    s.completeLater(final, today: monday)
+    #expect(s.items[0].done)
+    // A weekly call ticked off on Monday counts for Sunday, and the repeat goes on.
+    s.completeLater(call, today: monday)
+    #expect(!s.items[1].done && s.items[1].doneDates == [addDays(monday, 6)])
+}
+
 @Test func theLetterAddedLastComesLast() {
     var s = AppState()
     for (title, date) in [("Essay", nil), ("Lab", nil), ("Quiz prep", Optional(monday))] {

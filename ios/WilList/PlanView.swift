@@ -236,13 +236,15 @@ struct PlanList: View {
         .tint(.gray)
     }
 
-    /// An item off today's list, waiting for a letter or coming later: its title, when, and its
-    /// letter (without a number, which only the day's list has) or the empty mark.
+    /// An item off today's list, waiting for a letter or coming later: its check, title, when, and
+    /// its letter (without a number, which only the day's list has) or the empty mark.
     private func plainRow(_ item: Item) -> some View {
-        HStack(spacing: 8) {
+        let done = ticking.contains(item.id)
+        return HStack(spacing: 10) {
+            CheckButton(done: done) { finishLater(item) }
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
-                    .strikethrough(item.priority == .E, color: .secondary)
+                    .strikethrough(item.priority == .E || done, color: .secondary)
                     .foregroundStyle(item.priority == .E ? .secondary : .primary)
                 if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
             }
@@ -253,8 +255,7 @@ struct PlanList: View {
             // In the same column as the letters above.
             letterMenu(item) { LetterMark(letter: item.priority) }
         }
-        // The words line up with the day's rows above, which have a check before them.
-        .listRowInsets(EdgeInsets(top: 0, leading: 66, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
@@ -316,6 +317,19 @@ struct PlanList: View {
             withAnimation(.snappy) {
                 store.change(undo: "\u{201C}\(row.item.title)\u{201D} done") { $0.complete(row, today: today) }
                 ticking.remove(row.key)
+            }
+        }
+    }
+
+    /// Ticks off something off today's list, as `complete` does a day's row.
+    private func finishLater(_ item: Item) {
+        ticking.insert(item.id)
+        Chime.play()
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            withAnimation(.snappy) {
+                store.change(undo: "\u{201C}\(item.title)\u{201D} done") { $0.completeLater(item.id, today: today) }
+                ticking.remove(item.id)
             }
         }
     }

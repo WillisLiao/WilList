@@ -183,9 +183,7 @@ struct DueRow: View {
                    clearLabel: time == nil ? "Remove the date" : "Remove the time",
                    clear: { if time == nil { date = nil } else { time = nil } }) {
                 HStack(spacing: 6) {
-                    DatePicker(title, selection: Binding(get: { Fmt.date(d) }, set: { date = WilListCore.today($0) }),
-                               displayedComponents: .date)
-                        .labelsHidden()
+                    DayChip(title: title, day: Binding(get: { d }, set: { date = $0 }))
                     if let t = time {
                         DatePicker("Time", selection: Binding(
                             get: { Calendar.current.date(bySettingHour: (timeToMin(t) ?? 1020) / 60, minute: (timeToMin(t) ?? 1020) % 60, second: 0, of: .now) ?? .now },
@@ -226,6 +224,43 @@ struct DueRow: View {
         Button { date = d } label: {
             Text(title)
             Text(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+        }
+    }
+}
+
+/// A day as a chip, "Oct 26" (the year only when it isn't this year), that opens the calendar like
+/// the system's compact picker. That one always writes the year, which left no room for the time
+/// beside it under Display Zoom.
+private struct DayChip: View {
+    let title: String
+    @Binding var day: Day
+    @State private var picking = false
+
+    var body: some View {
+        let date = Fmt.date(day)
+        let sameYear = Calendar.current.isDate(date, equalTo: .now, toGranularity: .year)
+        Button { picking = true } label: {
+            // A fixed colour: inside a button, the primary style takes on the tint.
+            Text(sameYear ? date.formatted(.dateTime.month(.abbreviated).day()) : date.formatted(date: .abbreviated, time: .omitted))
+                .foregroundStyle(Color.primary)
+                .lineLimit(1)
+                .padding(.horizontal, 11)
+                .frame(minHeight: 34)
+                .background(Color(.tertiarySystemFill), in: Capsule())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(title)
+        .accessibilityValue(date.formatted(date: .complete, time: .omitted))
+        .popover(isPresented: $picking) {
+            DatePicker(title, selection: Binding(get: { date }, set: { day = WilListCore.today($0); picking = false }),
+                       displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .tint(.brand)
+                // A popover takes its content's size, and the calendar on its own asks for almost none.
+                .frame(width: 320)
+                .padding(8)
+                .presentationCompactAdaptation(.popover)
         }
     }
 }

@@ -366,16 +366,15 @@ struct RisingField: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        GeometryReader { geo in
-            // Past the top by the status bar's height, so the new colour covers it too.
-            // The colours themselves never blend, even when the change around them is animated:
-            // blue to orange passes through a vivid blue and a grey mauve.
-            color.animation(nil, value: color)
-                .frame(height: (geo.size.height + 100) * risen)
-                .frame(maxHeight: .infinity, alignment: .bottom)
-        }
-        .background((under ?? color).animation(nil, value: color).padding(.top, -1000))
-        .padding(.horizontal, -1000)
+        // The colours themselves never blend, even when the change around them is animated: blue
+        // to orange passes through a vivid blue and a grey mauve.
+        color.animation(nil, value: color)
+            // Up past the top by the status bar's height, so the new colour covers it too, and
+            // grown from the bottom.
+            .padding(.top, -100)
+            .scaleEffect(y: risen, anchor: .bottom)
+            .background((under ?? color).animation(nil, value: color).padding(.top, -1000))
+            .padding(.horizontal, -1000)
         .onChange(of: color) { old, _ in
             guard !reduceMotion else { return }
             var still = Transaction()

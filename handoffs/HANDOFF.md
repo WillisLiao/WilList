@@ -24,13 +24,13 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Plan** (was Goals): main goal (Your goals opens on it, large in white on a green card), the day in ABCDE order with the A1 first, items needing a letter (**Letter them** opens the sorter), then Plan tomorrow and Bring in a schedule.
 - **Study:** today's sessions, this week's load stacked by course colour with a key, against a dashed daily-budget line (a day past it has its time in red), exams and deadlines coming up.
 - **More:** calendar links, to-do and study settings, planning time, the Claude key (keychain), backup and restore.
-- **Focus:** the whole screen in the task's course colour, one white ring timer, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
+- **Focus:** the whole screen in the task's course colour, the time spent rising from the bottom in a deeper shade like a glass filling, the time left in large serif, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
 - **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1.
 - **Plan tomorrow:** Tracy's evening habit in two steps on a night-indigo field: anything new for tomorrow (one line each, dates read), then which one first.
   It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour, as Today will look in the morning; that page rises over the night like a sunrise.
-  Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned, and the evening notification opens it.
+  Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned (with nothing left for today, the poster itself turns night and asks what matters most tomorrow), and the evening notification opens it.
 - **Give it a letter:** a to-do that turns out to matter moves into Plan with its steps, dates and note.
 - **Widgets:** Do this first (your A1 with Mark done, on its course colour: small, medium, Lock Screen rectangular and inline) and Today (to-dos with ticks: medium, large, Lock Screen circular), sharing the plan through the app group `group.com.lull.willist`.
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
@@ -49,7 +49,7 @@ Once the owner picks, delete the others from `ios/Shared/Look.swift`.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`) and Live Activities under team `45MSS5RXML`, so Xcode needs that team signed in.
 Signing is blocked until the owner accepts Apple's latest Program License Agreement in the developer account (Xcode reports "PLA Update available"); compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
 
-**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 10 UI tests (add and tick, adding the A1 from an empty Today, a reminder, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
+**Checked:** 81 Swift core tests, 78 website unit tests, lint, the website end-to-end test, 11 UI tests (add and tick, adding the A1 from an empty Today, Plan tomorrow from the evening poster, a reminder, give a letter, Mark done and Undo through to "Your A’s are done.", focus, the first run, Plan tomorrow, Search, and the accessibility audit), a zero-warning build, and every changed screen in the simulator at the default text size (the owner asked not to spend time on the largest accessibility sizes), on the iPhone 17, the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 The poster's Mark done and the colour change to the next course were checked frame by frame in screen recordings.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.

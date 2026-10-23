@@ -10,6 +10,7 @@ final class AuditTests: XCTestCase {
         let screens: [(name: String, plan: String, args: [String])] = [
             ("Today", "busy", ["-tab", "today"]),
             ("Plan", "busy", ["-tab", "plan"]),
+            ("Plan, empty", "empty", ["-tab", "plan"]),
             ("Study", "busy", ["-tab", "study"]),
             ("More", "busy", ["-tab", "more"]),
             ("Welcome", "new", []),

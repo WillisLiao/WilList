@@ -129,8 +129,19 @@ struct PlanList: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
             }
-            Text(emptyMessage)
-                .fixedSize(horizontal: false, vertical: true)
+            if let emptyMessage {
+                Text(emptyMessage)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                // Nothing in the plan yet: the method itself, set like Today's question card.
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Give everything a letter")
+                        .font(.title2.weight(.semibold))
+                        .accessibilityAddTraits(.isHeader)
+                    Text("Your A1 leads Today.").foregroundStyle(.secondary)
+                }
+                legend.padding(.vertical, 4)
+            }
             // With items waiting below, their Letter buttons are the way to fill this card.
             if waiting.isEmpty {
                 Button { adding = true } label: {
@@ -148,10 +159,30 @@ struct PlanList: View {
         .listRowBackground(Color.clear)
     }
 
-    private var emptyMessage: String {
+    /// What the empty card says when the plan has something in it; nil when it has nothing yet.
+    private var emptyMessage: String? {
         if !waiting.isEmpty { return "Give the items below a letter. Your most important one becomes your A1, at the top of Today." }
-        if let next = nextUp { return "Nothing to do today. Next: \(next.title), \(Fmt.day(next.day, today, inSentence: true))." }
-        return "Add what you need to do and give each one a letter. Your A1 goes to the top of Today, so you always know what to do first."
+        return nextUp.map { "Nothing to do today. Next: \($0.title), \(Fmt.day($0.day, today, inSentence: true))." }
+    }
+
+    /// Tracy's five letters and what each means, for a plan with nothing in it yet: the method at a
+    /// glance instead of a paragraph about it.
+    private var legend: some View {
+        HStack(alignment: .top, spacing: 4) {
+            ForEach(Letter.allCases, id: \.self) { letter in
+                VStack(spacing: 6) {
+                    LetterMark(letter: letter, large: true)
+                    Text(letter.name)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Letter.allCases.map { "\($0.rawValue), \($0.name)" }.joined(separator: ". "))
     }
 
     /// The soonest lettered thing still to come, for a day with nothing on it.

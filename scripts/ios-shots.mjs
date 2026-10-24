@@ -1,18 +1,19 @@
 // Screenshots of the iPhone app in the iOS Simulator, with the app's sample week loaded.
 //   npm run ios:shots                          the four tabs, into shots/ios
-//   npm run ios:shots -- today -open goals     one tab, with debug launch arguments
+//   npm run ios:shots -- today -open settings     one tab, with debug launch arguments
 //   DEVICE="iPhone 17 Pro" npm run ios:shots   another simulator (default "iPhone 17")
 //   EMPTY=1 npm run ios:shots                  an empty plan, welcome already seen (files get -empty)
 //   FIRST=1 npm run ios:shots today            the very first launch: the welcome (files get -first)
 //
 // Debug builds read these launch arguments, so any screen can be shot without tapping:
-//   -tab today|plan|progress|agent   which tab opens
-//   -open settings|goals             Settings, from the profile picture (goals: with Goals pushed)
+//   -tab today|plan|progress|goals|agent   which tab opens
+//   -open settings                   Settings, from the profile picture
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
 //   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
 //   -scroll later|calendar           Plan: scroll to Later or the calendar
 //   -scroll next|coming              Progress: scroll to Next 7 days or Coming up
-//   -sheet add|search|letters        open that sheet (add from Plan, search and letters from Today)
+//   -scroll coming                   Today: scroll to Coming up
+//   -sheet add|study|search|letters  open that sheet (New task and New study block from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)
 //   -show "Email TA"                 open the to-do or item whose title starts with this
@@ -36,7 +37,7 @@ const OUT = 'shots/ios';
 process.chdir(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
 
 const argv = process.argv.slice(2);
-const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'plan', 'progress', 'agent'];
+const tabs = argv[0] && !argv[0].startsWith('-') ? [argv.shift()] : ['today', 'plan', 'progress', 'goals', 'agent'];
 const run = (cmd, args, quiet = false) => execFileSync(cmd, args, { encoding: 'utf8', stdio: quiet ? 'ignore' : 'pipe' });
 const tryRun = (cmd, args) => { try { run(cmd, args, true); } catch { /* already in that state */ } };
 

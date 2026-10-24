@@ -3,7 +3,7 @@ import Foundation
 // Turns stored items into what the screens show: the lettered list, the schedule, the
 // days ahead and "the vital few".
 
-private let fixedTypes: Set<ItemType> = [.exam, .presentation, .event]
+private let fixedTypes: Set<ItemType> = [.exam, .presentation, .event, .study]
 
 public func occursOn(_ item: Item, _ iso: Day) -> Bool {
     guard let start = item.date else { return false }
@@ -45,7 +45,7 @@ public func nextRepeat(_ recur: Recur, from start: Day, after day: Day) -> Day? 
     return nil
 }
 
-/// Exams, presentations and one-off events are finished once their day has passed.
+/// Exams, presentations, one-off events and study blocks are finished once their day has passed.
 public func isPast(_ item: Item, _ today: Day) -> Bool {
     guard fixedTypes.contains(item.type), item.recur == nil, let d = item.date else { return false }
     return diffDays(today, d) < 0
@@ -56,9 +56,9 @@ public func isOpen(_ item: Item, _ today: Day) -> Bool { !item.done && !isPast(i
 /// Letter first, then the order you ranked them in, then due date.
 public func letterKey(_ it: Item) -> (Int, Double, String) { (it.priority?.rank ?? -1, it.order, it.date ?? "9999") }
 
-/// Fixed-time commitments for a day: classes, meetings, exams, presentations.
+/// Fixed-time commitments for a day: classes, meetings, study blocks, exams, presentations.
 public func scheduleOn(_ items: [Item], _ iso: Day) -> [Item] {
-    items.filter { ($0.type == .event && occursOn($0, iso)) || (($0.type == .exam || $0.type == .presentation) && $0.date == iso) }
+    items.filter { ($0.type.isBlock && occursOn($0, iso)) || (($0.type == .exam || $0.type == .presentation) && $0.date == iso) }
         .sorted { ($0.time ?? "") < ($1.time ?? "") }
 }
 
@@ -99,7 +99,7 @@ public func dayRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row]
         let due = open.filter { diffDays(day, $0.date) <= 0 }
         if let first = due.first { rows.append(row(it, first, extra: due.count - 1)) }
     }
-    for it in items where it.type != .event && it.priority != nil {
+    for it in items where !it.type.isBlock && it.priority != nil {
         if it.recur != nil {
             if occursOn(it, day) && !it.doneDates.contains(day) {
                 var r = row(it)
@@ -136,8 +136,8 @@ public func doRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row] 
 }
 
 /// Everything that isn't on the day's list: work whose study starts later, things due further
-/// out, repeats on other days, anything without a letter. Plan shows them under the day, soonest
-/// first.
+/// out, repeats on other days, anything without a letter, study blocks. Plan shows them under the
+/// day, soonest first.
 public func laterItems(_ items: [Item], _ day: Day) -> [Item] {
     let shown = Set(dayRows(items, day).map(\.item.id))
     func next(_ it: Item) -> Day { it.sessions.first { !$0.done }?.date ?? it.date ?? "9999" }
@@ -160,7 +160,7 @@ public func studyRows(_ items: [Item], _ today: Day) -> [Row] {
 
 /// Open items still waiting for a letter, soonest first.
 public func unsorted(_ items: [Item], _ today: Day) -> [Item] {
-    items.filter { $0.type != .event && $0.priority == nil && isOpen($0, today) }
+    items.filter { !$0.type.isBlock && $0.priority == nil && isOpen($0, today) }
         .sorted { ($0.date ?? "9999") < ($1.date ?? "9999") }
 }
 
@@ -210,6 +210,12 @@ public func radar(_ items: [Item], _ today: Day, days: Int, perDayMin: Int) -> [
                 study.append(.init(item: it, count: todays.count, minutes: minutes))
             }
             if !it.sessions.contains(where: \.done), it.sessions.first(where: { !$0.done })?.date == d { starts.append(it) }
+        }
+        // Study blocks count as that day's study too.
+        for b in items where b.type == .study && occursOn(b, d) && !b.done && !b.doneDates.contains(d) {
+            let minutes = b.durationMin ?? 60
+            load += minutes
+            study.append(.init(item: b, count: 1, minutes: minutes))
         }
         let due = items.filter { !fixedTypes.contains($0.type) && $0.recur == nil && !$0.done && $0.date == d }
         return Ahead(date: d, schedule: scheduleOn(items, d), due: due, study: study, starts: starts, load: load, over: load > perDayMin)
@@ -264,7 +270,7 @@ public func readiness(_ items: [Item], _ today: Day, horizon: Int = 45) -> [Vita
 /// "Urgent things are seldom important; important things are seldom urgent."
 public func importantNotUrgent(_ items: [Item], _ today: Day) -> [Item] {
     items.filter { it in
-        guard it.priority == .A, isOpen(it, today), let d = it.date, it.recur == nil, it.type != .event else { return false }
+        guard it.priority == .A, isOpen(it, today), let d = it.date, it.recur == nil, !it.type.isBlock else { return false }
         return (4...30).contains(diffDays(today, d))
     }
     .sorted { $0.date! < $1.date! }

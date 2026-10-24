@@ -4,12 +4,18 @@ import Foundation
 // from the old app decodes unchanged. Decoding is forgiving: a missing or odd field takes its
 // default, and a broken row is dropped instead of failing the whole file.
 
-public enum ItemType: String, Codable, Sendable, CaseIterable {
-    case task, deadline, exam, presentation, reading, event
+public enum ItemType: String, Codable, Sendable, CaseIterable, Identifiable {
+    /// `study` is a study block: a set time to study something, added by hand, maybe every week.
+    case task, deadline, exam, presentation, reading, event, study
 
     public init(from decoder: Decoder) throws {
         self = ItemType(rawValue: (try? decoder.singleValueContainer().decode(String.self)) ?? "") ?? .task
     }
+
+    public var id: Self { self }
+
+    /// A block of time on the calendar (a class, a study block), not a line of the lettered list.
+    public var isBlock: Bool { self == .event || self == .study }
 }
 
 public enum Letter: String, Codable, Sendable, CaseIterable, Comparable {

@@ -121,7 +121,7 @@ extension Fmt {
     static func marks(_ steps: [Step], remind: String?, today onToday: Bool) -> [Text?] {
         let upcoming = Reminders.remind(remind).flatMap { Calendar.current.date(from: $0) }.map { $0 > .now } ?? false
         return [
-            steps.isEmpty ? nil : Text("\(steps.filter(\.done).count) of \(steps.count)").foregroundStyle(Color.secondary),
+            steps.isEmpty ? nil : Text("\(steps.filter(\.done).count)\u{00A0}of\u{00A0}\(steps.count)").foregroundStyle(Color.secondary),
             upcoming ? Text(Image(systemName: "bell")).foregroundStyle(Color.secondary) : nil,
             onToday ? Text(Image(systemName: "sun.max")).foregroundStyle(Color.secondary) : nil,
         ]
@@ -274,5 +274,21 @@ extension View {
     /// hidden, and the screen's toast host leaves room for ours.
     func underTabBar() -> some View {
         toolbar(.hidden, for: .tabBar).environment(\.tabBarRoom, TabBar.room)
+    }
+}
+
+extension View {
+    /// A row's title and the line under it as one element that opens the row's details, at least as
+    /// tall as the row: a tap anywhere on the words opens it, and VoiceOver reads them as one
+    /// ("Read chapter 4, 1:30 – 1:55 PM"). Left apart, the line under the title was a tap target too
+    /// small for the accessibility audit.
+    func rowWords(opens: @escaping () -> Void) -> some View {
+        frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 6)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .onTapGesture(perform: opens)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
     }
 }

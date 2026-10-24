@@ -325,6 +325,8 @@ public func quickAdd(_ text: String, today: Day, minute: Int = 0, dateOrder: Str
     out.bare = title.isEmpty
     out.title = title.isEmpty ? raw : title
     out.type = detectType(raw)
+    // "Study chem tue 7pm 2h": a set time to study is a study block.
+    if out.time != nil && matches(raw.lowercased(), #"^\s*study(ing)?\b"#) { out.type = .study }
 
     if var r = out.recur {
         if (r.freq == .weekly || r.freq == .biweekly) && (r.days ?? []).isEmpty { r.days = [weekday(out.date ?? today)] }

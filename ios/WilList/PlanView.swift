@@ -13,7 +13,8 @@ struct PlanList: View {
     @Environment(Store.self) private var store
     /// The day tapped on the calendar, listed in full under it.
     @State private var picked: Day?
-    @State private var adding = false
+    /// Which New sheet is open: a task, or a study block.
+    @State private var adding: ItemType?
     @State private var editing: Item?
     @State private var ticking: Set<String> = []
     @State private var searching = false
@@ -61,10 +62,14 @@ struct PlanList: View {
             .ground()
             .readableColumn()
             #if DEBUG
-            // `-scroll letters|calendar` or `-sheet add` on launch, for screenshots.
+            // `-scroll later|calendar` or `-sheet add|study` on launch, for screenshots.
             .onAppear {
                 UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) }
-                adding = UserDefaults.standard.string(forKey: "sheet") == "add"
+                switch UserDefaults.standard.string(forKey: "sheet") {
+                case "add": adding = .task
+                case "study": adding = .study
+                default: break
+                }
             }
             #endif
         }
@@ -75,11 +80,17 @@ struct PlanList: View {
                 Button("Search", systemImage: "magnifyingglass") { searching = true }
             }
             ToolbarItem(placement: .primaryAction) {
-                Button("Add", systemImage: "plus") { adding = true }
+                Menu {
+                    Button("Task", systemImage: "checklist") { adding = .task }
+                    Button("Study block", systemImage: "book") { adding = .study }
+                } label: {
+                    Label("Add", systemImage: "plus")
+                }
+                .menuOrder(.fixed)
             }
         }
         .sheet(isPresented: $searching) { SearchView() }
-        .sheet(isPresented: $adding) { AddItemSheet() }
+        .sheet(item: $adding) { AddItemSheet(preset: $0 == .study ? .study : nil) }
         .onChange(of: store.opening, initial: true) {
             if let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
                 store.opening = nil
@@ -113,13 +124,11 @@ struct PlanList: View {
                     .foregroundStyle(row.priority == .E ? .secondary : .primary)
                 if let line = line(row) { line.font(.subheadline) }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-            .onTapGesture { editing = row.item }
+            .rowWords { editing = row.item }
+            if row.priority != .E { PlayButton(planned: row.session?.minutes) { store.startFocus(row, minutes: $0) } }
             letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .leading) {
             Button("Done", systemImage: "checkmark") { complete(row) }.tint(.brand)
             addToToday(row.item)
@@ -150,14 +159,16 @@ struct PlanList: View {
                     .foregroundStyle(item.priority == .E ? .secondary : .primary)
                 if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-            .onTapGesture { editing = item }
+            .rowWords { editing = item }
+            if item.priority != .E {
+                PlayButton(planned: item.sessions.first { !$0.done }?.minutes ?? (item.type == .study ? item.durationMin : nil)) {
+                    store.startFocus(item, minutes: $0)
+                }
+            }
             // In the same column as the letters above.
-            if item.priority != nil { letterMenu(item) { LetterMark(letter: item.priority) } }
+            if item.priority != nil { letterMenu(item) { LetterMark(letter: item.priority) } } else { MarkColumn {} }
         }
-        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .trailing) {
             Button("Delete", systemImage: "trash", role: .destructive) { store.delete(item.id) }
         }
@@ -170,7 +181,7 @@ struct PlanList: View {
                 withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
             }
         } label: {
-            label().frame(minWidth: 44, minHeight: 44, alignment: .trailing).contentShape(Rectangle())
+            label().frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
         }
         .buttonStyle(.borderless)
         .sensoryFeedback(.selection, trigger: item.priority)

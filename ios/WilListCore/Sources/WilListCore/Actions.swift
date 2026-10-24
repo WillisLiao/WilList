@@ -45,7 +45,7 @@ public func makeItem(_ draft: Item, _ settings: Settings, _ today: Day, _ items:
     var it = draft
     it.id = newID()
     if it.title.isEmpty { it.title = "Untitled" }
-    it.durationMin = it.type == .event ? (draft.durationMin ?? 60) : nil
+    it.durationMin = it.type.isBlock ? (draft.durationMin ?? 60) : nil
     // For planned work a typed duration ("essay due fri 4h") means effort.
     it.effortMin = plannedTypes.contains(it.type)
         ? [draft.effortMin, draft.durationMin ?? 0].first { $0 > 0 } ?? calibrated(it.type, it.title, settings)
@@ -163,7 +163,7 @@ extension AppState {
         guard let i = index(of: id) else { return }
         guard items[i].recur != nil else { complete(itemId: id, today: today); return }
         let it = items[i]
-        guard let next = (1...400).lazy.map({ addDays(today, $0) }).first(where: { occursOn(it, $0) && !it.doneDates.contains($0) }) else { return }
+        guard let next = (0...400).lazy.map({ addDays(today, $0) }).first(where: { occursOn(it, $0) && !it.doneDates.contains($0) }) else { return }
         meta.doneCount += 1
         items[i].doneDates.append(next)
     }

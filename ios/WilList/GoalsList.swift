@@ -45,9 +45,9 @@ struct GoalsList: View {
             }
         }
         .ground()
-        // Inline, as Settings is: a large title here was drawn over the main goal.
-        .readableColumn(inline: true)
+        .readableColumn()
         .navigationTitle("Goals")
+        .profileButton()
         .sheet(item: $editingGoal) { GoalEditor(goal: $0) }
         .sheet(isPresented: $editingPurpose) { PurposeEditor() }
         .toastHost()

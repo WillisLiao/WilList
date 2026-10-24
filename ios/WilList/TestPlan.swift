@@ -95,6 +95,7 @@ enum TestPlan {
         add("Chemistry lab", .event, course: "CHEM110", on: 0, at: "14:00", for: 180, weekly: [wd == 0 || wd == 6 ? 3 : wd])
         add("Research group meeting", .event, on: 0, at: "16:30", for: 60, weekly: [2])
         add("Office hours with Prof. Lee", .event, course: "MATH201", on: 3, at: "15:00", for: 30)
+        add("Study organic chemistry", .study, course: "CHEM110", on: 0, at: "19:00", for: 90, weekly: [wd, (wd + 2) % 7])
         add("Calculus midterm", .exam, .A, course: "MATH201", on: 12, at: "09:00", effort: 360, weight: 25, goal: gpa.id)
         add("Chem quiz 4", .exam, .A, course: "CHEM110", on: 3, effort: 120, weight: 5)
         add("History presentation: the printing press", .presentation, .A, course: "HIST150", on: 9, at: "13:00", effort: 180, weight: 15)

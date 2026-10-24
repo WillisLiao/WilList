@@ -2,7 +2,8 @@ import SwiftUI
 import WilListCore
 
 /// Add items by typing them the way you'd say them. The sheet stays open, so a whole week can
-/// go in one after another.
+/// go in one after another. As New study block (`preset` `.study`) it adds a set time to study,
+/// every week if you like.
 struct AddItemSheet: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
@@ -13,13 +14,17 @@ struct AddItemSheet: View {
     @State private var text = ""
     #endif
     @State private var chosenLetter: Letter??
+    @State private var weekly = false
     @State private var added: [String] = []
     @FocusState private var focused: Bool
 
     private var parsed: Parsed { quickAdd(text, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder) }
-    private var type: ItemType { parsed.type == .task ? preset ?? .task : parsed.type }
+    private var type: ItemType { preset == .study ? .study : parsed.type == .task ? preset ?? .task : parsed.type }
+    private var study: Bool { type == .study }
     private var letter: Letter? { chosenLetter ?? parsed.priority ?? suggestedLetter(type, weightPct: parsed.weightPct) }
     private var empty: Bool { text.trimmingCharacters(in: .whitespaces).isEmpty }
+    /// A study block needs its time.
+    private var ready: Bool { !empty && !(study && parsed.time == nil) }
 
     var body: some View {
         NavigationStack {
@@ -32,7 +37,9 @@ struct AddItemSheet: View {
                         .onSubmit(add)
                 } footer: {
                     if empty {
-                        Text("Like \u{201C}Essay due fri 4h #ENG101\u{201D}")
+                        Text(study ? "Like \u{201C}Organic chem tue 7pm 2h\u{201D}" : "Like \u{201C}Essay due fri 4h #ENG101\u{201D}")
+                    } else if study && parsed.time == nil {
+                        Text("Add a time, like \u{201C}7pm\u{201D}")
                     } else if let hint = parsed.hints.first {
                         Text(advice(hint))
                     }
@@ -40,29 +47,31 @@ struct AddItemSheet: View {
 
                 if !empty { understood }
 
-                Section {
-                    HStack(spacing: 8) {
-                        ForEach(Letter.allCases, id: \.self) { l in
-                            Button { chosenLetter = .some(l == letter ? nil : l) } label: {
-                                Text(l.rawValue)
-                                    .font(.headline)
-                                    .strikethrough(l == .E)
-                                    // Its colour in full once chosen, a pale wash of it until then (yellow
-                                    // and green words can't be read on white).
-                                    .foregroundStyle(letter == l ? l.ink : Color.primary)
-                                    .frame(maxWidth: .infinity, minHeight: 40)
-                                    .background(letter == l ? l.color : l.color.opacity(0.22), in: Capsule())
+                if !study {
+                    Section {
+                        HStack(spacing: 8) {
+                            ForEach(Letter.allCases, id: \.self) { l in
+                                Button { chosenLetter = .some(l == letter ? nil : l) } label: {
+                                    Text(l.rawValue)
+                                        .font(.headline)
+                                        .strikethrough(l == .E)
+                                        // Its colour in full once chosen, a pale wash of it until then (yellow
+                                        // and green words can't be read on white).
+                                        .foregroundStyle(letter == l ? l.ink : Color.primary)
+                                        .frame(maxWidth: .infinity, minHeight: 40)
+                                        .background(letter == l ? l.color : l.color.opacity(0.22), in: Capsule())
+                                }
+                                .buttonStyle(.borderless)
+                                .accessibilityLabel("\(l.rawValue): \(l.meaning)")
+                                .accessibilityAddTraits(letter == l ? .isSelected : [])
                             }
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel("\(l.rawValue): \(l.meaning)")
-                            .accessibilityAddTraits(letter == l ? .isSelected : [])
                         }
+                        .sensoryFeedback(.selection, trigger: letter)
+                    } header: {
+                        Text("Letter")
+                    } footer: {
+                        if let letter { Text(letter.meaning) }
                     }
-                    .sensoryFeedback(.selection, trigger: letter)
-                } header: {
-                    Text("Letter")
-                } footer: {
-                    if let letter { Text(letter.meaning) }
                 }
 
                 if !added.isEmpty {
@@ -79,7 +88,7 @@ struct AddItemSheet: View {
                     Button(added.isEmpty ? "Cancel" : "Done") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Add", action: add).disabled(empty)
+                    Button("Add", action: add).disabled(!ready)
                 }
             }
             .sensoryFeedback(.success, trigger: added.count)
@@ -94,6 +103,7 @@ struct AddItemSheet: View {
 
     private var placeholder: String {
         switch preset {
+        case .study: "What and when"
         case .exam: "Chem quiz thu 9am #CHEM110"
         case .deadline: "Lab report due fri 5pm"
         default: "What and when"
@@ -108,7 +118,12 @@ struct AddItemSheet: View {
             if let d = p.date {
                 LabeledContent("When", value: [Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)), Fmt.time(p.time)].compactMap { $0 }.joined(separator: ", "))
             }
-            if let r = p.recur { LabeledContent("Repeats", value: Fmt.recur(r)) }
+            if study, p.time != nil { LabeledContent("Lasts", value: Fmt.minutes(p.durationMin ?? 60)) }
+            if let r = p.recur {
+                LabeledContent("Repeats", value: Fmt.recur(r))
+            } else if study {
+                Toggle("Every week", isOn: $weekly).tint(.brand)
+            }
             if let c = p.course { LabeledContent("Course", value: c) }
             if let w = p.weightPct { LabeledContent("Share of grade", value: "\(w.formatted())%") }
             if let plan = planPreview { LabeledContent("Plan", value: plan) }
@@ -118,7 +133,8 @@ struct AddItemSheet: View {
     private var draft: Item {
         var it = Item(parsed)
         it.type = type
-        it.priority = letter
+        it.priority = study ? nil : letter
+        if study && weekly && it.recur == nil, let d = it.date { it.recur = Recur(.weekly, days: [weekday(d)]) }
         return it
     }
 
@@ -142,12 +158,13 @@ struct AddItemSheet: View {
     }
 
     private func add() {
-        guard !empty else { return }
+        guard ready else { return }
         let it = draft
         withAnimation { store.add(it) }
         added.insert(it.title, at: 0)
         text = ""
         chosenLetter = nil
+        weekly = false
         focused = true
     }
 }

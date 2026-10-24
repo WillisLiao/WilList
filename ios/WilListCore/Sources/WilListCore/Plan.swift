@@ -27,7 +27,7 @@ public func suggestEffort(_ type: ItemType, _ title: String = "") -> Int {
         if has(#"\bpapers?\b"#) { return 120 }
         if has(#"\b(chapters|book|textbook)\b"#) { return 240 }
         return 120
-    case .task, .event:
+    case .task, .event, .study:
         return 0
     }
 }

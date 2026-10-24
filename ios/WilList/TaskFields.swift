@@ -445,3 +445,43 @@ struct StarButton: View {
         .accessibilityLabel(on ? "Important" : "Mark as important")
     }
 }
+
+/// Play beside a task: choose how long, and a focus session on it starts. The planned length, when
+/// there is one, comes with the usual ones.
+struct PlayButton: View {
+    /// A study session's or a block's own length.
+    var planned: Int?
+    let start: (Int) -> Void
+
+    var body: some View {
+        Menu {
+            Section("Focus for") {
+                ForEach(Array(Set([15, 25, 45, 60, 90] + [planned].compactMap { $0 })).sorted(), id: \.self) { m in
+                    Button { start(m) } label: {
+                        Text(Fmt.minutes(m))
+                        if m == planned { Text("As planned") }
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "play.fill")
+                .font(.subheadline)
+                .foregroundStyle(Color.brand)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .menuOrder(.fixed)
+        .menuIndicator(.hidden)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Start a focus session")
+    }
+}
+
+/// The column at a row's right end, as wide as the star: a letter, or nothing, so the Play
+/// buttons beside it line up down a list.
+struct MarkColumn<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    // The clear fill keeps the width when there is nothing in it.
+    var body: some View { ZStack { Color.clear; content }.frame(width: 44, height: 44) }
+}

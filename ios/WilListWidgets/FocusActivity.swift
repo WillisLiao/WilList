@@ -20,9 +20,11 @@ struct FocusActivity: Widget {
             let field = CourseColor.of(a.color), lifted = CourseColor.onDark(a.color)
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    LetterMark(letter: a.letter, label: a.label, large: true, onBrand: true)
-                        .environment(\.field, field)
-                        .padding(.leading, 4)
+                    if a.letter != nil {
+                        LetterMark(letter: a.letter, label: a.label, large: true, onBrand: true)
+                            .environment(\.field, field)
+                            .padding(.leading, 4)
+                    }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
                     FocusClock(state: s, over: context.isStale)
@@ -50,8 +52,13 @@ struct FocusActivity: Widget {
                     .padding(.top, 6)
                 }
             } compactLeading: {
-                LetterMark(letter: a.letter, label: a.label, onBrand: true)
-                    .environment(\.field, field)
+                // A to-do or anything else without a letter: the timer instead.
+                if a.letter != nil {
+                    LetterMark(letter: a.letter, label: a.label, onBrand: true)
+                        .environment(\.field, field)
+                } else {
+                    Image(systemName: "timer").font(.subheadline.weight(.semibold)).foregroundStyle(lifted)
+                }
             } compactTrailing: {
                 Group {
                     if s.end == nil { Image(systemName: "pause.fill") } else { FocusClock(state: s, over: context.isStale) }

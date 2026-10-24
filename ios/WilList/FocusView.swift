@@ -77,7 +77,9 @@ struct FocusView: View {
         VStack(spacing: 0) {
             Spacer(minLength: 8)
             VStack(spacing: 12) {
-                LetterMark(letter: Letter(rawValue: String(f.label.prefix(1))), label: f.label, large: true, onBrand: true)
+                if let letter = Letter(rawValue: String(f.label.prefix(1))) {
+                    LetterMark(letter: letter, label: f.label, large: true, onBrand: true)
+                }
                 Text(Fmt.noWidow(f.title))
                     .font(.title.bold())
                     .foregroundStyle(.white)
@@ -133,12 +135,27 @@ struct FocusView: View {
 
 extension Store {
     /// Starts a focus session on a row: the timer screen, a Live Activity, and a notice when the
-    /// planned minutes are up. A study session's own length, or the usual task length.
-    func startFocus(_ row: Row) {
-        let f = FocusSession(key: row.key, itemId: row.item.id, type: row.item.type, title: row.item.title,
-                             label: row.label, minutes: row.session?.minutes ?? state.settings.taskMin)
+    /// minutes are up. The minutes chosen, or a study session's own length, or the usual task length.
+    func startFocus(_ row: Row, minutes: Int? = nil) {
+        begin(FocusSession(key: row.key, itemId: row.item.id, type: row.item.type, title: row.item.title,
+                           label: row.label, minutes: minutes ?? row.session?.minutes ?? state.settings.taskMin),
+              course: row.item.course)
+    }
+
+    /// A focus session on an item off the day's list, or a study block.
+    func startFocus(_ item: Item, minutes: Int) {
+        begin(FocusSession(key: item.id, itemId: item.id, type: item.type, title: item.title,
+                           label: item.priority?.rawValue ?? "", minutes: minutes), course: item.course)
+    }
+
+    /// A focus session on a to-do.
+    func startFocus(_ todo: Todo, minutes: Int) {
+        begin(FocusSession(key: todo.id, itemId: todo.id, type: .task, title: todo.title, label: "", minutes: minutes), course: nil)
+    }
+
+    private func begin(_ f: FocusSession, course: String?) {
         keepFocus(f)
-        LiveFocus.start(f, color: state.courseColor(row.item.course))
+        LiveFocus.start(f, color: state.courseColor(course))
     }
 
     func pauseFocus() {
@@ -156,15 +173,22 @@ extension Store {
         LiveFocus.update(f)
     }
 
-    /// Ends the session and keeps its real minutes, as the website does; Done also ticks the row
-    /// off. Mark done on the Live Activity comes here too, maybe with the app in the background.
+    /// Ends the session and keeps its real minutes, as the website does; Done also ticks it off: the
+    /// day's row, the to-do, or the item. Mark done on the Live Activity comes here too, maybe with
+    /// the app in the background.
     func finishFocus(done: Bool) {
         guard let f = focus else { LiveFocus.end(); return }
         reload() // a widget may have changed the plan meanwhile
         let today = today
         change(undo: done ? "\u{201C}\(f.title)\u{201D} done" : nil) { s in
-            if done, let row = dayRows(s.items, today, realToday: today).first(where: { $0.key == f.key }) {
-                s.complete(row, today: today)
+            if done {
+                if let row = dayRows(s.items, today, realToday: today).first(where: { $0.key == f.key }) {
+                    s.complete(row, today: today)
+                } else if let t = s.todos.first(where: { $0.id == f.itemId }) {
+                    if !t.done { s.toggleTodo(t.id, today: today) }
+                } else if s.index(of: f.itemId) != nil {
+                    s.completeLater(f.itemId, today: today)
+                }
             }
             s.logFocus(itemId: f.itemId, type: f.type, title: f.title, minutes: f.elapsed() / 60, planned: f.minutes,
                        completed: done, today: today)

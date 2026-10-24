@@ -15,7 +15,7 @@ struct ItemEditor: View {
     private var dueWord: String {
         switch item.type {
         case .deadline, .reading: "Due"
-        case .exam, .presentation, .event: "On"
+        case .exam, .presentation, .event, .study: "On"
         case .task: "Date"
         }
     }
@@ -25,12 +25,12 @@ struct ItemEditor: View {
             Form {
                 Section {
                     TextField("Title", text: $item.title, axis: .vertical).font(.title3)
-                    Picker("Kind", selection: $item.type) {
-                        ForEach(ItemType.allCases, id: \.self) { Text($0.name).tag($0) }
-                    }
-                    Picker("Letter", selection: $item.priority) {
-                        Text("None").tag(Letter?.none)
-                        ForEach(Letter.allCases, id: \.self) { Text("\($0.rawValue)  \($0.name)").tag(Letter?.some($0)) }
+                    // A class or study block has its time instead of a letter.
+                    if !item.type.isBlock {
+                        Picker("Letter", selection: $item.priority) {
+                            Text("None").tag(Letter?.none)
+                            ForEach(Letter.allCases, id: \.self) { Text("\($0.rawValue)  \($0.name)").tag(Letter?.some($0)) }
+                        }
                     }
                     if item.priority == .D {
                         TextField("Who will do it?", text: $item.delegateTo)
@@ -44,12 +44,12 @@ struct ItemEditor: View {
                 }
 
                 Section {
-                    AddToTodayRow(myDay: $item.myDay, today: store.today)
+                    if !item.type.isBlock { AddToTodayRow(myDay: $item.myDay, today: store.today) }
                     ReminderRow(at: $item.remindAt, today: store.today)
                     DueRow(date: $item.date, time: $item.time, today: store.today,
                            title: dueWord, add: "Add a date")
                     RepeatRow(recur: $item.recur, date: $item.date, today: store.today)
-                    if item.type == .event {
+                    if item.type.isBlock {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)
                     }
                     Label {

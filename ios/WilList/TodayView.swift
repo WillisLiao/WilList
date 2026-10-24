@@ -17,8 +17,9 @@ enum TodoSort: String, CaseIterable, Identifiable {
     }
 }
 
-/// Today: the day's A1 on one card, then a plain checklist. Type a line, tick it off. Tap one for
-/// steps, a reminder, a due date and time, a repeat and a note.
+/// Today: the day in time order (classes and study blocks at their times, the lettered work fitted
+/// into the free time between them, A's first, and to-dos due at a time), then a plain checklist,
+/// then what's coming up. Every task has Play, for a focus session of the length you choose.
 struct TodayView: View {
     @Environment(Store.self) private var store
     @AppStorage("todoSort") private var sort = TodoSort.manual
@@ -37,39 +38,75 @@ struct TodayView: View {
     @State private var deleting: Todo?
     @State private var editingItem: Item?
     @State private var sorting: LetterSorter.Batch?
+    /// The minute it is now, which places the line for now and the work after it.
+    @State private var minute = nowMinutes()
 
     private var today: Day { store.today }
-    private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
+    /// The to-dos for the checklist: no date, overdue, or due today at no set time.
+    private var open: [Todo] {
+        ordered(store.state.todos.filter { t in !t.done && t.date.map { diffDays(today, $0) < 0 || ($0 == today && t.time == nil) } ?? true })
+    }
     private var completed: [Todo] {
         store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
     }
-    /// The day's A1, first on Today, then the items from Plan added to Today, still to
-    /// do today.
-    private var planItems: [Item] {
-        let a1 = doRows(store.state.items, today).first?.item
-        let added = store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.id }
+    /// The day's work, A to C, and anything else added to Today from Plan.
+    private var rows: [Row] {
+        let listed = Set(dayRows(store.state.items, today).map(\.item.id))
+        let added = store.state.items
+            .filter { $0.myDay == today && !listed.contains($0.id) && !$0.type.isBlock && isOpen($0, today) && !$0.doneDates.contains(today) }
             .sorted { letterKey($0) < letterKey($1) }
-        return (a1.map { [$0] } ?? []) + added
+            .map { it in
+                var r = Row(item: it)
+                r.label = it.priority?.rawValue ?? ""
+                return r
+            }
+        return doRows(store.state.items, today) + added
+    }
+    /// The day in time order, from now on.
+    private var column: [DayEntry] {
+        let events = scheduleOn(store.state.items, today).filter { !$0.done && !$0.doneDates.contains(today) }
+        let timed = store.state.todos.filter { !$0.done && $0.date == today && $0.time != nil }
+        return dayColumn(events: events, rows: rows, todos: timed, settings: store.state.settings, nowMin: minute)
+    }
+    /// The next week's deadlines, exams and dated tasks not already on today's column, and every
+    /// to-do due after today, soonest first.
+    private func coming(besides column: [DayEntry]) -> [Upcoming] {
+        let shown = Set(column.compactMap { e -> String? in
+            if case .work(let r) = e.kind { return r.item.id }
+            if case .over(let r) = e.kind { return r.item.id }
+            return nil
+        })
+        let items = store.state.items.filter { it in
+            guard !it.type.isBlock, it.recur == nil, it.priority != .E, isOpen(it, today), !shown.contains(it.id), let d = it.date else { return false }
+            return (1...7).contains(diffDays(today, d))
+        }
+        .map { Upcoming(id: $0.id, date: $0.date!, time: $0.time, item: $0) }
+        let todos = store.state.todos.filter { t in !t.done && t.date.map { diffDays(today, $0) > 0 } ?? false }
+            .map { Upcoming(id: $0.id, date: $0.date!, time: $0.time, todo: $0) }
+        return (items + todos).sorted { ($0.date, $0.time ?? "99:99") < ($1.date, $1.time ?? "99:99") }
     }
 
     var body: some View {
-        let fromPlan = planItems
+        let column = column
+        let coming = coming(besides: column)
+        // Only the line for now and the end of the day: nothing to show.
+        let hasDay = column.contains { e in
+            switch e.kind { case .now, .free, .endOfDay: false; default: true }
+        }
         let planned = plannedFor == addDays(today, 1)
         // A new list has nothing to search or sort yet.
         let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
         NavigationStack {
+            ScrollViewReader { proxy in
             List {
                 // The date sits straight on the ground; everything under it is on cards.
-                header(fromPlan: fromPlan)
+                header(toDo: column.filter(\.isTask).count + open.count)
                     .padding(.bottom, 16)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                // The day's A1 leads, with what was added from Plan under it.
-                if !fromPlan.isEmpty {
-                    Section {
-                        ForEach(Array(fromPlan.enumerated()), id: \.element.id) { k, item in planRow(item, first: k == 0) }
-                    }
+                if hasDay {
+                    Section { ForEach(column) { entry($0) } }
                 }
                 // In the evening, until tomorrow is planned.
                 if store.evening && !planned {
@@ -84,6 +121,16 @@ struct TodayView: View {
                     ForEach(dueGroups, id: \.name) { group in
                         Section { rows(group.todos, movable: false) } header: { Text(group.name).onGround() }
                     }
+                }
+                if !coming.isEmpty {
+                    Section {
+                        ForEach(coming) { u in
+                            if let t = u.todo { row(t) } else if let it = u.item { itemRow(it) }
+                        }
+                    } header: {
+                        Text("Coming up").onGround()
+                    }
+                    .id("coming")
                 }
                 if showCompleted && !completed.isEmpty {
                     Section {
@@ -105,6 +152,11 @@ struct TodayView: View {
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
+            #if DEBUG
+            // `-scroll coming` on launch, for screenshots.
+            .onAppear { UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) } }
+            #endif
+            }
             .ground()
             // The profile picture, Search and Sort in the bar, as on every tab; the date is the
             // screen's title, set large in the list so a long one wraps.
@@ -154,18 +206,22 @@ struct TodayView: View {
                 }
             }
             .toastHost()
+            .onAppear { minute = nowMinutes() }
+            .onReceive(Timer.publish(every: 30, on: .main, in: .common).autoconnect()) { _ in
+                if nowMinutes() != minute { minute = nowMinutes() }
+            }
         }
     }
 
     // MARK: header
 
     /// The date and how the day stands.
-    private func header(fromPlan: [Item]) -> some View {
+    private func header(toDo: Int) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(Fmt.long(today))
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
-            Text(summary(open.count + fromPlan.count))
+            Text(summary(toDo))
                 .font(.subheadline)
         }
         .onGround()
@@ -281,7 +337,8 @@ ForEach(list) { todo in
         .onMove(perform: reorder)
     }
 
-    private func row(_ todo: Todo) -> some View {
+    /// A to-do; on the day's column (`at` its time), the time stands for its due date.
+    private func row(_ todo: Todo, at: Int? = nil) -> some View {
         let checked = todo.done || ticking.contains(todo.id)
         return HStack(spacing: 10) {
             CheckButton(done: checked) { todo.done ? untick(todo) : tick(todo) }
@@ -289,12 +346,10 @@ ForEach(list) { todo in
                 Text(todo.title)
                     .strikethrough(checked, color: .secondary)
                     .foregroundStyle(todo.done ? .secondary : .primary)
-                if let meta = meta(todo) { meta.font(.subheadline) }
+                if let meta = meta(todo, at: at) { meta.font(.subheadline) }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-            .onTapGesture { editing = todo.id }
+            .rowWords { editing = todo.id }
+            if !todo.done { PlayButton { store.startFocus(todo, minutes: $0) } }
             StarButton(on: Binding(get: { todo.starred }, set: { v in
                 withAnimation(.snappy) { store.change { s in
                     if let i = s.todos.firstIndex(where: { $0.id == todo.id }) { s.todos[i].starred = v }
@@ -304,75 +359,174 @@ ForEach(list) { todo in
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    /// The A1, or an item added to Today from Plan: tick it off here, or take it off
-    /// Today. The A1 (`first`, when it is one) has Start, for a focus session on it.
-    private func planRow(_ item: Item, first: Bool) -> some View {
-        let checked = ticking.contains(item.id)
-        let row = dayRows(store.state.items, today, realToday: today).first { $0.item.id == item.id }
+    // MARK: the day
+
+    @ViewBuilder private func entry(_ e: DayEntry) -> some View {
+        switch e.kind {
+        case .now: nowLine(e.start ?? minute)
+        case .free: note("\(Fmt.minutes(e.minutes)) free")
+        case .endOfDay: note("End of day, \(Fmt.span(e.start ?? 0, 0))")
+        case .allDay(let it): blockRow(it, when: "All day", minutes: nil)
+        case .block(let it): blockRow(it, when: Fmt.span(e.start ?? 0, e.minutes), minutes: e.minutes)
+        case .work(let r):
+            workRow(r, when: Text(Fmt.span(e.start ?? 0, e.minutes) + (e.part.map { ", part \($0)" } ?? "")).foregroundStyle(Color.secondary),
+                    planned: r.session.map { _ in e.minutes })
+        case .over(let r): workRow(r, when: Text("Won\u{2019}t fit today").foregroundStyle(Color.red), planned: r.session?.minutes)
+        case .todo(let t): row(t, at: e.start)
+        }
+    }
+
+    /// The line for now: a teal rule across the card, the time at its start.
+    private func nowLine(_ at: Int) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color.brand).frame(width: 9, height: 9).frame(width: 44)
+            Text("Now, \(Fmt.span(at, 0))")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(Color.brandDeep)
+                .fixedSize()
+            Rectangle().fill(Color.brand).frame(height: 1.5)
+        }
+        .frame(minHeight: 32)
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Now, \(Fmt.span(at, 0))")
+    }
+
+    /// Free time and the end of the day: a quiet line in the words' column.
+    private func note(_ words: String) -> some View {
+        Text(words)
+            .font(.footnote)
+            .foregroundStyle(Color.secondary)
+            .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
+            .listRowInsets(EdgeInsets(top: 0, leading: 66, bottom: 0, trailing: 16))
+    }
+
+    /// Work from the plan at its time: tick it off, Play (a study session's time planned), its letter.
+    private func workRow(_ r: Row, when: Text, planned: Int?) -> some View {
+        let checked = ticking.contains(r.key)
         return HStack(spacing: 10) {
-            CheckButton(done: checked) { finish(item) }
+            CheckButton(done: checked) { finish(r) }
             VStack(alignment: .leading, spacing: 2) {
-                Text(item.title).strikethrough(checked, color: .secondary)
-                if let line = Fmt.meta([Fmt.subline(item, today, in: store.state)?.foregroundStyle(Color.secondary)]
-                                       + Fmt.marks(item.steps, remind: item.remindAt, today: false)) {
+                Text(r.item.title).strikethrough(checked, color: .secondary)
+                if let line = Fmt.meta([when, Fmt.detail(r, today, in: store.state, timed: true)?.foregroundStyle(r.overdue ? Color.red : Color.secondary)]
+                                       + Fmt.marks(r.item.steps, remind: r.item.remindAt, today: false)) {
                     line.font(.subheadline)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
-            .contentShape(Rectangle())
-            .onTapGesture { editingItem = item }
-            if first, let row, row.label == "A1" {
-                // A focus session on it, with the timer on the Lock Screen too.
-                Button("Start", systemImage: "play.fill") { store.startFocus(row) }
-                    .labelStyle(.iconOnly)
-                    .foregroundStyle(Color.brand)
-                    .tapArea()
-                    .buttonStyle(.borderless)
+            .rowWords { editingItem = r.item }
+            PlayButton(planned: planned) { store.startFocus(r, minutes: $0) }
+            MarkColumn { if r.priority != nil { LetterMark(letter: r.priority, label: r.label.isEmpty ? nil : r.label) } }
+        }
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
+        .swipeActions(edge: .leading) {
+            Button("Done", systemImage: "checkmark") { finish(r) }.tint(.brand)
+        }
+        .swipeActions(edge: .trailing) {
+            if r.item.myDay == today { removeFromToday(r.item) }
+        }
+    }
+
+    /// A class, exam or study block at its time, a bar of its course's colour beside it. A study
+    /// block is something to do, so it has a check and Play.
+    private func blockRow(_ it: Item, when: String, minutes: Int?) -> some View {
+        let study = it.type == .study, checked = ticking.contains(it.id)
+        let colour = CourseColor.of(store.state.courseColor(it.course))
+        let kind: String? = switch it.type {
+        case .exam: "Exam"
+        case .presentation: "Presenting"
+        default: nil
+        }
+        return HStack(spacing: 10) {
+            if study {
+                CheckButton(done: checked) { finish(block: it) }
+            } else {
+                Capsule().fill(colour).frame(width: 4, height: 30).frame(width: 44).accessibilityHidden(true)
             }
-            if item.priority != nil {
-                LetterMark(letter: item.priority, label: row?.label)
-                    .padding(.trailing, 8)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(it.title).strikethrough(checked, color: .secondary)
+                if let line = Fmt.meta([Text([kind, when].compactMap { $0 }.joined(separator: ", ")).foregroundStyle(Color.secondary),
+                                        it.course.map { Text($0).foregroundStyle(colour) }]) {
+                    line.font(.subheadline)
+                }
+            }
+            .rowWords { editingItem = it }
+            if study {
+                PlayButton(planned: minutes ?? it.durationMin) { store.startFocus(it, minutes: $0) }
+                MarkColumn {}
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .leading) {
-            Button("Done", systemImage: "checkmark") { finish(item) }.tint(.brand)
-        }
-        .swipeActions(edge: .trailing) {
-            Button("Remove from Today", systemImage: "sun.max") {
-                withAnimation { store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = nil } } }
-            }
-            .tint(.gray)
+            if study { Button("Done", systemImage: "checkmark") { finish(block: it) }.tint(.brand) }
         }
     }
 
-    /// Ticks off today's part of an item: its session or its occurrence if it has one today.
-    private func finish(_ item: Item) {
-        ticking.insert(item.id)
+    /// Something coming up: tick it off, Play, its letter.
+    private func itemRow(_ it: Item) -> some View {
+        let checked = ticking.contains(it.id)
+        return HStack(spacing: 10) {
+            CheckButton(done: checked) { finish(block: it) }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(it.title).strikethrough(checked, color: .secondary)
+                if let sub = Fmt.subline(it, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
+            }
+            .rowWords { editingItem = it }
+            PlayButton(planned: it.sessions.first { !$0.done }?.minutes) { store.startFocus(it, minutes: $0) }
+            MarkColumn { if it.priority != nil { LetterMark(letter: it.priority) } }
+        }
+        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
+        .swipeActions(edge: .leading) {
+            Button("Done", systemImage: "checkmark") { finish(block: it) }.tint(.brand)
+        }
+    }
+
+    private func removeFromToday(_ item: Item) -> some View {
+        Button("Remove from Today", systemImage: "sun.max") {
+            withAnimation { store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = nil } } }
+        }
+        .tint(.gray)
+    }
+
+    /// Ticks off a row of the day: its session, its occurrence, or the item.
+    private func finish(_ r: Row) {
+        tickOff(r.key, r.item.title) { s in
+            if dayRows(s.items, today, realToday: today).contains(where: { $0.key == r.key }) {
+                s.complete(r, today: today)
+            } else {
+                s.completeLater(r.item.id, today: today)
+            }
+        }
+    }
+
+    /// Ticks off a study block for today, or something coming up.
+    private func finish(block it: Item) {
+        tickOff(it.id, it.title) { $0.completeLater(it.id, today: today) }
+    }
+
+    /// The circle fills first, then the row glides away.
+    private func tickOff(_ key: String, _ title: String, _ edit: @escaping (inout AppState) -> Void) {
+        ticking.insert(key)
         Chime.play()
         Task {
             try? await Task.sleep(for: .milliseconds(450))
             withAnimation(.snappy) {
-                store.change(undo: "\u{201C}\(item.title)\u{201D} done") { s in
-                    if let row = dayRows(s.items, today, realToday: today).first(where: { $0.item.id == item.id }) {
-                        s.complete(row, today: today)
-                    } else {
-                        s.complete(itemId: item.id, today: today)
-                    }
-                }
-                ticking.remove(item.id)
+                store.change(undo: "\u{201C}\(title)\u{201D} done", edit)
+                ticking.remove(key)
             }
         }
     }
 
     /// The small line under a to-do: steps, due, reminder, repeat and note, only what it has.
-    private func meta(_ t: Todo) -> Text? {
+    private func meta(_ t: Todo, at: Int? = nil) -> Text? {
         var parts: [Text] = []
-        if !t.steps.isEmpty {
-            parts.append(Text("\(t.steps.filter(\.done).count) of \(t.steps.count)").foregroundStyle(Color.secondary))
+        if let at {
+            // Red once its time has passed.
+            parts.append(Text(Fmt.span(at, 0)).foregroundStyle(at < minute ? Color.red : Color.secondary))
         }
-        if let due = Fmt.dueLine(t.date, t.time, today) {
+        if !t.steps.isEmpty {
+            parts.append(Text("\(t.steps.filter(\.done).count)\u{00A0}of\u{00A0}\(t.steps.count)").foregroundStyle(Color.secondary))
+        }
+        if at == nil, let due = Fmt.dueLine(t.date, t.time, today) {
             let late = !t.done && diffDays(today, t.date ?? today) < 0
             parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.brand : Color.secondary))
         }
@@ -452,3 +606,24 @@ ForEach(list) { todo in
 
 /// A sheet's subject by id.
 struct Opened: Identifiable { let id: String }
+
+/// A line of Coming up: an item or a to-do, by its date.
+struct Upcoming: Identifiable {
+    let id: String
+    let date: Day
+    let time: String?
+    var item: Item?
+    var todo: Todo?
+}
+
+extension DayEntry {
+    /// Something to do, counted in Today's summary; work split over the day counts once.
+    var isTask: Bool {
+        switch kind {
+        case .work: (part ?? 1) == 1
+        case .over, .todo: true
+        case .block(let it), .allDay(let it): it.type == .study
+        case .now, .free, .endOfDay: false
+        }
+    }
+}

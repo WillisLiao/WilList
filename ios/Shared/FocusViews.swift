@@ -17,7 +17,9 @@ struct FocusLockView: View {
         let field = CourseColor.of(attributes.color)
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .center, spacing: 10) {
-                LetterMark(letter: attributes.letter, label: attributes.label, large: true, onBrand: true)
+                if attributes.letter != nil {
+                    LetterMark(letter: attributes.letter, label: attributes.label, large: true, onBrand: true)
+                }
                 Text(attributes.title)
                     .font(.headline)
                     .lineLimit(2)

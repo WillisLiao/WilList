@@ -68,7 +68,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
 }
 
 enum AppTab: String, Hashable, CaseIterable {
-    case today, plan, progress, agent
+    case today, plan, progress, goals, agent
 
     var title: String { rawValue.capitalized }
 
@@ -77,12 +77,13 @@ enum AppTab: String, Hashable, CaseIterable {
         case .today: "checklist"
         case .plan: "list.number"
         case .progress: "chart.bar.xaxis"
+        case .goals: "target"
         case .agent: "sparkles"
         }
     }
 }
 
-/// The four tabs on a solid white capsule. The system's glass tab bar takes on the colour of
+/// The five tabs on a solid white capsule. The system's glass tab bar takes on the colour of
 /// whatever is behind it (the slate, a card), turns it when pressed and can't be made solid on
 /// iOS 26, so WilList draws its own; the system's stays hidden (`underTabBar()`).
 struct TabBar: View {
@@ -99,7 +100,7 @@ struct TabBar: View {
                         Image(systemName: item.symbol)
                             .font(.system(size: 19, weight: .semibold))
                             .frame(height: 24)
-                        Text(item.title).font(.caption2.weight(.semibold))
+                        Text(item.title).font(.caption2.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
                     }
                     // The deeper teal on its pale pill: the teal itself reads at only 4.4:1 there.
                     .foregroundStyle(on ? Color.brandDeep : Color.primary)
@@ -139,6 +140,7 @@ struct RootView: View {
             Tab("Today", systemImage: "checklist", value: .today) { TodayView().underTabBar() }
             Tab("Plan", systemImage: "list.number", value: .plan) { PlanView().underTabBar() }
             Tab("Progress", systemImage: "chart.bar.xaxis", value: .progress) { ProgressTab().underTabBar() }
+            Tab("Goals", systemImage: "target", value: .goals) { NavigationStack { GoalsList() }.underTabBar() }
             Tab("Agent", systemImage: "sparkles", value: .agent) { AgentView().underTabBar() }
         }
         // The keyboard covers the bar rather than lifting it.
@@ -183,7 +185,7 @@ struct RootView: View {
         #if DEBUG
         // `-show <title>` on launch opens that to-do or item, `-focus YES` starts a focus session on
         // the A1 (`-focusSpent 30` with 30 minutes already spent), `-evening 1|2|3` opens Plan
-        // tomorrow at that step, `-open settings|goals` opens Settings (screenshots).
+        // tomorrow at that step, `-open settings` opens Settings (screenshots).
         .onAppear {
             store.planningTomorrow = UserDefaults.standard.integer(forKey: "evening") > 0
             store.showingSettings = UserDefaults.standard.string(forKey: "open") != nil

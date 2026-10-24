@@ -3,7 +3,6 @@ import UniformTypeIdentifiers
 import UserNotifications
 import WilListCore
 
-enum SettingsPage: Hashable { case goals }
 
 /// The profile picture at the top left of every tab: it opens Settings.
 struct ProfileButton: View {
@@ -29,13 +28,10 @@ extension View {
     }
 }
 
-/// Your main goal and goals, how WilList behaves, and backups.
+/// How WilList behaves, and backups.
 struct SettingsView: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.dynamicTypeSize) private var typeSize
-    // `-open goals` on launch opens Goals (screenshots).
-    @State private var path = UserDefaults.standard.string(forKey: "open") == "goals" ? [SettingsPage.goals] : []
     @State private var restoring = false
     @State private var restoreError: String?
     @AppStorage("newOnTop") private var newOnTop = false
@@ -46,10 +42,8 @@ struct SettingsView: View {
     @AppStorage("badge") private var badge = Badge.off
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             Form {
-                Section { goalRow }
-
                 Section {
                     Toggle("New to-dos on top", isOn: $newOnTop).tint(.brand)
                     Toggle("Starred on top", isOn: $starredOnTop).tint(.brand)
@@ -125,7 +119,6 @@ struct SettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
-            .navigationDestination(for: SettingsPage.self) { _ in GoalsList() }
             .fileImporter(isPresented: $restoring, allowedContentTypes: [.json]) { restore($0) }
             .onChange(of: badge) {
                 guard badge != .off else { return }
@@ -159,24 +152,6 @@ struct SettingsView: View {
         let url = URL.temporaryDirectory.appending(path: "WilList backup \(store.today).json")
         try? JSONEncoder().encode(store.state).write(to: url)
         return url
-    }
-
-    /// The main goal, written down, first: the way into all of your goals.
-    private var goalRow: some View {
-        let goal = store.state.mdp, others = store.state.goals.count
-        return NavigationLink(value: SettingsPage.goals) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(goal.isEmpty ? "Set your main goal" : goal)
-                    .font(.headline)
-                    .foregroundStyle(goal.isEmpty ? Color.brand : .primary)
-                    // Two lines hold even a long goal, except at the largest text sizes.
-                    .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
-                Text(others == 0 ? "Main goal" : "Main goal and \(others) more")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            .padding(.vertical, 4)
-        }
     }
 
     private func restore(_ result: Result<URL, Error>) {

@@ -56,7 +56,8 @@ public func planDay(events: [Item], rows: [Row], dayStart: String = "08:00", day
         slots.append(Slot(kind: .work, start: free[k].s, end: free[k].s + minutes, row: row, part: part))
         free[k].s = min(free[k].e, free[k].s + minutes + breakMin)
     }
-    for row in rows where [.A, .B, .C].contains(row.priority) {
+    // Anything to hand off or drop gets no time; something without a letter, added to Today, does.
+    for row in rows where row.priority.map({ $0 <= .C }) ?? true {
         var rem = rowMinutes(row, taskMin: taskMin)
         if let k = free.firstIndex(where: { $0.e - $0.s >= rem }) {
             take(k, row, rem, nil)
@@ -80,4 +81,83 @@ public func planDay(events: [Item], rows: [Row], dayStart: String = "08:00", day
     let all = (fixed + slots).sorted { ($0.start, $0.kind == .event ? 0 : 1) < ($1.start, $1.kind == .event ? 0 : 1) }
     return DayPlan(slots: all, unplaced: unplaced, freeMin: free.reduce(0) { $0 + max(0, $1.e - $1.s) },
                    workMin: slots.reduce(0) { $0 + $1.end - $1.start })
+}
+
+/// One line of Today's column: the day in time order, as on the website.
+public struct DayEntry: Equatable, Sendable, Identifiable {
+    public enum Kind: Equatable, Sendable {
+        /// The line that marks the time now.
+        case now
+        /// A class, exam or study block without a time.
+        case allDay(Item)
+        /// A class, exam or study block at its time.
+        case block(Item)
+        /// Lettered work fitted into a free stretch.
+        case work(Row)
+        /// A to-do due at a time today.
+        case todo(Todo)
+        case free
+        case endOfDay
+        /// Work that doesn't fit before the end of the day.
+        case over(Row)
+    }
+
+    public var kind: Kind
+    /// Minutes since midnight; nil for all-day blocks and what doesn't fit.
+    public var start: Int?
+    /// How long it lasts (a free stretch's length too); 0 for the lines and to-dos.
+    public var minutes: Int
+    /// 1, 2, 3… when work was split over several stretches.
+    public var part: Int?
+    public var id: String
+
+    init(_ kind: Kind, start: Int?, minutes: Int = 0, part: Int? = nil) {
+        self.kind = kind
+        self.start = start
+        self.minutes = minutes
+        self.part = part
+        id = switch kind {
+        case .now: "now"
+        case .allDay(let it), .block(let it): "block-\(it.id)"
+        case .work(let r): "work-\(r.key)-\(part ?? 0)"
+        case .todo(let t): "todo-\(t.id)"
+        case .free: "free-\(start ?? 0)"
+        case .endOfDay: "end"
+        case .over(let r): "over-\(r.key)"
+        }
+    }
+}
+
+/// Today from now on: to-dos whose time has passed first, the line for now, then blocks, work and
+/// timed to-dos in time order with the free stretches between them, the end of the day, and the
+/// work that doesn't fit after it. Blocks that have ended are left out.
+public func dayColumn(events: [Item], rows: [Row], todos: [Todo], settings: Settings, nowMin: Int, gapMin: Int = 20) -> [DayEntry] {
+    let plan = planDay(events: events, rows: rows, dayStart: settings.dayStart, dayEnd: settings.dayEnd, nowMin: nowMin,
+                       taskMin: settings.taskMin)
+    let start = timeToMin(settings.dayStart) ?? 480, end = timeToMin(settings.dayEnd) ?? 1320
+    let timed = todos.compactMap { t in timeToMin(t.time).map { (todo: t, at: $0) } }.sorted { $0.at < $1.at }
+
+    var out = events.filter { $0.time == nil }.map { DayEntry(.allDay($0), start: nil) }
+    out += timed.filter { $0.at < nowMin }.map { DayEntry(.todo($0.todo), start: $0.at) }
+    out.append(DayEntry(.now, start: nowMin))
+
+    var later = plan.slots.filter { $0.kind == .work || $0.end > nowMin }.map { s in
+        s.kind == .event ? DayEntry(.block(s.event!), start: s.start, minutes: s.end - s.start)
+            : DayEntry(.work(s.row!), start: s.start, minutes: s.end - s.start, part: s.part)
+    }
+    later += timed.filter { $0.at >= nowMin }.map { DayEntry(.todo($0.todo), start: $0.at) }
+    var cursor = max(start, nowMin)
+    for e in later.sorted(by: { $0.start! < $1.start! }) {
+        if e.start! - cursor >= gapMin { out.append(DayEntry(.free, start: cursor, minutes: e.start! - cursor)) }
+        cursor = max(cursor, e.start! + e.minutes)
+        out.append(e)
+    }
+    if nowMin < end {
+        if end - cursor >= gapMin { out.append(DayEntry(.free, start: cursor, minutes: end - cursor)) }
+        out.append(DayEntry(.endOfDay, start: end))
+    }
+    // Work split over the day keeps its placed parts; only work with no time at all is listed here.
+    let placed = Set(plan.slots.compactMap { $0.row?.key })
+    out += plan.unplaced.filter { !placed.contains($0.row.key) }.map { DayEntry(.over($0.row), start: nil, minutes: $0.minutes) }
+    return out
 }

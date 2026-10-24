@@ -97,29 +97,31 @@ These aren't from the seminar. They make the ideas above work for a student's ac
 
 ## In the iPhone app
 
-The app (`ios/`) is WilList now. It keeps the ideas above in four tabs, so each place answers one question.
+The app (`ios/`) is WilList now.
+It keeps the ideas above in five tabs (Today, Plan, Progress, Goals, Agent), so each place answers one question.
 
 | Principle | In the iPhone app |
 |---|---|
-| **Think on paper.** | Today is a plain list: type a line, press return, type the next, and the keyboard stays up. Plan has **+**, which reads `Chem quiz thu 2pm #CHEM110` the same way the website does and stays open for the next one. |
+| **Think on paper.** | Today has a plain checklist: type a line, press return, type the next, and the keyboard stays up. Plan has **+** (a task or a study block), which reads `Chem quiz thu 2pm #CHEM110` the same way the website did and stays open for the next one. |
 | **Get the whole term onto the list at once.** | The **Agent** tab reads any file, photo or words (a syllabus, a timetable, a roster, for any course, job or project) and proposes everything in it on one card to tick and Add; nothing goes in before that tap. A calendar file is read on the phone itself, and a calendar link the student types (Canvas, Moodle, Blackboard, Brightspace, Google, Outlook) can be followed, read again every half hour. |
-| **ABCDE and A1 first.** | Today opens with the A1 as its first row, and the widgets show the same A1. Plan numbers the day A1, A2, B1, each letter on the right of its row. An item without a letter is fine: it sits under Later with no mark and nothing asks for one (the owner's call); its details give it one, each letter shown with what it means. |
-| **Single handling: one thing until it's done.** | **Start** beside the A1 on Today opens focus: the task and a ring timer, nothing else. The timer also sits on the Lock Screen and in the Dynamic Island with Mark done on it, and says Break when the planned minutes are up. The real minutes are kept, as on the website. |
+| **ABCDE and A1 first.** | Today puts the A1 in the first free time after now, then A2, then the B's and C's, and the widgets show the same A1. Plan numbers the day A1, A2, B1, each letter on the right of its row. An item without a letter is fine: it sits under Later with no mark and nothing asks for one (the owner's call); its details give it one, each letter shown with what it means. |
+| **Single handling: one thing until it's done.** | **Play** beside every task, on Today and in Plan, asks how long (15 minutes to an hour and a half, or the session's planned time) and opens focus: the task and its timer, nothing else. The timer also sits on the Lock Screen and in the Dynamic Island with Mark done on it, and says Break when the planned minutes are up. The real minutes are kept, as on the website. |
 | **Consider consequences.** | Tapping a letter lists all five with what each one means, and the suggested one is marked. A share of the grade suggests the letter, as on the web. |
 | **Make tomorrow's list the night before.** | **Plan tomorrow** takes two short steps: write down anything new, then pick the one thing that matters most. It ends with "Tomorrow starts with" and that A1. From your planning time Today offers it at the top, and the optional evening notification opens it; Plan's calendar shows any other day too. |
 | **Sub-deadlines and spaced repetition.** | Today and Plan carry today's study sessions. Progress lists each exam and deadline in the next 45 days (or with no date yet), how many sessions are done and whether it is on track, behind or short of time, and suggests replanning missed sessions or starting important work early. |
-| **Load-aware planning.** | Progress charts the next 7 days' planned study per day, with days over your daily study time in red, and suggests what to move. |
+| **Time management is control of the sequence of events.** | Today runs in time order from now: classes and study blocks at their times, the lettered work fitted into the free time between them (A's first, a short break between blocks), to-dos due at a time, the free time left, and the end of the day; work that doesn't fit is listed under it as "Won’t fit today". Under the checklist, Coming up shows the next week's deadlines and exams and every to-do due later. |
+| **Load-aware planning.** | Progress charts the next 7 days' planned study per day, study blocks included, with days over your daily study time in red, and suggests what to move. |
 | **Review your progress.** | Progress shows the last 7 days (done, A's, days started with an A, focus time) and a chart of the last 14 by letter; the Agent answers questions about your plan and progress in words. |
-| **A new habit takes about 21 days.** | Your goals (first in Settings, from the profile picture) shows 21 dots, filled where the first thing you finished was an A, and the days in a row. |
+| **A new habit takes about 21 days.** | The Goals tab shows 21 dots, filled where the first thing you finished was an A, and the days in a row. |
 | **Victim language.** | While you type in **+**, "I'll try", "I wish", "I have to" and "problem" get a one-line nudge. |
 | **Finishing gives a jolt of energy.** | Ticking something off fills the circle with a ring and a burst of sparks, a short chime and a haptic, then the row slides away. The widgets and the Live Activity tick off too, and a widget shows the line done for a moment before it goes. |
 | **Slice and dice the task.** | Every to-do and item can hold steps, ticked off one by one, with "1 of 3" in the list. |
-| **Written goals, a major definite purpose.** | Your main goal is the first thing in Settings, from the profile picture on every tab, and leads Your goals. |
+| **Written goals, a major definite purpose.** | The Goals tab, between Progress and Agent, leads with your main goal set large on the teal, then your other goals. |
 | **Plan every day in advance.** | Plan's calendar shows what's planned on every day of the month. Any to-do or item can have a reminder at a date and time, a due date and time, and a repeat; the reminder can be marked done from the notification. |
 
-Not in the iPhone app yet: Worry Buster, 20 Ideas, Pre-game and the seven questions for finding goals; the Agent takes the coach's place.
-Their data is kept untouched in the save file, so nothing is lost while they are missing.
-Whether they come to the app is the owner's call.
+Worry Buster, 20 Ideas, Pre-game and the seven questions for finding goals stay on the website only: on 2026-10-24 the owner said the app doesn't need them, with the Goals tab back.
+The Agent takes the coach's place.
+Their data is kept untouched in the save file.
 
 ## Deliberately left out
 

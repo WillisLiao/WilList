@@ -21,7 +21,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 
 | Token | Value | Used for, and only for |
 |---|---|---|
-| Ground | `LinearGradient.ground`, `#BAC5CD` at the top to `#B1BAC3` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Progress, Agent, Settings and Your goals): a light slate, the widget gallery's deep one (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on 2026-10-24 for it "at least 50% lighter". Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 8:1 at the top and 7:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
+| Ground | `LinearGradient.ground`, `#BAC5CD` at the top to `#B1BAC3` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Progress, Goals, Agent and Settings): a light slate, the widget gallery's deep one (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on 2026-10-24 for it "at least 50% lighter". Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 8:1 at the top and 7:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
 | Words on the ground | white, through `.onGround()` | Today's date and summary, large titles, section titles and footers. Never grey or teal there. |
 | Sheet | `Color.sheet`, `#DAE2E7`, through `.sheetGround()` | What every sheet's cards lie on, so a sheet stands apart from the tab under it. |
 | Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card; the Agent's title card and chat bubbles are cards of their own. |
@@ -42,8 +42,9 @@ Words on a field of colour are always pure white: white dimmed even to 85% falls
 The guided flows open on a field too: the welcome's questions on the teal, Plan tomorrow's on night (`PlanTomorrow.night`, `#262C66`), and Plan tomorrow's last page on the colour of tomorrow's A1, as its focus session will be.
 That last page rises over the night like a sunrise, the list held still beneath it; between steps the band stays put while the new question rises in, and the step count sits in the middle and rolls on.
 On 2026-10-24 the owner took the A1 card off Today, and every explanation off Plan: students know to letter what they add.
-The A1 is now the first row of Today's first card, with Start beside it; an empty Plan day says only "Nothing planned".
-Your goals leads with the main goal set large in white on a teal card (or the question that asks for one); a tap writes it, keyboard up.
+Later that day they asked for Today to be the day in time order, as on the website, with what's coming up under it, Play beside every task, and the Goals tab back between Progress and Agent.
+An empty Plan day says only "Nothing planned".
+Goals leads with the main goal set large in white on a teal card (or the question that asks for one); a tap writes it, keyboard up.
 
 ## Type
 
@@ -75,24 +76,25 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Under today's date, the A1 first on a card (with Start, for a focus session) and anything added to Today from Plan under it, Plan tomorrow in the evening until tomorrow is planned, then a quick checklist | Tick the A1; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Under today's date, the day in time order from now on one card: a teal line for now, classes and study blocks at their times, the lettered work fitted into the free time between them (A's first), to-dos due at a time, the free time left ("4 h 15 min free"), the end of the day, and the work that won't fit under it. Then Plan tomorrow in the evening until tomorrow is planned, the checklist (no date, overdue, or due today at no time), and Coming up: the next week's deadlines and exams and every to-do due later, soonest first | Tick the next thing, or Play it; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), everything that isn't on today's list under Later (soonest first, with or without a letter), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
 | Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Review, Adjust), the next 7 days' study load, then exams and deadlines coming up and whether each is on track | Act on a suggestion |
+| Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
 | Agent | A chat: hand it a file, a photo or words and it proposes what to add, on a card to tick and Add; ask it about your plan and progress. Behind a subscription, and it asks once before anything is sent to Anthropic | Send |
 
-The profile picture at the top left of every tab opens **Settings** (a sheet): your main goal (the way into all your goals), to-do and study settings, the day's clocks, calendar links the Agent followed, backups.
+The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the day's clocks, calendar links the Agent followed, backups.
 It will hold the account and sign-in once those exist.
 
-The four tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
+The five tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
 The chosen tab is in the deep teal on a pale teal pill.
 
-Every tab's bar holds the profile picture at the left and its tools at the right (Today: Search and Sort; Plan: Search and +), in the system's glass on iOS 26, so they look the same and sit in the same place on every tab.
+Every tab's bar holds the profile picture at the left and its tools at the right (Today: Search and Sort; Plan: Search and +, which asks Task or Study block), in the system's glass on iOS 26, so they look the same and sit in the same place on every tab.
 Today has no title in its bar: its date sits in the list, in the large title's font and place, so a long date can wrap.
 
 Search (magnifying glass) sits on Today and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
 
-Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan, Plan tomorrow in the evening on a card of its own, then the to-dos with Add a to-do at their top, then each group.
+Today's date and its summary sit straight on the ground; everything under them is on cards: the day's column, Plan tomorrow in the evening on a card of its own, the to-dos with Add a to-do at their top, then Coming up and Completed.
 Plan's date sits on the ground the same way, under the tab's title.
 Section titles and footers stay on the ground between the cards, in the ground's ink.
 
@@ -109,7 +111,10 @@ There is no focus Live Activity on a Mac (it has no Lock Screen or Dynamic Islan
 
 All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swift` and `ios/WilList/Steps.swift` (the guided flows' page, line entry and A1 choice).
 
-- **Row:** check on the left, title, one quiet line under it, and on the right a star (to-dos) or a letter (items). Tap the text to open details. Swipe right to finish, left to delete.
+- **Row:** check on the left, title, one quiet line under it, and on the right Play, then a star (to-dos) or a letter (items) in a 44-point column (`MarkColumn`, empty when there is no letter), so the Play buttons line up down a list. Tap the text to open details. Swipe right to finish, left to delete.
+  E items (dropped) have no Play. A class or exam on Today's column has a bar of its course's colour where the check would be, and no Play.
+- **Today's column** (`dayColumn` in `Timeline.swift`, drawn in `TodayView.swift`): each line's time leads its grey line as a range ("12:45 – 1:35 PM", never broken across lines), a session leaving out its length; the line for now is a teal dot and rule with "Now, 12:41 PM" in the deep teal; free time and the end of the day are quiet footnotes in the words' column; a to-do whose time has passed stays above now with its time in red; work that doesn't fit says "Won’t fit today" in red.
+- **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and the planned time of a study session or block among them, marked "As planned". Choosing one starts focus.
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date ("Due tomorrow, 10:00 AM", teal when today, red when overdue), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
 - **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
@@ -124,7 +129,7 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   It is drawn by hand like the week chart, not with Swift Charts, whose bars left out the empty days at either end; its scale starts at three, so one thing done doesn't fill the card.
 - **Week chart** (`WeekChart` in `ProgressTab.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
-- **Focus** (`FocusView.swift`, from Start beside the A1 on Today): one task, one timer, nothing else. The letter and the title, the time left, the screen filling from the bottom as the planned minutes pass (a study session's own length, or the usual task length), Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
+- **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left, the screen filling from the bottom as the chosen minutes pass, Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Agent** (`AgentView.swift`): the student's words in deep teal bubbles on the right, the Agent's in white bubbles on the left, always as plain text (`Text(verbatim:)`, never Markdown or links, so nothing a file says becomes something to tap).
   What it proposes comes as a white card of rows to tick, each with its kind and date, and one Add button; once added it says Added, and Undo brings the button back.
   A calendar link the student typed comes as a card with Follow.
@@ -220,3 +225,6 @@ No decorative or entrance animation.
 30. **A title mode set outside `readableColumn()` is lost:** the column sets the bar's title mode itself (large on a phone, inline beside the iPad's tabs), and a mode set closer to the content wins.
     So Settings and Your goals, which asked for an inline title, got a large one, and on Your goals it was drawn over the main goal; Today, with no title, kept an empty large title's room above its date.
     A screen that wants an inline title says so to the column: `readableColumn(inline: true)`.
+31. **A row's line was a tap target of its own:** with Today's times under the titles, the accessibility audit flagged each time ("12:45 – 1:10 PM", 18 points tall) as a hit area too small, inside the row's tappable words.
+    A row's title and line are now one element (`rowWords` in `Theme.swift`): a button at least 44 points tall that opens the details, read as "Read chapter 4, 1:30 – 1:55 PM".
+    UI tests find a row by its title at the start of that label (`title(_:in:)` in `CoreFlowsTests`).

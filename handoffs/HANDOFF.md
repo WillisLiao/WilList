@@ -62,7 +62,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
-**On the owner's devices:** the iPad (iOS 18.5) has `016ef8b` and the iPhone 15 Pro (iOS 18.7.8) has `a6c1962`; neither has anything from this evening.
+**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `ce44d4f` (installed with `npm run ios` on 2026-10-24, at the owner's OK); Xcode is signed in to team `45MSS5RXML` again.
 The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`), Live Activities, the iCloud container and push under team `45MSS5RXML`, so Xcode needs that team signed in.
 On 2026-10-23 Xcode had lost the owner's credentials ("No Accounts"): sign in again in Xcode, Settings, Accounts, and accept Apple's latest Program License Agreement if Xcode still reports "PLA Update available"; compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
 The iPad was paired and reachable then; the iPhone was not.

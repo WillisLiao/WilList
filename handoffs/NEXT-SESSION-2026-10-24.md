@@ -7,7 +7,7 @@ Then `CLAUDE.md`, `handoffs/HANDOFF.md`, `docs/DESIGN.md`, `docs/PRINCIPLES.md` 
 Where things stand: everything is on `claude/optimistic-ride-55ift9`, pushed; `main` is still at `8a23b92`.
 The app has four tabs (Today, Plan, Progress, Agent), Settings behind the profile picture, no letter prompts (letters are optional, the owner's call), no website in the code, and a Mac Catalyst build.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The devices still run an older build.
+The owner's iPhone and iPad have `ce44d4f`.
 Work at the default text size; the owner uses Display Zoom set to Larger Text (about 320 points wide).
 
 ## Start here
@@ -18,7 +18,7 @@ Work at the default text size; the owner uses Display Zoom set to Larger Text (a
 
 ## Ask the owner first
 
-- Installing the new build on the iPhone and iPad (`npm run ios`), and how Progress, the Agent and Settings feel in hand.
+- How Progress, the Agent, Settings and the optional letters feel in hand (the iPhone and iPad have `ce44d4f`).
 - Merging the branch into `main`, and turning GitHub Pages off to take the old website down.
 - Study time blocks: "i dont think we have option to enter what we gonna study at what time block". Study sessions have a day and a length but no time; a time on each session, or study blocks added by hand?
 - Whether the item details sheet should lose its Kind picker too (New task lost it at their ask).

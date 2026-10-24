@@ -52,17 +52,6 @@ enum Fmt {
         return d.formatted(date: .omitted, time: .shortened)
     }
 
-    /// "9:45 – 10:35 AM" for a stretch of the day from its start, in minutes since midnight;
-    /// just "9:45 AM" without a length. It never breaks across lines.
-    static func span(_ start: Int, _ minutes: Int) -> String {
-        let at = { (m: Int) in Calendar.current.date(bySettingHour: min(m, 1439) / 60, minute: min(m, 1439) % 60, second: 0, of: .now) ?? .now }
-        let words = minutes > 0 && start < 1439 ? (at(start)..<at(start + minutes)).formatted(.interval.hour().minute())
-            : at(start).formatted(date: .omitted, time: .shortened)
-        // No-break spaces, thin ones kept thin, and word joiners round the dash.
-        return words.replacingOccurrences(of: " ", with: "\u{00A0}").replacingOccurrences(of: "\u{2009}", with: "\u{202F}")
-            .replacingOccurrences(of: "\u{2013}", with: "\u{2060}\u{2013}\u{2060}")
-    }
-
     static func minutes(_ m: Int) -> String {
         if m < 60 { return "\(m) min" }
         let (h, r) = (m / 60, m % 60)
@@ -133,14 +122,7 @@ enum Fmt {
 
     /// `detail`, its course in the course's colour; a study session names its course too, like
     /// the rows around it.
-    /// On Today's column (`timed`), a session leaves out its length: the row shows its time.
-    static func detail(_ row: Row, _ today: Day, in s: AppState, timed: Bool = false) -> Text? {
-        if timed, let session = row.session {
-            let more = row.extra > 0 ? " (+\(row.extra) more)" : ""
-            guard let course = row.item.course else { return Text(session.label + more) }
-            let name = Text(course.replacingOccurrences(of: " ", with: "\u{00A0}")).foregroundStyle(CourseColor.of(s.courseColor(course)))
-            return Text("\(session.label)\(more),\u{00A0}\(name)")
-        }
+    static func detail(_ row: Row, _ today: Day, in s: AppState) -> Text? {
         if row.session == nil && !(row.item.priority == .D && !row.item.delegateTo.isEmpty) { return subline(row.item, today, in: s) }
         guard let session = row.session, let course = row.item.course else { return detail(row, today).map { Text($0) } }
         // The time and the course keep together: a line too long breaks before "50 min, MATH201",

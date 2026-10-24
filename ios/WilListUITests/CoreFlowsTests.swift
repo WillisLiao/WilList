@@ -32,8 +32,8 @@ final class CoreFlowsTests: XCTestCase {
         let sheet = app.navigationBars.matching(NSPredicate(format: "identifier BEGINSWITH 'New'")).firstMatch
         XCTAssertTrue(tap(sheet.buttons["Add"], shows: sheet.buttons["Done"]))
         XCTAssertTrue(tap(sheet.buttons["Done"], hides: sheet))
-        // It leads Today's work, with Play for a focus session on it.
-        XCTAssertTrue(tap(app.buttons["tab-today"], shows: app.buttons["Start a focus session"]), "it leads the day")
+        // It leads Today, with Play for a focus session on it.
+        XCTAssertTrue(tap(app.buttons["tab-today"], shows: app.buttons["Start a focus session"].firstMatch), "it leads the day")
         XCTAssertTrue(title("Write the essay intro", in: app).exists)
     }
 
@@ -76,7 +76,7 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(title("Email the TA", in: app), shows: give))
         let mustDo = app.buttons.matching(NSPredicate(format: "label CONTAINS 'Must do'")).firstMatch
         XCTAssertTrue(tap(give, shows: mustDo))
-        // Back on Today it is the A1, with Play.
+        // Back on Today it is the A1, at the top.
         XCTAssertTrue(tap(mustDo, shows: app.buttons["Start a focus session"].firstMatch))
         XCTAssertTrue(title("Email the TA", in: app).exists)
     }
@@ -89,10 +89,11 @@ final class CoreFlowsTests: XCTestCase {
         let undo = app.buttons["Undo"], tick = app.buttons["Mark done"].firstMatch
         XCTAssertTrue(tap(tick) { undo.waitForExistence(timeout: wait) }, "ticking it off offers Undo")
         undo.tap()
-        XCTAssertTrue(title("Write the essay intro", in: app).waitForExistence(timeout: wait), "Undo brings it back")
-        // Done again: the finished one leaves Today and the next A moves up.
-        XCTAssertTrue(tap(tick, hides: title("Write the essay intro", in: app)))
-        XCTAssertTrue(title("Read chapter 4", in: app).exists)
+        XCTAssertTrue(gone(title("Read chapter 4", in: app)), "the essay intro is the A1 again")
+        XCTAssertTrue(title("Write the essay intro", in: app).exists)
+        // Done again: the next A moves up and the finished one leaves Today.
+        XCTAssertTrue(tap(tick, shows: title("Read chapter 4", in: app)))
+        XCTAssertTrue(gone(title("Write the essay intro", in: app)))
         // The last A done, the day is clear.
         let clear = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'All clear'")).firstMatch
         XCTAssertTrue(tap(tick, shows: clear), "the day says it's clear")
@@ -138,8 +139,8 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]), "it ends on tomorrow's A1")
         XCTAssertTrue(title("Read chapter 4", in: app).exists, "the chosen one is tomorrow's A1")
         XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["Tomorrow starts with"]))
-        let a1 = title("Read chapter 4", in: app), a2 = title("Write the essay intro", in: app)
-        XCTAssertTrue(a1.exists && a2.exists && a1.frame.minY < a2.frame.minY, "Today leads with the new A1")
+        XCTAssertTrue(title("Read chapter 4", in: app).exists, "Today leads with the new A1")
+        XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")
     }
 
     func testPlanTomorrowFromAnEmptyDay() {
@@ -249,7 +250,7 @@ final class CoreFlowsTests: XCTestCase {
     private func title(_ text: String, in app: XCUIApplication) -> XCUIElement {
         var joined = text
         if let last = text.lastIndex(of: " ") { joined.replaceSubrange(last...last, with: "\u{00A0}") }
-        // A row's words are one button, its line after the title ("Read chapter 4, 1:30 – 1:55 PM").
+        // A row's words are one button, its line after the title ("Read chapter 4, Due Fri").
         return app.descendants(matching: .any)
             .matching(NSPredicate(format: "label IN %@ OR label BEGINSWITH %@ OR label BEGINSWITH %@", [text, joined], text + ",", joined + ","))
             .firstMatch

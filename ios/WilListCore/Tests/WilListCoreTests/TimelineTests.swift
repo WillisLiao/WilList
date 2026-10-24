@@ -46,36 +46,6 @@ private func work(_ p: DayPlan) -> [String] {
     #expect(work(planDay(events: [], rows: [row("A1", .A, 30)], nowMin: 15 * 60 + 2))[0] == "A1@15:05-15:35")
 }
 
-@Test func todaysColumnRunsFromNowInTimeOrder() {
-    var settings = Settings()
-    settings.dayEnd = "18:00"
-    var call = Todo(id: "call", title: "Call mum")
-    call.time = "08:30"
-    var print = Todo(id: "print", title: "Print notes")
-    print.time = "15:00"
-    let events = [ev("08:00", 50), ev("10:00", 50), ev("14:00", 60, "Lab")]
-    let column = dayColumn(events: events, rows: [row("A1", .A, 60), row("C1", .C, 30)], todos: [call, print],
-                           settings: settings, nowMin: 9 * 60)
-    // The class at 8 is over; the call at 8:30 is still to do, so it stays, above now.
-    #expect(read(column) == ["Call mum", "now", "C1", "free 30", "Class", "A1", "free 125", "Lab", "Print notes", "free 180", "end"])
-    #expect(column.first { $0.id == "work-A1:A1s-0" }?.start == 10 * 60 + 55)
-    // Late at night nothing fits: no end of the day after now, the work listed under it.
-    #expect(read(dayColumn(events: events, rows: [row("A1", .A, 60)], todos: [], settings: settings, nowMin: 23 * 60)) == ["now", "A1"])
-}
-
-private func read(_ column: [DayEntry]) -> [String] {
-    column.map { e -> String in
-        switch e.kind {
-        case .now: "now"
-        case .allDay(let it), .block(let it): it.title
-        case .work(let r), .over(let r): r.label
-        case .todo(let t): t.title
-        case .free: "free \(e.minutes)"
-        case .endOfDay: "end"
-        }
-    }
-}
-
 @Test func studyBlocksAreFixedTimeAndCountAsStudy() {
     let monday = "2026-10-19"
     let p = quickAdd("Study organic chem every tue thu 7pm 2h", today: monday, minute: 9 * 60)

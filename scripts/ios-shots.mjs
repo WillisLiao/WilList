@@ -12,7 +12,6 @@
 //   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
 //   -scroll later|calendar           Plan: scroll to Later or the calendar
 //   -scroll next|coming              Progress: scroll to Next 7 days or Coming up
-//   -scroll coming                   Today: scroll to Coming up
 //   -sheet add|study|search|letters  open that sheet (New task and New study block from Plan, search and letters from Today)
 //   -draft "Calc midterm fri 2pm"    text already typed in the Add sheet (no keyboard)
 //   -edit t5                         Today: open that to-do's details (sample ids t1 to t6)

@@ -12,7 +12,7 @@ Read it first; update the top section at the end of every substantial session.
 - No more kinds, at the owner's word ("listing them is enough, organizing them based on those kinds are useless"): every item is a task or a study block, from typed words, the Agent and calendar links alike. The study planner (prep sessions, start dates, pace calibration, replanning), Progress's exams and deadlines, grade weights, effort and the suggested letter are gone; older saves still load, any old kind read as a task. Progress is the last 7 days, the suggestions and the next 7 days' study blocks.
 
 **Checked:** 73 core tests (the planner's went with it), lint, the UI tests (16: 15 passed, `WidgetTests` skipped as usual) and a zero-warning release build; Progress, Plan, Later, a task's and a study block's details, Settings, the Agent's card (demo), Today and New task looked at in the simulator (iPhone 17).
-**On the owner's devices:** the iPhone has `5e7b89f`, the iPad `fbe9251`; neither has today's work. Offer `npm run ios` when they are awake.
+**On the owner's devices:** the iPhone has `62789f0` (installed 2026-10-25); the iPad still has `fbe9251`: offer `npm run ios -- ipad` when it is awake.
 **To ask the owner:** the four open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
 
 ## Before that (2026-10-24, after the owner tried the build)
@@ -103,7 +103,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
-**On the owner's devices:** the iPhone 15 Pro has `5e7b89f` and the iPad Pro 12.9-inch `fbe9251` (installed with `npm run ios`, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
+**On the owner's devices:** the iPhone 15 Pro has `62789f0` and the iPad Pro 12.9-inch `fbe9251` (installed with `npm run ios`, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
 The iPhone drops off the Wi-Fi tunnel when it sleeps (`xcrun devicectl list devices` shows it "unavailable"): ask the owner to unlock it, then `npm run ios -- iphone`.
 
 **Checked (2026-10-24, late night):** 102 Swift core tests, lint, all 14 UI tests on `4909d65` (13 pass, `WidgetTests` skipped as usual), a zero-warning release build on `fbe9251` (its one-word change wasn't UI-tested locally; CI is green), and Today at 320 points by narrowing the simulator's window, plus the iPhone SE and iPhone 17.

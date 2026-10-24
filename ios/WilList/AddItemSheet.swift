@@ -58,24 +58,7 @@ struct AddItemSheet: View {
                     if !empty { understood }
                 } else {
                     Section {
-                        HStack(spacing: 8) {
-                            ForEach(Letter.allCases, id: \.self) { l in
-                                Button { chosenLetter = .some(l == letter ? nil : l) } label: {
-                                    Text(l.rawValue)
-                                        .font(.headline)
-                                        .strikethrough(l == .E)
-                                        // Its colour in full once chosen, a pale wash of it until then (yellow
-                                        // and green words can't be read on white).
-                                        .foregroundStyle(letter == l ? l.ink : Color.primary)
-                                        .frame(maxWidth: .infinity, minHeight: 40)
-                                        .background(letter == l ? l.color : l.color.opacity(0.22), in: Capsule())
-                                }
-                                .buttonStyle(.borderless)
-                                .accessibilityLabel("\(l.rawValue): \(l.meaning)")
-                                .accessibilityAddTraits(letter == l ? .isSelected : [])
-                            }
-                        }
-                        .sensoryFeedback(.selection, trigger: letter)
+                        LetterChips(letter: letter) { chosenLetter = .some($0) }
                     } header: {
                         Text("Letter")
                     } footer: {

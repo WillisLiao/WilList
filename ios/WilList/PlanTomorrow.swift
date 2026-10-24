@@ -7,8 +7,6 @@ import WilListCore
 struct PlanTomorrow: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
-    /// The day last planned, so Today stops asking once tomorrow is planned.
-    @AppStorage("plannedFor") private var plannedFor = ""
 
     /// Tomorrow's A1: something already on tomorrow's list, or a line written here.
     enum Pick: Hashable { case item(String), line(Int) }
@@ -120,7 +118,6 @@ struct PlanTomorrow: View {
     private func finish() {
         chosenFrom = rows
         save(pick)
-        plannedFor = tomorrow
         step = 3
     }
 
@@ -151,13 +148,3 @@ struct PlanTomorrow: View {
     }
 }
 
-extension Store {
-    /// From the planning time on (8:30 PM unless changed in Settings), it's time to plan tomorrow.
-    var evening: Bool {
-        #if DEBUG
-        // `-night YES` or `-night NO` on launch fixes it, so tests and screenshots don't depend on the clock.
-        if UserDefaults.standard.object(forKey: "night") != nil { return UserDefaults.standard.bool(forKey: "night") }
-        #endif
-        return nowMinutes() >= (timeToMin(state.settings.planTime) ?? 1230)
-    }
-}

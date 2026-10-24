@@ -9,7 +9,6 @@
 //   -tab today|plan|progress|goals|agent   which tab opens
 //   -open settings                   Settings, from the profile picture
 //   -evening 1|2|3                   Plan tomorrow at that step (2 with a line written)
-//   -night YES                       it's evening: Today offers Plan tomorrow (NO, the default here)
 //   -scroll later|calendar           Plan: scroll to Later or the calendar
 //   -scroll next|coming              Progress: scroll to Next 7 days or Coming up
 //   -sheet add|study|search|letters  open that sheet (New task and New study block from Plan, search and letters from Today)
@@ -67,8 +66,6 @@ const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').re
   + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '');
 // A focus session left running by an earlier shot would cover the screen.
 if (!argv.includes('-focus')) argv.push('-focus', 'NO');
-// Shots look the same at any hour.
-if (!argv.includes('-night')) argv.push('-night', 'NO');
 // The Agent answers from its script: there is no server or key here.
 if (!argv.includes('-agentDemo')) argv.push('-agentDemo', 'YES');
 if (!argv.includes('-agentConsent')) argv.push('-agentConsent', 'YES');

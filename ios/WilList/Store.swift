@@ -19,7 +19,7 @@ final class Store {
     var opening: String?
     /// A home-screen quick action waiting to be carried out.
     var quickAction: QuickAction?
-    /// Plan tomorrow is open (PlanTomorrow.swift): from Today's evening row or the evening notice.
+    /// Plan tomorrow is open (PlanTomorrow.swift): from the evening notice.
     var planningTomorrow = false
     /// The focus session running, if any (FocusView.swift). It outlives the app being closed.
     var focus: FocusSession? = FocusSession.saved

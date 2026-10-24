@@ -48,23 +48,14 @@ struct StepsList: View {
 
 /// "Remind me": later today, tomorrow morning, next week, or any date and time.
 struct ReminderRow: View {
-    @Environment(Store.self) private var store
     @Binding var at: String?
     let today: Day
-    @State private var picking = false
 
     private var date: Date? { Reminders.remind(at).flatMap { Calendar.current.date(from: $0) } }
 
     var body: some View {
         HStack(spacing: 12) {
-            Menu {
-                if let later = Self.laterToday {
-                    choice("Later today", later)
-                }
-                choice("Tomorrow", Self.morning(in: 1))
-                choice("Next week", Self.morning(in: Self.daysToMonday))
-                Button("Pick a date and time") { picking = true }
-            } label: {
+            ReminderMenu(at: $at, today: today) {
                 if let date {
                     // "Remind me at 9:00 AM" over "Tomorrow", as Microsoft To Do puts it.
                     HStack(spacing: 12) {
@@ -92,28 +83,6 @@ struct ReminderRow: View {
                 .accessibilityLabel("Remove reminder")
             }
         }
-        .sheet(isPresented: $picking) {
-            DateTimePicker(initial: date ?? Self.morning(in: 1)) { set($0) }
-        }
-    }
-
-    /// Sets the reminder, asking for notifications the first time.
-    private func set(_ date: Date) {
-        at = Reminders.stamp(date)
-        Task {
-            if await Reminders.allowed() {
-                await Reminders.sync(Reminders.due(store.state, today: store.today))
-            } else {
-                store.say("Turn on notifications for WilList in Settings.")
-            }
-        }
-    }
-
-    private func choice(_ title: String, _ date: Date) -> some View {
-        Button { set(date) } label: {
-            Text(title)
-            Text(Fmt.reminder(Reminders.stamp(date), today) ?? "")
-        }
     }
 
     /// Three hours on, on the hour; not offered late in the evening.
@@ -137,25 +106,110 @@ struct ReminderRow: View {
     }
 }
 
-/// A calendar and a clock, for "Pick a date and time".
+/// Remind me's choices, as a menu with any label: later today, tomorrow morning, next week, or any
+/// date and time. Setting one asks for notifications the first time.
+struct ReminderMenu<Label: View>: View {
+    @Environment(Store.self) private var store
+    @Binding var at: String?
+    let today: Day
+    @ViewBuilder let label: Label
+    @State private var picking = false
+
+    var body: some View {
+        Menu {
+            if let later = ReminderRow.laterToday {
+                choice("Later today", later)
+            }
+            choice("Tomorrow", ReminderRow.morning(in: 1))
+            choice("Next week", ReminderRow.morning(in: ReminderRow.daysToMonday))
+            Button("Pick a date and time") { picking = true }
+            if at != nil { Button("Remove", role: .destructive) { at = nil } }
+        } label: {
+            label
+        }
+        .sheet(isPresented: $picking) {
+            DateTimePicker(title: "Remind me", initial: Reminders.remind(at).flatMap { Calendar.current.date(from: $0) } ?? ReminderRow.morning(in: 1),
+                           from: .now) { set($0) }
+        }
+    }
+
+    private func set(_ date: Date) {
+        at = Reminders.stamp(date)
+        Task {
+            if await Reminders.allowed() {
+                await Reminders.sync(Reminders.due(store.state, today: store.today))
+            } else {
+                store.say("Turn on notifications for WilList in Settings.")
+            }
+        }
+    }
+
+    private func choice(_ title: String, _ date: Date) -> some View {
+        Button { set(date) } label: {
+            Text(title)
+            Text(Fmt.reminder(Reminders.stamp(date), today) ?? "")
+        }
+    }
+}
+
+/// A date's choices, as a menu with any label: today, tomorrow, next week, or any day.
+struct DateMenu<Label: View>: View {
+    @Binding var date: Day?
+    let today: Day
+    var title = "Date"
+    @ViewBuilder let label: Label
+    @State private var picking = false
+
+    var body: some View {
+        Menu {
+            pick("Today", today)
+            pick("Tomorrow", addDays(today, 1))
+            pick("Next week", addDays(today, ReminderRow.daysToMonday))
+            Button("Pick a date") { picking = true }
+            if date != nil { Button("Remove", role: .destructive) { date = nil } }
+        } label: {
+            label
+        }
+        .sheet(isPresented: $picking) {
+            DateTimePicker(title: title, initial: Fmt.date(date ?? addDays(today, 1)), components: .date) { date = WilListCore.today($0) }
+        }
+    }
+
+    private func pick(_ title: String, _ d: Day) -> some View {
+        Button { date = d } label: {
+            Text(title)
+            Text(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+        }
+    }
+}
+
+/// A calendar, and a clock when it's a time too.
 private struct DateTimePicker: View {
     @Environment(\.dismiss) private var dismiss
+    let title: String
     @State var date: Date
+    /// The earliest it can be: now, for a reminder.
+    let from: Date
+    let components: DatePickerComponents
     let done: (Date) -> Void
 
-    init(initial: Date, done: @escaping (Date) -> Void) {
+    init(title: String, initial: Date, from: Date = .distantPast, components: DatePickerComponents = [.date, .hourAndMinute],
+         done: @escaping (Date) -> Void) {
+        self.title = title
         _date = State(initialValue: initial)
+        self.from = from
+        self.components = components
         self.done = done
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                DatePicker("Remind me", selection: $date, in: Date.now..., displayedComponents: [.date, .hourAndMinute])
+                DatePicker(title, selection: $date, in: from..., displayedComponents: components)
                     .datePickerStyle(.graphical)
             }
             .sheetGround()
-            .navigationTitle("Remind me")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -209,21 +263,7 @@ struct DueRow: View {
                 .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
             }
         } else {
-            Menu {
-                pick("Today", today)
-                pick("Tomorrow", addDays(today, 1))
-                pick("Next week", addDays(today, ReminderRow.daysToMonday))
-                Button("Pick a date") { date = addDays(today, 1) }
-            } label: {
-                Label(add, systemImage: "calendar").fillsRow()
-            }
-        }
-    }
-
-    private func pick(_ title: String, _ d: Day) -> some View {
-        Button { date = d } label: {
-            Text(title)
-            Text(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+            DateMenu(date: $date, today: today, title: title) { Label(add, systemImage: "calendar").fillsRow() }
         }
     }
 }
@@ -279,30 +319,40 @@ private struct DayChip: View {
 /// "Repeat": the usual choices, or every so many days, weeks, months or years.
 struct RepeatRow: View {
     @Binding var recur: Recur?
+    @Binding var date: Day?
+    let today: Day
+
+    var body: some View {
+        if let r = recur {
+            SetRow(symbol: "repeat", overdue: false, clear: { recur = nil }) {
+                RepeatMenu(recur: $recur, date: $date, today: today) {
+                    HStack {
+                        Text("Repeat").foregroundStyle(Color.primary)
+                        Spacer()
+                        Text(Fmt.recur(r)).foregroundStyle(Color.secondary)
+                    }
+                }
+            }
+        } else {
+            RepeatMenu(recur: $recur, date: $date, today: today) { Label("Repeat", systemImage: "repeat").fillsRow() }
+        }
+    }
+}
+
+/// Repeat's choices, as a menu with any label.
+struct RepeatMenu<Label: View>: View {
+    @Binding var recur: Recur?
     /// A repeat counts from the due date, so setting one without a date starts it today.
     @Binding var date: Day?
     let today: Day
+    @ViewBuilder let label: Label
     @State private var customizing = false
 
     var body: some View {
-        Group {
-            if let r = recur {
-                SetRow(symbol: "repeat", overdue: false, clear: { recur = nil }) {
-                    Menu { choices } label: {
-                        HStack {
-                            Text("Repeat").foregroundStyle(Color.primary)
-                            Spacer()
-                            Text(Fmt.recur(r)).foregroundStyle(Color.secondary)
-                        }
-                    }
-                }
-            } else {
-                Menu { choices } label: { Label("Repeat", systemImage: "repeat").fillsRow() }
+        Menu { choices } label: { label }
+            .sheet(isPresented: $customizing) {
+                CustomRepeat(recur: recur ?? Recur(.weekly, days: [weekday(date ?? today)])) { set($0) }
             }
-        }
-        .sheet(isPresented: $customizing) {
-            CustomRepeat(recur: recur ?? Recur(.weekly, days: [weekday(date ?? today)])) { set($0) }
-        }
     }
 
     @ViewBuilder private var choices: some View {
@@ -314,6 +364,7 @@ struct RepeatRow: View {
         Button("Yearly") { set(Recur(.yearly)) }
         Divider()
         Button("Custom…") { customizing = true }
+        if recur != nil { Button("Remove", role: .destructive) { recur = nil } }
     }
 
     private func set(_ r: Recur) {
@@ -419,6 +470,32 @@ private struct SetRow<Content: View>: View {
             .buttonStyle(.borderless)
             .accessibilityLabel(clearLabel)
         }
+    }
+}
+
+/// The five letters as chips: each a pale wash of its colour with dark words until chosen, then in
+/// full (yellow and green words can't be read on white). Choosing the chosen one again clears it.
+struct LetterChips: View {
+    let letter: Letter?
+    let choose: (Letter?) -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(Letter.allCases, id: \.self) { l in
+                Button { choose(l == letter ? nil : l) } label: {
+                    Text(l.rawValue)
+                        .font(.headline)
+                        .strikethrough(l == .E)
+                        .foregroundStyle(letter == l ? l.ink : Color.primary)
+                        .frame(maxWidth: .infinity, minHeight: 40)
+                        .background(letter == l ? l.color : l.color.opacity(0.22), in: Capsule())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("\(l.rawValue): \(l.meaning)")
+                .accessibilityAddTraits(letter == l ? .isSelected : [])
+            }
+        }
+        .sensoryFeedback(.selection, trigger: letter)
     }
 }
 

@@ -131,6 +131,7 @@ struct RootView: View {
     @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
     @AppStorage("badge") private var badge = Badge.off
     @State private var welcoming = Store.shared.needsWelcome
+    @State private var keyboardUp = false
     #if DEBUG
     @State private var gallery = UserDefaults.standard.object(forKey: "gallery") != nil
     #endif
@@ -143,8 +144,11 @@ struct RootView: View {
             Tab("Goals", systemImage: "target", value: .goals) { NavigationStack { GoalsList() }.underTabBar() }
             Tab("Agent", systemImage: "sparkles", value: .agent) { AgentView().underTabBar() }
         }
-        // The keyboard covers the bar rather than lifting it.
-        .overlay(alignment: .bottom) { TabBar(tab: $tab).ignoresSafeArea(.keyboard) }
+        // The keyboard covers the bar rather than lifting it: `ignoresSafeArea(.keyboard)` alone
+        // let the bar ride on the keyboard over Today's add line, so it goes while the keyboard is up
+        // (a bottom safe area over 150 points, pitfall 29).
+        .overlay(alignment: .bottom) { if !keyboardUp { TabBar(tab: $tab).ignoresSafeArea(.keyboard) } }
+        .onGeometryChange(for: Bool.self) { $0.safeAreaInsets.bottom > 150 } action: { keyboardUp = $0 }
         // The accent colour is the teal already; tinting with it too turns the toolbar buttons teal.
         .tint(.brand)
         // The first launch writes the first plan, then opens Today on its A1.

@@ -44,7 +44,7 @@ That last page rises over the night like a sunrise, the list held still beneath 
 On 2026-10-24 the owner took the A1 card off Today, and every explanation off Plan: students know to letter what they add.
 The A1 is now the first row of Today's first card; an empty Plan day says only "Nothing planned".
 Later that night they asked for Play beside every task, and the Goals tab back between Progress and Agent; a time-ordered Today, tried that night, was taken back out at their ask ("no need time column").
-Goals leads with the main goal set large in white on a teal card (or the question that asks for one); a tap writes it, keyboard up.
+Goals leads with the main goal set large in white on a teal card (just “Main goal” and a plus until there is one); a tap writes it, keyboard up.
 
 ## Type
 
@@ -219,7 +219,8 @@ No decorative or entrance animation.
     UI tests tap its buttons by identifier (`tab-today`), not through `app.tabBars`.
 28. **A lazy grid inside a list's row:** a `LazyVGrid` in a `List` row sent the collection view's layout round in a loop (`_updateVisibleCellsNow`) until an assertion stopped the app, as soon as the row came on screen.
     `MonthCalendar` lays its days out in plain `HStack` rows of seven instead.
-29. **A text field above WilList's own tab bar:** the bar stays at the foot of the screen under the keyboard (`ignoresSafeArea(.keyboard)`), so a field kept clear of the bar would float a bar's height above the keyboard.
+29. **A text field above WilList's own tab bar:** the bar stays at the foot of the screen under the keyboard, so a field kept clear of the bar would float a bar's height above the keyboard.
+    `ignoresSafeArea(.keyboard)` on the bar alone wasn't enough (on iOS 26.5 the bar rode on the keyboard, over Today's add line), so the bar also goes while the keyboard is up, read the same way as below.
     The Agent's message field leaves the bar's room only while the keyboard is down, read from the screen's bottom safe area (over 150 points means the keyboard is up), which also holds with a hardware keyboard, where focus alone would mislead.
     Its toast host is told the bar takes no room (`tabBarRoom` 0), so Undo shows just above the field.
 30. **A title mode set outside `readableColumn()` is lost:** the column sets the bar's title mode itself (large on a phone, inline beside the iPad's tabs), and a mode set closer to the content wins.

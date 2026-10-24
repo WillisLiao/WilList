@@ -3,7 +3,7 @@ import XCTest
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// add the day's A1 in Plan, set a reminder on one (or while adding it in Plan) and Mark done on the reminder when it comes,
 /// give one a letter, tick off the A1 at the top of Today, a focus session on it, the first-run
-/// welcome, Plan tomorrow from Today's evening nudge, Search, and adding what the Agent found.
+/// welcome, Plan tomorrow as the evening notice opens it, Search, and adding what the Agent found.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -17,6 +17,27 @@ final class CoreFlowsTests: XCTestCase {
         add("Buy stamps", in: app)
         XCTAssertTrue(tap(app.buttons["Mark done"].firstMatch, shows: app.staticTexts["Completed"]))
         XCTAssertTrue(app.buttons["Done"].exists, "the to-do's circle is filled")
+    }
+
+    /// Today's line takes a letter and a reminder before it's added, and + adds it.
+    func testAddALetteredTaskOnToday() {
+        let app = launch(plan: "empty")
+        let field = app.textFields["Add a to-do"]
+        XCTAssertTrue(field.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
+        field.typeText("Read chapter 2")
+        let a = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'A:'")).firstMatch
+        XCTAssertTrue(tap(a) { a.wait(for: \.isSelected, toEqual: true, timeout: wait) }, "A is chosen")
+        let tomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tomorrow'")).firstMatch
+        XCTAssertTrue(tap(app.buttons["Reminder"], shows: tomorrow))
+        tomorrow.tap()
+        allowNotifications()
+        XCTAssertTrue(tap(app.buttons["Add"], shows: app.buttons["Start a focus session"].firstMatch), "it leads Today")
+        XCTAssertTrue(title("Read chapter 2", in: app).exists)
+        // The keyboard covers the tab bar; return on the empty line puts it away.
+        field.typeText("\n")
+        XCTAssertTrue(app.buttons["tab-plan"].waitForExistence(timeout: wait), "the tab bar is back")
+        XCTAssertTrue(tap(app.buttons["tab-plan"], shows: app.buttons["Letter A, Must do. Change"]), "it's an A in Plan")
     }
 
     func testAddTheA1InPlan() {
@@ -147,10 +168,11 @@ final class CoreFlowsTests: XCTestCase {
     }
 
     func testPlanTomorrowPicksTheA1() {
-        let app = launch(plan: "a1", night: true)
-        let planTomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch
+        // As the evening notice opens it.
+        let app = launch(plan: "a1", more: ["-evening", "1"])
         let field = app.textFields["Read chapter 5 by Friday"]
-        XCTAssertTrue(tap(planTomorrow, shows: field), "Plan tomorrow opens on its first step")
+        XCTAssertTrue(field.waitForExistence(timeout: wait), "Plan tomorrow opens on its first step")
+        wait(for: [expectation(for: NSPredicate(format: "hasKeyboardFocus == true"), evaluatedWith: field)], timeout: wait)
         field.typeText("Buy a lab notebook\n")
         XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         // Tomorrow's list, its A1 already chosen; the other A becomes the A1 instead.
@@ -163,12 +185,10 @@ final class CoreFlowsTests: XCTestCase {
     }
 
     func testPlanTomorrowFromAnEmptyDay() {
-        let app = launch(plan: "empty", night: true)
-        // In the evening, Today offers to plan tomorrow.
-        let planTomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Plan tomorrow'")).firstMatch
-        XCTAssertTrue(planTomorrow.waitForExistence(timeout: wait))
+        let app = launch(plan: "empty", more: ["-evening", "1"])
         let field = app.textFields["Read chapter 5 by Friday"]
-        XCTAssertTrue(tap(planTomorrow, shows: field), "Plan tomorrow opens on its first step")
+        XCTAssertTrue(field.waitForExistence(timeout: wait), "Plan tomorrow opens on its first step")
+        wait(for: [expectation(for: NSPredicate(format: "hasKeyboardFocus == true"), evaluatedWith: field)], timeout: wait)
         field.typeText("Buy a lab notebook\n")
         XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         choose(app.buttons["Buy a lab notebook"], in: app)
@@ -216,11 +236,11 @@ final class CoreFlowsTests: XCTestCase {
 
     // MARK: helpers
 
-    /// Starts the app on a known plan; `night` makes it evening, past the planning time.
-    private func launch(plan: String, tab: String = "today", night: Bool = false, more: [String] = []) -> XCUIApplication {
+    /// Starts the app on a known plan.
+    private func launch(plan: String, tab: String = "today", more: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO", "-night", night ? "YES" : "NO"] + more
+        app.launchArguments = ["-plan", plan, "-tab", tab, "-playSound", "NO", "-focus", "NO"] + more
         app.launch()
         return app
     }

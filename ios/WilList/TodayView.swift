@@ -29,9 +29,13 @@ struct TodayView: View {
     @AppStorage("starredOnTop") private var starredOnTop = true
     @AppStorage("confirmDelete") private var confirmDelete = false
     @AppStorage("readDates") private var readDates = true
-    @AppStorage("plannedFor") private var plannedFor = ""
     @State private var draft = ""
     @FocusState private var typing: Bool
+    // Chosen under the line before it's added; nil until then, so the words decide the date and repeat.
+    @State private var letter: Letter?
+    @State private var remindAt: String?
+    @State private var chosenDate: Day??
+    @State private var chosenRecur: Recur??
     @State private var ticking: Set<String> = []
     @State private var editing: String?
     @State private var searching = false
@@ -55,7 +59,6 @@ struct TodayView: View {
 
     var body: some View {
         let fromPlan = planItems
-        let planned = plannedFor == addDays(today, 1)
         // A new list has nothing to search or sort yet.
         let hasTools = !(store.state.todos.isEmpty && store.state.items.isEmpty)
         NavigationStack {
@@ -71,10 +74,6 @@ struct TodayView: View {
                     Section {
                         ForEach(fromPlan) { planRow($0) }
                     }
-                }
-                // In the evening, until tomorrow is planned.
-                if store.evening && !planned {
-                    Section { nudge("Plan tomorrow", systemImage: "moon.fill", tint: PlanTomorrow.night) { store.planningTomorrow = true } }
                 }
                 // The checklist on one card, Add a to-do at its top, as on the Today widget.
                 Section {
@@ -172,25 +171,6 @@ struct TodayView: View {
         .onGround()
     }
 
-    /// A one-line nudge under the A1 card: Plan tomorrow, in the evening.
-    private func nudge(_ title: String, systemImage: String? = nil, tint: Color = .brand, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                if let systemImage { Image(systemName: systemImage).font(.footnote) }
-                Text(title)
-                Image(systemName: "chevron.right").font(.footnote.weight(.semibold))
-            }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(tint)
-            .multilineTextAlignment(.leading)
-            // The whole row answers a tap, not just the words.
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.borderless)
-        .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-    }
-
     private var sortMenu: some View {
         Menu {
             Picker("Sort by", selection: $sort) {
@@ -216,47 +196,105 @@ struct TodayView: View {
 
     // MARK: adding
 
+    /// Add a to-do: + (or return) adds the line. While it's being written, the letters and Remind
+    /// me, the date and Repeat sit under it; a letter makes it a task in Plan, on Today for today.
     private var addRow: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "plus.circle.fill")
-                .font(.title2)
-                .foregroundStyle(Color.brand)
-                .frame(width: 44, height: 44)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                TextField("Add a to-do", text: $draft)
-                    .focused($typing)
-                    .submitLabel(.done)
-                    .onSubmit(add)
-                // What the line will be saved as, when it names a day or a repeat.
-                if let reads = reads {
-                    Text(reads).font(.footnote).foregroundStyle(Color.brand)
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                Button { if blank { typing = true } else { add() } } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(Color.brand)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityLabel("Add")
+                VStack(alignment: .leading, spacing: 2) {
+                    TextField("Add a to-do", text: $draft)
+                        .focused($typing)
+                        .submitLabel(.done)
+                        .onSubmit(add)
+                    // What the line will be saved as: its day, repeat and reminder.
+                    if let reads { reads.font(.footnote).foregroundStyle(Color.brand) }
                 }
             }
-            // The line under it starts at the words, like every row's below.
-            .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
+            if typing || !blank || letter != nil || remindAt != nil || chosenDate != nil || chosenRecur != nil {
+                VStack(alignment: .leading, spacing: 4) {
+                    LetterChips(letter: letter) { letter = $0 }
+                    HStack(spacing: 0) {
+                        // Not "Remind me": that's the row in a to-do's details, which can be open over this.
+                        ReminderMenu(at: $remindAt, today: today) { option(remindAt == nil ? "bell" : "bell.fill", on: remindAt != nil) }
+                            .accessibilityLabel("Reminder")
+                            .accessibilityValue(Fmt.reminder(remindAt, today) ?? "None")
+                        DateMenu(date: date, today: today) { option("calendar", on: date.wrappedValue != nil) }
+                            .accessibilityLabel("Date")
+                            .accessibilityValue(Fmt.dueLine(date.wrappedValue, nil, today, word: false) ?? "None")
+                        RepeatMenu(recur: recur, date: date, today: today) { option("repeat", on: recur.wrappedValue != nil) }
+                            .accessibilityLabel("Repeat")
+                            .accessibilityValue(recur.wrappedValue.map(Fmt.recur) ?? "None")
+                    }
+                    .padding(.leading, -10) // the icons line up with the words, their frames reaching past
+                }
+                .padding(.leading, 54)
+                .padding(.bottom, 6)
+            }
         }
+        // The line under it starts at the words, like every row's below.
+        .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] + 54 }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 20))
     }
 
-    private var reads: String? {
-        let t = draft.trimmingCharacters(in: .whitespaces)
-        guard !t.isEmpty else { return nil }
-        guard readDates else { return nil }
-        let p = quickAdd(t, today: today, minute: nowMinutes(), dateOrder: store.dateOrder)
-        let parts = [Fmt.dueLine(p.date ?? (p.recur != nil ? today : nil), p.date == nil ? nil : p.time, today), p.recur.map(Fmt.recur)]
-            .compactMap { $0 }
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    private func option(_ symbol: String, on: Bool) -> some View {
+        Image(systemName: symbol)
+            .font(.body)
+            .foregroundStyle(on ? Color.brand : Color.secondary)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+    }
+
+    private var blank: Bool { draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var parsed: Parsed? {
+        readDates && !blank ? quickAdd(draft, today: today, minute: nowMinutes(), dateOrder: store.dateOrder) : nil
+    }
+    private var date: Binding<Day?> {
+        Binding(get: { chosenDate ?? parsed.flatMap { $0.date ?? ($0.recur != nil ? today : nil) } }, set: { chosenDate = .some($0) })
+    }
+    private var recur: Binding<Recur?> { Binding(get: { chosenRecur ?? parsed?.recur }, set: { chosenRecur = .some($0) }) }
+
+    /// "Due Fri, 17:00, Every week, 🔔 Tomorrow, 9:00 AM": what the line will be saved as.
+    private var reads: Text? {
+        let d = date.wrappedValue
+        let parts = [Fmt.dueLine(d, d == nil ? nil : parsed?.time, today), recur.wrappedValue.map(Fmt.recur)].compactMap { $0 }
+        let words = parts.isEmpty ? nil : Text(parts.joined(separator: ", "))
+        let bell = Fmt.reminder(remindAt, today).map { Text(Image(systemName: "bell")) + Text(" \($0)") }
+        switch (words, bell) {
+        case let (w?, b?): return w + Text(", ") + b
+        case let (w, b): return w ?? b
+        }
     }
 
     private func add() {
-        guard !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { typing = false; return }
-        let text = draft
+        guard !blank else { typing = false; return }
+        let text = draft, letter = letter, remindAt = remindAt, recur = recur.wrappedValue
+        let date = date.wrappedValue, time = date == nil ? nil : parsed?.time
         withAnimation(.snappy) {
-            store.change { _ = $0.addTodo(text, today: today, minute: nowMinutes(), dateOrder: store.dateOrder,
-                                          onTop: newOnTop, readDates: readDates) }
+            store.change { s in
+                guard let t = s.addTodo(text, today: today, minute: nowMinutes(), dateOrder: store.dateOrder,
+                                        onTop: newOnTop, readDates: readDates),
+                      let i = s.todos.firstIndex(where: { $0.id == t.id }) else { return }
+                s.todos[i].date = date
+                s.todos[i].time = time
+                s.todos[i].recur = recur
+                s.todos[i].remindAt = remindAt
+                if let letter { s.letterTodo(t.id, letter, today: today) }
+            }
         }
         draft = ""
+        self.letter = nil
+        self.remindAt = nil
+        chosenDate = nil
+        chosenRecur = nil
         typing = true // keep the keyboard up for the next one
     }
 

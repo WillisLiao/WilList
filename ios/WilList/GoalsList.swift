@@ -54,7 +54,7 @@ struct GoalsList: View {
     }
 }
 
-/// The main goal in white on the teal, or the question that asks for one.
+/// The main goal in white on the teal; until there is one, just its name and a plus.
 private struct MainGoal: View {
     let goal: String
     @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 40
@@ -64,19 +64,21 @@ private struct MainGoal: View {
             HStack {
                 Text("Main goal").font(.subheadline.weight(.medium))
                 Spacer()
-                Image(systemName: "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
+                Image(systemName: goal.isEmpty ? "plus" : "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
             }
-            Text(goal.isEmpty ? "What one goal would change the most?" : Fmt.noWidow(goal))
-                .font(.system(size: size, weight: .bold))
-                .tracking(-0.5)
-                .fixedSize(horizontal: false, vertical: true)
+            if !goal.isEmpty {
+                Text(Fmt.noWidow(goal))
+                    .font(.system(size: size, weight: .bold))
+                    .tracking(-0.5)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
         .foregroundStyle(.white)
         .multilineTextAlignment(.leading)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .padding(.top, 16)
-        .padding(.bottom, 22)
+        .padding(.bottom, goal.isEmpty ? 16 : 22)
         .contentShape(Rectangle())
     }
 }

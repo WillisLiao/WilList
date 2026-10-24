@@ -63,6 +63,13 @@ private func state(_ items: Item...) -> AppState {
     #expect(!dayRows([exam], exam.sessions[0].date).isEmpty)
 }
 
+@Test func anUndatedTestWithALetterIsOnTheDaysList() {
+    // "ML test" reads as an exam; with no day yet it once fell under Later, letter and all.
+    let exam = mk("ML test", .exam, priority: .A)
+    #expect(dayRows([exam], monday).map(\.item.title) == ["ML test"])
+    #expect(laterItems([exam], monday).isEmpty)
+}
+
 @Test func lastSessionOfADeadlineCompletesIt() {
     let hw = mk("Problem set", .deadline, date: "2026-10-21", effort: 50, priority: .A)
     var s = state(hw)

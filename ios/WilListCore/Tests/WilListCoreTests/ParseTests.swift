@@ -9,7 +9,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
 @Test func examWithWeekdayTimeAndCourse() {
     let r = p("Calc midterm fri 2pm #MATH201")
     #expect(r.title == "Calc midterm")
-    #expect(r.type == .exam)
     #expect(r.date == "2026-10-23")
     #expect(r.time == "14:00")
     #expect(r.course == "MATH201")
@@ -18,7 +17,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
 @Test func homeworkWithNumericDateAndDue() {
     let r = p("HW3 due 10/24 11:59pm")
     #expect(r.title == "HW3")
-    #expect(r.type == .deadline)
     #expect(r.date == "2026-10-24")
     #expect(r.time == "23:59")
 }
@@ -29,7 +27,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
 
 @Test func weeklyMeeting() {
     let r = p("Team meeting every tue 4pm")
-    #expect(r.type == .event)
     #expect(r.recur == Recur(.weekly, days: [2]))
     #expect(r.date == "2026-10-20")
     #expect(r.time == "16:00")
@@ -48,7 +45,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
     let r = p("Bio lab every wed 2-5pm")
     #expect(r.time == "14:00")
     #expect(r.durationMin == 180)
-    #expect(r.type == .event)
 }
 
 @Test func elevenToOneStartsInTheMorning() {
@@ -72,7 +68,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
 
 @Test func nextMondayIsNextWeek() {
     #expect(p("Read Smith 2019 paper by next mon").date == "2026-10-26")
-    #expect(p("Read Smith 2019 paper by next mon").type == .reading)
     // On a Thursday, "next fri" is not tomorrow.
     #expect(quickAdd("Quiz next fri", today: "2026-10-22", minute: 540).date == "2026-10-30")
 }
@@ -105,17 +100,15 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
     #expect(p("Call mom 8am").date == "2026-10-20")
 }
 
-@Test func durationBecomesEffort() {
+@Test func durationIsRead() {
     let r = p("Study 2h for chem quiz on oct 22")
     #expect(r.durationMin == 120)
     #expect(r.title == "Study for chem quiz")
-    #expect(r.type == .exam)
 }
 
 @Test func unknownWordsStayInTheTitle() {
     let r = p("Problem set 5")
     #expect(r.title == "Problem set 5")
-    #expect(r.type == .deadline)
     #expect(p("constructor toString").title == "constructor toString")
 }
 
@@ -139,11 +132,14 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
     #expect(detectType("期中exam") == .exam)
 }
 
-@Test func anEventNeedsADay() {
-    #expect(quickAdd("Buy a lab notebook", today: monday).type == .task)
-    #expect(quickAdd("Call mum", today: monday).type == .task)
-    #expect(quickAdd("Chem lab thu 2pm", today: monday).type == .event)
-    #expect(quickAdd("Club meeting every tuesday", today: monday).type == .event)
+@Test func typedWordsAreAlwaysATask() {
+    // No exams, deadlines, readings, talks, classes or study blocks read from the words, and no
+    // share of the grade: "ML test" once became an undated exam that Plan put under Later.
+    for s in ["ML test", "Calc midterm fri 2pm", "Essay due fri", "Read ch 4", "Group presentation thu",
+              "Team meeting every tue 4pm", "Study chem tue 7pm 2h"] {
+        #expect(Item(p(s)).type == .task)
+    }
+    #expect(p("Lab report worth 25%").title == "Lab report worth 25%")
 }
 
 @Test func hugeNumbersStayInTheTitle() {

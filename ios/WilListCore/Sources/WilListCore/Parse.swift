@@ -10,7 +10,6 @@ public enum Hint: String, Sendable { case tryTo, wish, haveTo, problem }
 
 public struct Parsed: Equatable, Sendable {
     public var title = ""
-    public var type: ItemType = .task
     public var date: Day?
     public var time: String?
     public var durationMin: Int?
@@ -18,7 +17,6 @@ public struct Parsed: Equatable, Sendable {
     public var course: String?
     public var priority: Letter?
     public var rank: Int?
-    public var weightPct: Double?
     public var hints: [Hint] = []
     /// The text was nothing but dates, times and tags.
     public var bare = false
@@ -39,6 +37,7 @@ private let shortDays: [String: [Int]] = ["mwf": [1, 3, 5], "mw": [1, 3], "wf": 
 private let counters: Set<String> = ["week", "wk", "unit", "chapter", "chapters", "ch", "lecture", "module", "part", "session", "day", "lab", "quiz", "set", "hw", "test", "exam", "assignment", "problem", "no", "#"]
 private let connectors: Set<String> = ["due", "by", "on", "at", "@", "before", "from", "for", "this", "starting", "every", "each"]
 
+/// What a calendar entry is, from its title. Only calendar links use it: anything typed is a task.
 public func detectType(_ text: String) -> ItemType {
     let t = text.lowercased()
     func has(_ p: String) -> Bool { matches(t, p) }
@@ -302,15 +301,7 @@ public func quickAdd(_ text: String, today: Day, minute: Int = 0, dateOrder: Str
             continue
         }
 
-        // Share of the final grade: "25%", "(worth 20%)"
-        if let m = match(t, #"^(\d{1,3}(?:\.\d+)?)%$"#), let w = Double(m[1]!), w > 0, w <= 100 {
-            out.weightPct = w
-            take(i, 1)
-            if i > 0, !used[i - 1], norm[i - 1] == "worth" { used[i - 1] = true }
-            continue
-        }
-
-        // Duration, or effort for planned work
+        // How long: a study block's length
         if let d = parseDuration(t, n1), d.min > 0 { out.durationMin = d.min; take(i, d.used); i += d.used - 1; continue }
     }
 
@@ -324,9 +315,6 @@ public func quickAdd(_ text: String, today: Day, minute: Int = 0, dateOrder: Str
     let title = replacing(zip(orig, used).filter { !$0.1 }.map(\.0).joined(separator: " "), #"^[\s,;:–-]+|[\s,;:–-]+$"#, with: "")
     out.bare = title.isEmpty
     out.title = title.isEmpty ? raw : title
-    out.type = detectType(raw)
-    // "Study chem tue 7pm 2h": a set time to study is a study block.
-    if out.time != nil && matches(raw.lowercased(), #"^\s*study(ing)?\b"#) { out.type = .study }
 
     if var r = out.recur {
         if (r.freq == .weekly || r.freq == .biweekly) && (r.days ?? []).isEmpty { r.days = [weekday(out.date ?? today)] }
@@ -342,13 +330,8 @@ public func quickAdd(_ text: String, today: Day, minute: Int = 0, dateOrder: Str
             }
         }
         out.recur = r
-        // Repeating things with a time are almost always classes or meetings.
-        if out.type == .task && out.time != nil { out.type = .event }
     }
     if let time = out.time, out.date == nil { out.date = timeToMin(time)! >= minute ? today : addDays(today, 1) }
-    // Something to attend needs a day. Without one it is something to do ("Buy a lab notebook",
-    // "Call mum"); as an event it would show up nowhere.
-    if out.type == .event && out.date == nil { out.type = .task }
 
     let low = raw.lowercased()
     if matches(low, #"\b(i[’']?ll try|try to|trying to|attempt to)\b"#) { out.hints.append(.tryTo) }

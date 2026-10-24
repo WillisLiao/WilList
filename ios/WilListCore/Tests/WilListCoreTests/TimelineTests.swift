@@ -48,9 +48,12 @@ private func work(_ p: DayPlan) -> [String] {
 
 @Test func studyBlocksAreFixedTimeAndCountAsStudy() {
     let monday = "2026-10-19"
-    let p = quickAdd("Study organic chem every tue thu 7pm 2h", today: monday, minute: 9 * 60)
-    #expect(p.type == .study && p.time == "19:00" && p.recur?.days == [2, 4])
-    let block = makeItem(Item(p), Settings(), monday)
+    // As Plan's New study block adds it: the words give the time, the menu the kind.
+    let p = quickAdd("Organic chem every tue thu 7pm 2h", today: monday, minute: 9 * 60)
+    #expect(p.time == "19:00" && p.recur?.days == [2, 4])
+    var draft = Item(p)
+    draft.type = .study
+    let block = makeItem(draft, Settings(), monday)
     #expect(block.durationMin == 120)
     let tuesday = addDays(monday, 1)
     #expect(scheduleOn([block], tuesday).map(\.id) == [block.id])

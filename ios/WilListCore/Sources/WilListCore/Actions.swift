@@ -28,13 +28,12 @@ private func calibrated(_ type: ItemType, _ title: String, _ settings: Settings)
 extension Item {
     /// A draft from typed text, ready for makeItem.
     public init(_ p: Parsed) {
-        self.init(id: "", title: p.title, type: p.type)
+        self.init(id: "", title: p.title, type: .task)
         course = p.course
         date = p.date
         time = p.time
         durationMin = p.durationMin
         recur = p.recur
-        weightPct = p.weightPct
         priority = p.priority
     }
 }

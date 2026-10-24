@@ -1,7 +1,7 @@
 import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
-/// add the day's A1 in Plan, set a reminder on one and Mark done on the reminder when it comes,
+/// add the day's A1 in Plan, set a reminder on one (or while adding it in Plan) and Mark done on the reminder when it comes,
 /// give one a letter, tick off the A1 at the top of Today, a focus session on it, the first-run
 /// welcome, Plan tomorrow from Today's evening nudge, Search, and adding what the Agent found.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
@@ -28,8 +28,7 @@ final class CoreFlowsTests: XCTestCase {
         field.typeText("Write the essay intro")
         let a = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'A:'")).firstMatch
         XCTAssertTrue(tap(a) { a.wait(for: \.isSelected, toEqual: true, timeout: wait) }, "A is chosen")
-        // "essay" reads as a deadline, so the sheet may be New deadline.
-        let sheet = app.navigationBars.matching(NSPredicate(format: "identifier BEGINSWITH 'New'")).firstMatch
+        let sheet = app.navigationBars["New task"]
         XCTAssertTrue(tap(sheet.buttons["Add"], shows: sheet.buttons["Done"]))
         XCTAssertTrue(tap(sheet.buttons["Done"], hides: sheet))
         // It leads Today, with Play for a focus session on it.
@@ -48,6 +47,26 @@ final class CoreFlowsTests: XCTestCase {
         allowNotifications()
         XCTAssertTrue(app.staticTexts["Remind me at 9:00\u{202F}AM"].waitForExistence(timeout: wait)
                       || app.staticTexts["Remind me at 9:00 AM"].exists)
+    }
+
+    /// New task in Plan has Remind me, the date and Repeat, so nothing waits until it's added.
+    func testSetAReminderWhileAddingInPlan() {
+        let app = launch(plan: "empty", tab: "plan")
+        let field = app.textFields["What and when"]
+        XCTAssertTrue(tap(app.navigationBars.buttons["Add"], shows: app.buttons["Task"]))
+        XCTAssertTrue(tap(app.buttons["Task"], shows: field))
+        wait(for: [expectation(for: NSPredicate(format: "hasKeyboardFocus == true"), evaluatedWith: field)], timeout: wait)
+        field.typeText("Email the TA")
+        let tomorrow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tomorrow'")).firstMatch
+        XCTAssertTrue(tap(app.buttons["Remind me"], shows: tomorrow))
+        tomorrow.tap()
+        allowNotifications()
+        let set = NSPredicate(format: "label BEGINSWITH 'Remind me at 9:00'")
+        XCTAssertTrue(app.staticTexts.matching(set).firstMatch.waitForExistence(timeout: wait))
+        let sheet = app.navigationBars["New task"]
+        XCTAssertTrue(tap(sheet.buttons["Add"], shows: sheet.buttons["Done"]))
+        XCTAssertTrue(tap(sheet.buttons["Done"], hides: sheet))
+        XCTAssertTrue(tap(title("Email the TA", in: app), shows: app.staticTexts.matching(set).firstMatch), "the reminder was saved")
     }
 
     func testMarkDoneFromAReminder() {

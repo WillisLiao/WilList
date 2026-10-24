@@ -228,6 +228,17 @@ struct DueRow: View {
     }
 }
 
+extension ItemType {
+    /// What an item's date means, as the date row names it.
+    var dueWord: String {
+        switch self {
+        case .deadline, .reading: "Due"
+        case .exam, .presentation, .event, .study: "On"
+        case .task: "Date"
+        }
+    }
+}
+
 /// A day as a chip, "Oct 26" (the year only when it isn't this year), that opens the calendar like
 /// the system's compact picker. That one always writes the year, which left no room for the time
 /// beside it under Display Zoom.

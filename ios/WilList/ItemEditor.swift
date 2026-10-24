@@ -12,14 +12,6 @@ struct ItemEditor: View {
 
     private var planned: Bool { plannedTypes.contains(item.type) && item.recur == nil }
 
-    private var dueWord: String {
-        switch item.type {
-        case .deadline, .reading: "Due"
-        case .exam, .presentation, .event, .study: "On"
-        case .task: "Date"
-        }
-    }
-
     var body: some View {
         NavigationStack {
             Form {
@@ -47,7 +39,7 @@ struct ItemEditor: View {
                     if !item.type.isBlock { AddToTodayRow(myDay: $item.myDay, today: store.today) }
                     ReminderRow(at: $item.remindAt, today: store.today)
                     DueRow(date: $item.date, time: $item.time, today: store.today,
-                           title: dueWord, add: "Add a date")
+                           title: item.type.dueWord, add: "Add a date")
                     RepeatRow(recur: $item.recur, date: $item.date, today: store.today)
                     if item.type.isBlock {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)

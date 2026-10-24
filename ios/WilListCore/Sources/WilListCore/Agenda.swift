@@ -112,7 +112,12 @@ public func dayRows(_ items: [Item], _ day: Day, realToday: Day? = nil) -> [Row]
         if !isOpen(it, realToday) { continue }
         let open = it.sessions.filter { !$0.done }
         if it.type == .exam || it.type == .presentation {
-            if let d = it.date, diffDays(day, d) > 0 { sessionRow(it, open) }
+            // Before its day, the prep sessions; with no day yet, the item itself, as any task.
+            if let d = it.date {
+                if diffDays(day, d) > 0 { sessionRow(it, open) }
+            } else {
+                rows.append(row(it))
+            }
             continue
         }
         if let d = it.date, diffDays(day, d) <= 0 { rows.append(row(it)) }

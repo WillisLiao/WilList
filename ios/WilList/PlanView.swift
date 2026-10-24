@@ -90,7 +90,7 @@ struct PlanList: View {
             }
         }
         .sheet(isPresented: $searching) { SearchView() }
-        .sheet(item: $adding) { AddItemSheet(preset: $0 == .study ? .study : nil) }
+        .sheet(item: $adding) { AddItemSheet(study: $0 == .study) }
         .onChange(of: store.opening, initial: true) {
             if let id = store.opening, let it = store.state.items.first(where: { $0.id == id }) {
                 store.opening = nil

@@ -22,7 +22,7 @@ struct AddToDoIntent: AppIntent {
 
 struct AddToPlanIntent: AppIntent {
     static let title: LocalizedStringResource = "Add to the plan"
-    static let description = IntentDescription("Adds an exam, deadline, class or task to WilList, said the way you’d say it: \u{201C}Chem quiz Thursday 9am\u{201D}.")
+    static let description = IntentDescription("Adds a task to WilList, said the way you’d say it: \u{201C}Chem quiz Thursday 9am\u{201D}.")
 
     @Parameter(title: "What and when", requestValueDialog: "What is it, and when?")
     var text: String
@@ -32,9 +32,7 @@ struct AddToPlanIntent: AppIntent {
         store.reload() // a widget may have changed the plan since the app last ran
         let p = quickAdd(text, today: store.today, minute: nowMinutes(), dateOrder: store.dateOrder)
         guard !p.title.isEmpty else { return .result(dialog: "Nothing to add.") }
-        var draft = Item(p)
-        draft.priority = p.priority ?? suggestedLetter(p.type, weightPct: p.weightPct)
-        store.add(draft)
+        store.add(Item(p))
         let when = p.date.map { " for \(Fmt.day($0, store.today, inSentence: true))" } ?? ""
         return .result(dialog: "Added \u{201C}\(p.title)\u{201D}\(when).")
     }

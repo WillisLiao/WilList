@@ -34,7 +34,7 @@ Plan tomorrow is no longer offered on Today; the optional evening notification o
 Every item is a task or a study block: nothing tells exams, deadlines, readings or classes apart, whether typed, from the Agent or from a calendar link, and nothing plans study sessions (the owner, 2026-10-25: "listing them is enough").
 Progress is the last 7 days (Done, A's, Focus), the suggestions (start an A early, review old C to E items, a day over the daily study time) and the next 7 days' study blocks.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The owner's iPhone and iPad both have `56af015`, which still brings Plan's A1 to Today and has the slate ground: offer `npm run ios` for the latest.
+The owner's iPhone and iPad both have `4de1d6d`, everything above.
 Every tab lies on a light galaxy silver, and Settings has Delete progress (finished tasks stay and stop counting).
 Design work uses taste-skill (`.claude/skills/taste-skill`, also installed for every project on the owner's Mac); ui-ux-pro-max is gone, at the owner's ask.
 The owner uses Display Zoom (Larger Text, about 320 points wide): check rows there by narrowing the window (below), not only on the iPhone 17.

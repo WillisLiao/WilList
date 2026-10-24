@@ -17,7 +17,7 @@ Read it first; update the top section at the end of every substantial session.
 
 **Checked (latest round):** 74 core tests, lint, every UI test (16: 15 passed, `WidgetTests` skipped as usual), a zero-warning release build, and Today, Progress, Plan, Goals, Settings and the Delete progress flow in the simulator.
 **Checked before:** 73 core tests (the planner's went with it), lint, the UI tests (16: 15 passed, `WidgetTests` skipped as usual) and a zero-warning release build; Progress, Plan, Later, a task's and a study block's details, Settings, the Agent's card (demo), Today and New task looked at in the simulator (iPhone 17).
-**On the owner's devices:** the iPhone and the iPad both have `56af015` (installed 2026-10-25).
+**On the owner's devices:** the iPhone and the iPad both have `4de1d6d` (installed 2026-10-25).
 **To ask the owner:** the four open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
 
 ## Before that (2026-10-24, after the owner tried the build)
@@ -108,7 +108,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
-**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `56af015` (installed with `npm run ios`, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
+**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `4de1d6d` (installed with `npm run ios`, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
 The iPhone drops off the Wi-Fi tunnel when it sleeps (`xcrun devicectl list devices` shows it "unavailable"): ask the owner to unlock it, then `npm run ios -- iphone`.
 
 **Checked (2026-10-24, late night):** 102 Swift core tests, lint, all 14 UI tests on `4909d65` (13 pass, `WidgetTests` skipped as usual), a zero-warning release build on `fbe9251` (its one-word change wasn't UI-tested locally; CI is green), and Today at 320 points by narrowing the simulator's window, plus the iPhone SE and iPhone 17.

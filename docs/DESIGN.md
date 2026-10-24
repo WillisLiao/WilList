@@ -21,7 +21,7 @@ The app is always light (`UIUserInterfaceStyle` is `Light` in `Info.plist`). The
 
 | Token | Value | Used for, and only for |
 |---|---|---|
-| Ground | `LinearGradient.ground`, `#BAC5CD` at the top to `#B1BAC3` at the bottom, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Progress, Goals, Agent and Settings): a light slate, the widget gallery's deep one (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on 2026-10-24 for it "at least 50% lighter". Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 8:1 at the top and 7:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
+| Ground | `LinearGradient.ground`, `#ECEDF2` at the top left through `#DEE0E8` to `#D0D3DE` at the bottom right, through `.ground()` in `Theme.swift` | What every tab is laid on (Today, Plan, Progress, Goals, Agent and Settings): a light galaxy silver, as the owner asked on 2026-10-25, a cool silver with a faint lavender cast lit from the top left like brushed metal (before it, a light slate). Words straight on it (large titles, section names, footers, Today's date) are in `Color.groundInk`, `#1E2B37`, 12:1 at the top and 10:1 at the foot. The widget gallery keeps the deep slate, as a Home Screen would. The guided flows and Focus keep their fields of colour. |
 | Words on the ground | white, through `.onGround()` | Today's date and summary, large titles, section titles and footers. Never grey or teal there. |
 | Sheet | `Color.sheet`, `#DAE2E7`, through `.sheetGround()` | What every sheet's cards lie on, so a sheet stands apart from the tab under it. |
 | Card | white | Every part of a screen: lists are `.insetGrouped` with `.listSectionSpacing(.compact)`, so each section is a card; the Agent's title card and chat bubbles are cards of their own. |
@@ -76,13 +76,13 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Under today's date, the A1 first on a card and anything added to Today from Plan under it, then a quick checklist; Play beside every task | Tick the A1; type a line in "Add a to-do" and tap Add (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Under today's date, the tasks added to Today on a card (never one from Plan by itself, the owner's call, 2026-10-25), then a quick checklist; Play beside every task | Tick what's first; type a line in "Add a to-do" and tap Add (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), everything that isn't on today's list under Later (soonest first, with or without a letter), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
-| Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with at most one action each (Add to Today, Review), then the next 7 days' study blocks against the daily study time | Act on a suggestion |
+| Progress | The last 7 days in three numbers (done, A's, focus time) over a chart of the same days stacked by letter, suggestions with at most one action each (Add to Today, Review), then the next 7 days' study blocks against the daily study time | Act on a suggestion |
 | Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
 | Agent | A chat: hand it a file, a photo or words and it proposes what to add, on a card to tick and Add; ask it about your plan and progress. Behind a subscription, and it asks once before anything is sent to Anthropic | Send |
 
-The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the day's clocks, calendar links the Agent followed, backups.
+The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the planning time, calendar links the Agent followed, backups, and Delete progress (Progress and Goals' 21 days start from zero; finished tasks stay, so a mistaken tick can still be undone).
 It will hold the account and sign-in once those exist.
 
 The five tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).

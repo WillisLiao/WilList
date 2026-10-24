@@ -279,6 +279,10 @@ public struct Meta: Codable, Equatable, Sendable {
     public var doneCount = 0
     /// Per day, the letter of the first thing finished ("-" when it had none).
     public var firstDone: [Day: String] = [:]
+    /// Set by Delete progress: Progress counts only what's finished after this day, and on the
+    /// day itself only what isn't in `uncounted` (what was already finished then).
+    public var countFrom: Day?
+    public var uncounted: [String] = []
 
     public init() {}
 
@@ -288,6 +292,8 @@ public struct Meta: Codable, Equatable, Sendable {
         onboarded = c.get(.onboarded, false)
         doneCount = c.int(.doneCount) ?? 0
         firstDone = c.get(.firstDone, [:])
+        countFrom = c.get(.countFrom)
+        uncounted = c.get(.uncounted, [])
     }
 }
 

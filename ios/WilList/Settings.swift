@@ -34,6 +34,7 @@ struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var restoring = false
     @State private var restoreError: String?
+    @State private var deletingProgress = false
     @AppStorage("newOnTop") private var newOnTop = false
     @AppStorage("starredOnTop") private var starredOnTop = true
     @AppStorage("confirmDelete") private var confirmDelete = false
@@ -97,6 +98,19 @@ struct SettingsView: View {
                     Text("Backup").onGround()
                 } footer: {
                     if let restoreError { Text(restoreError).foregroundStyle(.red) }
+                }
+
+                Section {
+                    // On the button, so iOS 26 points its popover here. Finished tasks and to-dos
+                    // stay, so one ticked off by mistake can still be brought back.
+                    Button("Delete progress", role: .destructive) { deletingProgress = true }
+                        .confirmationDialog("Delete progress?", isPresented: $deletingProgress, titleVisibility: .visible) {
+                            Button("Delete progress", role: .destructive) {
+                                store.change(undo: "Progress deleted") { $0.deleteProgress(today: store.today) }
+                            }
+                        } message: {
+                            Text("Progress and the last 21 days in Goals start from zero. Your tasks and to-dos stay.")
+                        }
                 }
 
                 Section {

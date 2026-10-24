@@ -11,7 +11,7 @@ Do not merge into main or open a pull request without asking me first.
 Ask me before anything outward-facing or hard to undo (publishing, deleting, messaging, purchases, App Store Connect, Firebase).
 
 Read first, in this order: CLAUDE.md, handoffs/OWNER-REQUESTS.md (it wins wherever anything else disagrees), handoffs/HANDOFF.md, handoffs/NEXT-SESSION-2026-10-25.md, docs/DESIGN.md, docs/PRINCIPLES.md and docs/AGENT-SERVER.md.
-Then confirm CI is green on the branch's head (gh run list --commit needs the full SHA) and prove the baseline: swift test in ios/WilListCore (73), npm run lint, the UI tests (16) and a zero-warning release build.
+Then confirm CI is green on the branch's head (gh run list --commit needs the full SHA) and prove the baseline: swift test in ios/WilListCore (74), npm run lint, the UI tests (16) and a zero-warning release build.
 
 Build only what I ask for, in the smallest form that does it.
 If a request could mean reshaping a screen, ask me which part first, with a quick preview.
@@ -28,19 +28,21 @@ Before stopping, update HANDOFF, OWNER-REQUESTS, the devlog and NEXT-SESSION, th
 Everything is on `claude/optimistic-ride-55ift9`, pushed (check CI on its head first).
 `main` is at `d911eac` (merged with the owner's OK); the old website stays live from it until GitHub Pages is turned off.
 The app has five tabs (Today, Plan, Progress, Goals, Agent) and Settings behind the profile picture.
-Today is the A1 and what was added from Plan, then the to-do checklist, with Play beside every star and letter.
+Today is what was added to it (never a task from Plan by itself), then the to-do checklist, with Play beside every star and letter.
 Its add line works as in Microsoft To Do: tapping it or its + turns the + into an empty circle, Add sits at the top right in place of Search and Sort, and only Add adds (return just puts the keyboard away). While a line is typed, the letters and Reminder, Date and Repeat menus sit under it; a lettered line goes to Plan, on today's list.
 Plan tomorrow is no longer offered on Today; the optional evening notification opens it.
 Every item is a task or a study block: nothing tells exams, deadlines, readings or classes apart, whether typed, from the Agent or from a calendar link, and nothing plans study sessions (the owner, 2026-10-25: "listing them is enough").
-Progress is the last 7 days, the suggestions (start an A early, review old C to E items, a day over the daily study time) and the next 7 days' study blocks.
+Progress is the last 7 days (Done, A's, Focus), the suggestions (start an A early, review old C to E items, a day over the daily study time) and the next 7 days' study blocks.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The owner's iPhone and iPad both have `56af015`, everything above.
+The owner's iPhone and iPad both have `56af015`, which still brings Plan's A1 to Today and has the slate ground: offer `npm run ios` for the latest.
+Every tab lies on a light galaxy silver, and Settings has Delete progress (finished tasks stay and stop counting).
+Design work uses taste-skill (`.claude/skills/taste-skill`, also installed for every project on the owner's Mac); ui-ux-pro-max is gone, at the owner's ask.
 The owner uses Display Zoom (Larger Text, about 320 points wide): check rows there by narrowing the window (below), not only on the iPhone 17.
 
 ## Start here
 
 1. Confirm CI is green on the branch's head (`gh run list --commit <full SHA>`).
-2. Prove the baseline: `cd ios/WilListCore && swift test` (73), `npm run lint`, the UI tests (`xcodebuild test -project ios/WilList.xcodeproj -scheme WilList -destination 'platform=iOS Simulator,name=iPhone 17'`, 16, about 8 minutes), and the release build (`-configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`).
+2. Prove the baseline: `cd ios/WilListCore && swift test` (74), `npm run lint`, the UI tests (`xcodebuild test -project ios/WilList.xcodeproj -scheme WilList -destination 'platform=iOS Simulator,name=iPhone 17'`, 16, about 8 minutes), and the release build (`-configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`).
 3. If the desktop app's simulator panel says Xcode is "not selected", ask the owner to run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`: until then nothing can be tapped in the simulator by hand, and the Play menu has never been seen on screen.
 
 ## Ask the owner first

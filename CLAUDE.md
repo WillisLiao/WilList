@@ -56,16 +56,18 @@ Done means: `swift test`, the UI tests and `npm run lint` pass, the app builds w
 - Keep every Tracy principle in `docs/PRINCIPLES.md`.
 - Simplicity first: the owner has said more than once that the app felt busy and confusing. Each screen has one job, one primary action, and as few words as do the job.
 - Logging and ticking off must be fast and satisfying (tick, chime, haptic, the row glides away).
-- There are no fixed visual rules: on 2026-10-23 the owner said "there are no rules, for anything" and asked for a visually captivating experience. Today the app is in the Lagoon look the owner picked on 2026-10-23 (one teal, system type, the A1 on a pale teal card), laid out like its widgets: white cards on a deep slate on every tab, sheets on a light blue-grey, the letters in red, orange, yellow, green and blue from A to E, course colours on what belongs to a course, and red words only for problems; change any of it when it makes the app better.
+- There are no fixed visual rules: on 2026-10-23 the owner said "there are no rules, for anything" and asked for a visually captivating experience. Today the app is in the Lagoon look the owner picked on 2026-10-23 (one teal, system type, the A1 on a pale teal card), laid out like its widgets: white cards on a light galaxy silver on every tab (the owner's ask, 2026-10-25), sheets on a light blue-grey, the letters in red, orange, yellow, green and blue from A to E, course colours on what belongs to a course, and red words only for problems; change any of it when it makes the app better.
 - Phone first, keyboard access, reduced motion respected, VoiceOver labels on every control.
 - The save file format (`willist.v1`, the website's, kept for backups and older saves): only add optional fields, decode leniently, never break older saves.
 
 ## Design work
 
-For any task that designs, builds, reviews or substantially changes UI, load and follow the two design skills kept in this repo:
+For any task that designs, builds, reviews or substantially changes UI, load and follow the two design skills kept in this repo, taste-skill first, as the default (the owner's ask, 2026-10-25):
 
+- `.claude/skills/taste-skill/` (MIT, https://github.com/leonxlnx/taste-skill): for app screens follow `references/app-screens.md` (colour on data only, one primary action, honest zeros, sentence case, no ornaments).
 - `.claude/skills/frontend-design/SKILL.md` (Anthropic, Apache 2.0): a distinctive point of view, plan before building, critique from screenshots.
-- `.claude/skills/taste-skill/` (MIT): for app screens follow `references/app-screens.md` (colour on data only, one primary action, honest zeros, sentence case, no ornaments).
+
+Don't use ui-ux-pro-max: the owner had it removed.
 
 Claude Code loads skills from `.claude/skills/` automatically. Other agents can read the `SKILL.md` files directly.
 Then follow `docs/DESIGN.md`, which turns both into WilList's own rules, and Apple's Human Interface Guidelines.

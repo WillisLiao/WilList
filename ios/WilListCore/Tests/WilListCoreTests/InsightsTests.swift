@@ -19,7 +19,25 @@ private let tuesday: Day = "2026-10-20"
     let w = s.weekStats(tuesday)
     #expect(w.done == 2)
     #expect(w.aDone == 1)
-    #expect(w.aFirstDays == 0)
+}
+
+@Test func deletingProgressStartsTheCountAgain() {
+    var s = AppState()
+    s.items = [makeItem(draft("Essay", priority: .A), tuesday), makeItem(draft("Lab", priority: .B), tuesday)]
+    var todo = Todo(id: "t", title: "Stamps")
+    todo.done = true
+    todo.doneAt = "2026-10-19"
+    s.todos = [todo]
+    s.complete(itemId: s.items[0].id, today: tuesday)
+    #expect(s.weekStats(tuesday).done == 2)
+    s.deleteProgress(today: tuesday)
+    #expect(s.weekStats(tuesday).done == 0)
+    #expect(s.doneByDay(tuesday, days: 7).allSatisfy { $0.total == 0 })
+    #expect(s.meta.firstDone.isEmpty)
+    #expect(s.items[0].done && s.todos[0].done, "what was finished stays, to bring back a mistake")
+    s.complete(itemId: s.items[1].id, today: tuesday)
+    #expect(s.weekStats(tuesday).done == 1, "what's finished after it counts, the same day too")
+    #expect(s.doneByDay(tuesday, days: 1)[0].counts[.B] == 1)
 }
 
 @Test func doneByDayCountsEachKindOnItsDay() {

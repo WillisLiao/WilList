@@ -12,13 +12,12 @@ struct ProgressTab: View {
 
     var body: some View {
         let stats = store.state.weekStats(today)
-        let todosDone = store.state.todos.filter { $0.done && $0.doneAt.map { diffDays($0, today) < 7 && diffDays($0, today) >= 0 } ?? false }.count
         let tips = suggestions(store.state, today)
         NavigationStack {
             ScrollViewReader { proxy in
             List {
                 Section {
-                    numbers(stats, done: stats.done + todosDone)
+                    numbers(stats)
                     DoneChart(days: store.state.doneByDay(today, days: 7), today: today)
                 } header: {
                     Text("Last 7 days").onGround()
@@ -69,12 +68,11 @@ struct ProgressTab: View {
 
     // MARK: last 7 days
 
-    /// Four numbers side by side: things done, A's done, days that started with an A, focus time.
-    private func numbers(_ w: WeekStats, done: Int) -> some View {
+    /// Three numbers side by side: things done, A's done, focus time.
+    private func numbers(_ w: WeekStats) -> some View {
         let cells: [(String, String)] = [
-            ("\(done)", "Done"),
+            ("\(w.done)", "Done"),
             ("\(w.aDone)", "A’s"),
-            ("\(w.aFirstDays) of 7", "A first"),
             (Fmt.minutes(w.focusMin), "Focus"),
         ]
         return HStack(alignment: .top, spacing: 8) {

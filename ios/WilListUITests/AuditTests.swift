@@ -29,7 +29,7 @@ final class AuditTests: XCTestCase {
         ]
         for screen in screens {
             let app = XCUIApplication()
-            app.launchArguments = ["-plan", screen.plan, "-playSound", "NO", "-night", "NO"]
+            app.launchArguments = ["-plan", screen.plan, "-playSound", "NO"]
                 + (screen.args.contains("-focus") ? [] : ["-focus", "NO"]) + screen.args
             app.launch()
             XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10))
@@ -39,9 +39,10 @@ final class AuditTests: XCTestCase {
             try audit(app) { issue in
                 // The system keyboard isn't ours (Search opens with it up): the empty slots of the
                 // 44-point suggestion bar on top of it have no description, and they come and go
-                // while the audit runs, so one may be gone before its frame can be read.
-                if let element = issue.element, keyboard.exists,
-                   !element.exists || keyboard.frame.insetBy(dx: 0, dy: -44).intersects(element.frame) { return true }
+                // while the audit runs, so one may be gone before its frame can be read, or come
+                // back with no element at all (CI, 2026-10-25: "Search: Element has no description").
+                if keyboard.exists, issue.element.map({ !$0.exists || keyboard.frame.insetBy(dx: 0, dy: -44).intersects($0.frame) })
+                    ?? (issue.auditType == .sufficientElementDescription) { return true }
                 XCTFail("\(screen.name): \(issue.compactDescription), \(issue.element?.debugDescription ?? "")")
                 return true
             }

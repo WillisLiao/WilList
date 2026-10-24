@@ -3,8 +3,8 @@ import UIKit
 import WilListCore
 
 // How WilList looks: Lagoon, the owner's pick of four on 2026-10-23, laid out like its widgets
-// (the owner liked those best): every part on a card of its own, floating on the deep slate of
-// the widget gallery, and sheets on a light blue-grey. One soft teal for everything that acts or
+// (the owner liked those best): every part on a card of its own, floating on a light galaxy
+// silver (the owner's ask, 2026-10-25), and sheets on a light blue-grey. One soft teal for everything that acts or
 // is done, the system's own type, and the A1 on a pale teal card.
 
 extension Color {
@@ -55,15 +55,16 @@ enum CourseColor {
 }
 
 extension LinearGradient {
-    /// What every tab is laid on, as the widgets lie on a Home Screen: a light slate, the deep one
-    /// of the widget gallery (`#667C8F` to `#52667A`) mixed 55% with white, as the owner asked on
-    /// 2026-10-24 for it at least half again as light. White cards still stand off it.
-    static let ground = LinearGradient(colors: [Color(hex: 0xBAC5CD), Color(hex: 0xB1BAC3)], startPoint: .top, endPoint: .bottom)
+    /// What every tab is laid on, as the widgets lie on a Home Screen: a light galaxy silver (the
+    /// owner's ask, 2026-10-25), a cool silver with a faint lavender cast, lit from the top left
+    /// like brushed metal. White cards still stand off it.
+    static let ground = LinearGradient(colors: [Color(hex: 0xECEDF2), Color(hex: 0xDEE0E8), Color(hex: 0xD0D3DE)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing)
 }
 
 extension Color {
-    /// Words straight on the ground (titles, section names, footers): a deep slate, 8:1 on its
-    /// top and 7:1 on its foot.
+    /// Words straight on the ground (titles, section names, footers): a deep slate, 12:1 on its
+    /// top and 10:1 on its foot.
     static let groundInk = Color(hex: 0x1E2B37)
 }
 

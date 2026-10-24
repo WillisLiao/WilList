@@ -17,7 +17,7 @@ enum TodoSort: String, CaseIterable, Identifiable {
     }
 }
 
-/// Today: the day's A1 on one card, then a plain checklist. Type a line, tick it off. Tap one for
+/// Today: the tasks added to Today on one card, then a plain checklist. Type a line, tick it off. Tap one for
 /// steps, a reminder, a due date and time, a repeat and a note. Every task has Play, for a focus
 /// session of the length you choose.
 struct TodayView: View {
@@ -48,13 +48,11 @@ struct TodayView: View {
     private var completed: [Todo] {
         store.state.todos.filter(\.done).sorted { ($0.doneAt ?? "") > ($1.doneAt ?? "") }
     }
-    /// The day's A1, first on Today, then the items from Plan added to Today, still to
-    /// do today.
+    /// The tasks added to Today (Add to Today, or a line given a letter here), still to do today.
+    /// Nothing comes from Plan by itself (the owner's call, 2026-10-25).
     private var planItems: [Item] {
-        let a1 = doRows(store.state.items, today).first?.item
-        let added = store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) && $0.id != a1?.id }
+        store.state.items.filter { $0.myDay == today && !$0.done && !$0.doneDates.contains(today) }
             .sorted { letterKey($0) < letterKey($1) }
-        return (a1.map { [$0] } ?? []) + added
     }
 
     var body: some View {
@@ -69,7 +67,7 @@ struct TodayView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                // The day's A1 leads, with what was added from Plan under it.
+                // The tasks added to Today, in letter order.
                 if !fromPlan.isEmpty {
                     Section {
                         ForEach(fromPlan) { planRow($0) }
@@ -186,7 +184,7 @@ struct TodayView: View {
         }
     }
 
-    /// Everything on Today still to do, A1 included; the overdue to-dos; all finished today.
+    /// Everything on Today still to do; the overdue to-dos; all finished today.
     private func summary(_ toDo: Int) -> String {
         let overdue = open.filter { $0.date.map { diffDays(today, $0) < 0 } ?? false }.count
         let doneToday = completed.filter { $0.doneAt == today }.count + doneOn(store.state.items, today).count
@@ -350,7 +348,7 @@ struct TodayView: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
 
-    /// The A1, or an item added to Today from Plan: tick it off here, Play it, or take it off Today.
+    /// A task added to Today: tick it off here, Play it, or take it off Today.
     private func planRow(_ item: Item) -> some View {
         let checked = ticking.contains(item.id)
         let row = dayRows(store.state.items, today, realToday: today).first { $0.item.id == item.id }

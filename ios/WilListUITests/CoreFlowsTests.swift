@@ -59,9 +59,12 @@ final class CoreFlowsTests: XCTestCase {
         let sheet = app.navigationBars["New task"]
         XCTAssertTrue(tap(sheet.buttons["Add"], shows: sheet.buttons["Done"]))
         XCTAssertTrue(tap(sheet.buttons["Done"], hides: sheet))
-        // It leads Today, with Play for a focus session on it.
-        XCTAssertTrue(tap(app.buttons["tab-today"], shows: app.buttons["Start a focus session"].firstMatch), "it leads the day")
-        XCTAssertTrue(title("Write the essay intro", in: app).exists)
+        // It leads the day in Plan, with Play for a focus session on it, and stays off Today.
+        XCTAssertTrue(title("Write the essay intro", in: app).waitForExistence(timeout: wait))
+        XCTAssertTrue(app.buttons["Letter A, Must do. Change"].exists, "it's an A")
+        XCTAssertTrue(app.buttons["Start a focus session"].firstMatch.exists)
+        XCTAssertTrue(tap(app.buttons["tab-today"], shows: app.textFields["Add a to-do"]))
+        XCTAssertFalse(title("Write the essay intro", in: app).exists, "Plan's tasks stay off Today")
     }
 
     func testSetAReminderOnATodo() {
@@ -128,33 +131,33 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(title("Email the TA", in: app).exists)
     }
 
-    func testMarkTheA1Done() {
+    /// Only what was added to Today shows there: Plan's other A never moves up into its place.
+    func testTickATaskAddedToToday() {
         let app = launch(plan: "a1")
         XCTAssertTrue(title("Write the essay intro", in: app).waitForExistence(timeout: wait))
+        XCTAssertFalse(title("Read chapter 4", in: app).exists, "Plan's other A stays in Plan")
         // Undo first, the moment its message shows: on a slow machine, checking anything else
         // before it can outlast the message.
         let undo = app.buttons["Undo"], tick = app.buttons["Mark done"].firstMatch
         XCTAssertTrue(tap(tick) { undo.waitForExistence(timeout: wait) }, "ticking it off offers Undo")
         undo.tap()
-        XCTAssertTrue(gone(title("Read chapter 4", in: app)), "the essay intro is the A1 again")
-        XCTAssertTrue(title("Write the essay intro", in: app).exists)
-        // Done again: the next A moves up and the finished one leaves Today.
-        XCTAssertTrue(tap(tick, shows: title("Read chapter 4", in: app)))
-        XCTAssertTrue(gone(title("Write the essay intro", in: app)))
-        // The last A done, the day is clear.
+        XCTAssertTrue(title("Write the essay intro", in: app).waitForExistence(timeout: wait), "Undo brings it back")
+        // Done again: it leaves Today, and the day is clear.
         let clear = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'All clear'")).firstMatch
         XCTAssertTrue(tap(tick, shows: clear), "the day says it's clear")
+        XCTAssertTrue(gone(title("Write the essay intro", in: app)))
+        XCTAssertFalse(title("Read chapter 4", in: app).exists, "nothing comes up from Plan")
     }
 
-    func testFocusOnTheA1() {
+    func testFocusOnATaskOnToday() {
         let app = launch(plan: "a1")
         // Play asks how long.
         XCTAssertTrue(tap(app.buttons["Start a focus session"].firstMatch, shows: app.buttons["25 min"]))
         XCTAssertTrue(tap(app.buttons["25 min"], shows: app.staticTexts["One thing until it’s done."]))
         XCTAssertTrue(tap(app.buttons["Pause"], shows: app.buttons["Resume"]))
-        // The focus screen closes on Today, where the next A has moved up.
+        // Mark done closes the focus screen on Today, without the task.
         XCTAssertTrue(tap(app.buttons["focusDone"], hides: title("Write the essay intro", in: app)))
-        XCTAssertTrue(title("Read chapter 4", in: app).exists)
+        XCTAssertFalse(title("Read chapter 4", in: app).exists, "nothing comes up from Plan")
     }
 
     func testFirstRunPicksAnA1() {
@@ -186,9 +189,10 @@ final class CoreFlowsTests: XCTestCase {
         choose(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 4'")).firstMatch, in: app)
         XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]), "it ends on tomorrow's A1")
         XCTAssertTrue(title("Read chapter 4", in: app).exists, "the chosen one is tomorrow's A1")
+        // Back on Today, tomorrow's A1 waits for tomorrow; what was added to Today stays.
         XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["Tomorrow starts with"]))
-        XCTAssertTrue(title("Read chapter 4", in: app).exists, "Today leads with the new A1")
-        XCTAssertFalse(title("Write the essay intro", in: app).exists, "only the A1 shows on Today")
+        XCTAssertTrue(title("Write the essay intro", in: app).exists, "today's task stays on Today")
+        XCTAssertFalse(title("Read chapter 4", in: app).exists, "tomorrow's A1 isn't on Today yet")
     }
 
     func testPlanTomorrowFromAnEmptyDay() {
@@ -200,9 +204,10 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
         choose(app.buttons["Buy a lab notebook"], in: app)
         XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.staticTexts["Tomorrow starts with"]))
-        // Back on Today the line leads: with no date, it counts from now on.
+        // It waits in Plan, and on Today from tomorrow.
         XCTAssertTrue(tap(app.buttons["Done"], hides: app.staticTexts["Tomorrow starts with"]))
-        XCTAssertTrue(title("Buy a lab notebook", in: app).exists, "the new A1 leads Today")
+        XCTAssertFalse(title("Buy a lab notebook", in: app).exists, "not on Today until tomorrow")
+        XCTAssertTrue(tap(app.buttons["tab-plan"], shows: title("Buy a lab notebook", in: app)), "it's in Plan")
     }
 
     func testSearchFindsATodo() {

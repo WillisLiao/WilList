@@ -128,9 +128,9 @@ struct PlanTomorrow: View {
     }
 
     /// Adds the lines written (without a letter, unless one is the pick) and makes the pick
-    /// tomorrow's A1.
+    /// tomorrow's A1, added to Today for tomorrow.
     private func save(_ pick: Pick?) {
-        let today = today, order = store.dateOrder, lines = lines
+        let today = today, tomorrow = tomorrow, order = store.dateOrder, lines = lines
         guard !lines.isEmpty || pick != nil else { return }
         store.change { s in
             var added: [String] = []
@@ -139,10 +139,14 @@ struct PlanTomorrow: View {
                 s.items.append(it)
                 added.append(it.id)
             }
-            switch pick {
-            case .item(let id): s.makeA1(id)
-            case .line(let i) where added.indices.contains(i): s.makeA1(added[i])
-            default: break
+            let a1: String? = switch pick {
+            case .item(let id): id
+            case .line(let i) where added.indices.contains(i): added[i]
+            default: nil
+            }
+            if let a1, let i = s.index(of: a1) {
+                s.makeA1(a1)
+                s.items[i].myDay = tomorrow
             }
         }
     }

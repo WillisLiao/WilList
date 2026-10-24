@@ -99,7 +99,8 @@ struct WelcomeView: View {
         store.change { s in
             for (i, line) in all.enumerated() {
                 var draft = Item(quickAdd(line, today: today, minute: nowMinutes(), dateOrder: order))
-                if i == chosen { draft.priority = .A }
+                // The A1 picked here is the first thing on Today.
+                if i == chosen { draft.priority = .A; draft.myDay = today }
                 s.items.append(makeItem(draft, today, s.items))
             }
             if !goal.isEmpty { s.mdp = goal }

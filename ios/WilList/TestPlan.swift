@@ -3,7 +3,7 @@ import Foundation
 import WilListCore
 
 /// The plans the UI tests and screenshots start from, by name: `-plan new` (a first launch),
-/// `-plan empty` (the welcome seen, nothing added), `-plan a1` (two A's for today), `-plan busy`
+/// `-plan empty` (the welcome seen, nothing added), `-plan a1` (two A's, the first added to Today), `-plan busy`
 /// (those, a to-do `t1` and an item without a letter, so every screen and sheet has something on
 /// it), `-plan reminder` (a to-do whose reminder comes within 75 seconds; it asks to send
 /// notifications, as setting a reminder does), `-plan sample` (a full student week, for
@@ -33,6 +33,7 @@ enum TestPlan {
                 var it = makeItem(Item(id: "", title: title), today, s.items)
                 it.priority = .A
                 it.order = Double(rank)
+                if rank == 0 { it.myDay = today }
                 s.items.append(it)
             }
         }

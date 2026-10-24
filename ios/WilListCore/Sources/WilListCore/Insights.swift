@@ -17,8 +17,6 @@ public struct WeekStats: Equatable, Sendable {
     public var focusMin = 0
     public var done = 0
     public var aDone = 0
-    public var aFirstDays = 0
-    public var activeDays = 0
 }
 
 extension AppState {
@@ -41,15 +39,33 @@ extension AppState {
         var w = WeekStats()
         w.focusMin = log.filter { inWeek($0.date) }.reduce(0) { $0 + $1.minutes }
         for it in items {
-            var hits = it.done && inWeek(it.doneAt) ? 1 : 0
-            hits += it.doneDates.filter(inWeek).count
+            var hits = it.done && inWeek(it.doneAt) && counts(it.id, on: it.doneAt) ? 1 : 0
+            hits += it.doneDates.filter { inWeek($0) && counts(it.id, on: $0) }.count
             w.done += hits
             if it.priority == .A { w.aDone += hits }
         }
-        let days = meta.firstDone.filter { inWeek($0.key) }
-        w.aFirstDays = days.values.filter { $0 == "A" }.count
-        w.activeDays = days.count
+        w.done += todos.filter { $0.done && inWeek($0.doneAt) && counts($0.id, on: $0.doneAt) }.count
         return w
+    }
+
+    /// Whether something finished on `day` counts in Progress: after Delete progress, nothing
+    /// finished up to then does, the things finished earlier that same day included.
+    func counts(_ id: String, on day: Day?) -> Bool {
+        guard let day else { return false }
+        guard let from = meta.countFrom else { return true }
+        return day > from || (day == from && !meta.uncounted.contains(id))
+    }
+
+    /// Delete progress: Progress and the 21 days in Goals start again from zero. What was
+    /// finished stays, so something ticked off by mistake can still be brought back; it just
+    /// stops counting.
+    public mutating func deleteProgress(today: Day) {
+        log = []
+        meta.firstDone = [:]
+        meta.doneCount = 0
+        meta.countFrom = today
+        meta.uncounted = items.filter { ($0.done && $0.doneAt == today) || $0.doneDates.contains(today) }.map(\.id)
+            + todos.filter { $0.done && $0.doneAt == today }.map(\.id)
     }
 }
 
@@ -66,14 +82,14 @@ extension AppState {
     public func doneByDay(_ today: Day, days: Int) -> [DayDone] {
         var out = (0..<days).map { DayDone(date: addDays(today, $0 - days + 1)) }
         let index = Dictionary(uniqueKeysWithValues: out.indices.map { (out[$0].date, $0) })
-        func add(_ d: Day?, _ letter: Letter?) {
-            if let d, let i = index[d] { out[i].counts[letter, default: 0] += 1 }
+        func add(_ id: String, _ d: Day?, _ letter: Letter?) {
+            if let d, let i = index[d], counts(id, on: d) { out[i].counts[letter, default: 0] += 1 }
         }
         for it in items {
-            if it.done { add(it.doneAt, it.priority) }
-            for d in it.doneDates { add(d, it.priority) }
+            if it.done { add(it.id, it.doneAt, it.priority) }
+            for d in it.doneDates { add(it.id, d, it.priority) }
         }
-        for t in todos where t.done { add(t.doneAt, nil) }
+        for t in todos where t.done { add(t.id, t.doneAt, nil) }
         return out
     }
 }

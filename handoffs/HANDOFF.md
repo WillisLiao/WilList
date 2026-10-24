@@ -13,7 +13,7 @@ Read it first; update the top section at the end of every substantial session.
 - At the owner's word ("our study tab has already been dropped so all those academic detection shouldn't remain"), typed words no longer pick a kind, a letter or a grade share: `quickAdd` returns no type or `weightPct`, everything typed (New task, to-dos, first run, Plan tomorrow, Siri) is a task, and New study block sets its own kind. `detectType` stays for calendar links only.
 - A lettered exam or presentation with no day (the Agent can still make one) is now on the day's list like any task (`dayRows`), with a test.
 
-**Checked:** 103 core tests, lint, the UI tests (15: 14 passed, the widget test skipped as usual) and a zero-warning release build; New task looked at in the simulator. The code is `5e7b89f`; the owner's iPhone and iPad still have `fbe9251`.
+**Checked:** 103 core tests, lint, the UI tests (15: 14 passed, the widget test skipped as usual) and a zero-warning release build; New task looked at in the simulator. The code is `5e7b89f`, installed on the owner's iPhone (`npm run ios -- iphone`); the iPad was asleep and still has `fbe9251`.
 **To ask the owner:** whether the Agent and calendar links should stop setting kinds too (they feed Progress's exams and deadlines and the study sessions); plus the four open questions in `handoffs/NEXT-SESSION-2026-10-24.md`.
 
 ## Before that (2026-10-24, late night)

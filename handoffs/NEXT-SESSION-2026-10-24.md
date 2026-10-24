@@ -33,7 +33,7 @@ Today is the A1 and what was added from Plan, then the to-do checklist, with Pla
 Play asks how long and starts focus on any task; study blocks are added from Plan's + and listed under Later.
 New task in Plan sets the letter, Remind me, the date and Repeat before Add, and anything typed is a task: no words make an exam, deadline, reading, class or study block (the owner's call, 2026-10-24); only the Agent and calendar links still set kinds.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The owner's iPhone and iPad have `fbe9251`, without the New task rows and the typed-words change: offer `npm run ios` to put `5e7b89f` on them.
+The owner's iPhone has `5e7b89f`; the iPad still has `fbe9251` (it was asleep): offer `npm run ios -- ipad` when it's awake.
 The owner uses Display Zoom (Larger Text, about 320 points wide): check rows there by narrowing the window (below), not only on the iPhone 17.
 
 ## Start here

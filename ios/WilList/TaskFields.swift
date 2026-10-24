@@ -485,3 +485,12 @@ struct MarkColumn<Content: View>: View {
     // The clear fill keeps the width when there is nothing in it.
     var body: some View { ZStack { Color.clear; content }.frame(width: 44, height: 44) }
 }
+
+/// Play and the star or letter at a row's right end, side by side with no gap, and up against the
+/// words: their 44-point frames already leave room round the marks, and on a narrow screen (Display
+/// Zoom's 320 points) the words need every point, so "Due today, 17:00" stays on one line.
+struct RowEnd<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    var body: some View { HStack(spacing: 0) { content }.padding(.leading, -10) }
+}

@@ -122,11 +122,13 @@ struct PlanList: View {
                 Text(row.item.title)
                     .strikethrough(row.priority == .E || done, color: .secondary)
                     .foregroundStyle(row.priority == .E ? .secondary : .primary)
-                if let line = line(row) { line.font(.subheadline) }
+                if let line = line(row) { line.font(.footnote) }
             }
             .rowWords { editing = row.item }
-            if row.priority != .E { PlayButton(planned: row.session?.minutes) { store.startFocus(row, minutes: $0) } }
-            letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
+            RowEnd {
+                if row.priority != .E { PlayButton(planned: row.session?.minutes) { store.startFocus(row, minutes: $0) } }
+                letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
+            }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .leading) {
@@ -157,16 +159,18 @@ struct PlanList: View {
                 Text(item.title)
                     .strikethrough(item.priority == .E || done, color: .secondary)
                     .foregroundStyle(item.priority == .E ? .secondary : .primary)
-                if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.subheadline).foregroundStyle(.secondary) }
+                if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.footnote).foregroundStyle(.secondary) }
             }
             .rowWords { editing = item }
-            if item.priority != .E {
-                PlayButton(planned: item.sessions.first { !$0.done }?.minutes ?? (item.type == .study ? item.durationMin : nil)) {
-                    store.startFocus(item, minutes: $0)
+            RowEnd {
+                if item.priority != .E {
+                    PlayButton(planned: item.sessions.first { !$0.done }?.minutes ?? (item.type == .study ? item.durationMin : nil)) {
+                        store.startFocus(item, minutes: $0)
+                    }
                 }
+                // In the same column as the letters above.
+                if item.priority != nil { letterMenu(item) { LetterMark(letter: item.priority) } } else { MarkColumn {} }
             }
-            // In the same column as the letters above.
-            if item.priority != nil { letterMenu(item) { LetterMark(letter: item.priority) } } else { MarkColumn {} }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .trailing) {

@@ -290,15 +290,17 @@ ForEach(list) { todo in
                 Text(todo.title)
                     .strikethrough(checked, color: .secondary)
                     .foregroundStyle(todo.done ? .secondary : .primary)
-                if let meta = meta(todo) { meta.font(.subheadline) }
+                if let meta = meta(todo) { meta.font(.footnote) }
             }
             .rowWords { editing = todo.id }
-            if !todo.done { PlayButton { store.startFocus(todo, minutes: $0) } }
-            StarButton(on: Binding(get: { todo.starred }, set: { v in
-                withAnimation(.snappy) { store.change { s in
-                    if let i = s.todos.firstIndex(where: { $0.id == todo.id }) { s.todos[i].starred = v }
-                } }
-            }))
+            RowEnd {
+                if !todo.done { PlayButton { store.startFocus(todo, minutes: $0) } }
+                StarButton(on: Binding(get: { todo.starred }, set: { v in
+                    withAnimation(.snappy) { store.change { s in
+                        if let i = s.todos.firstIndex(where: { $0.id == todo.id }) { s.todos[i].starred = v }
+                    } }
+                }))
+            }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
     }
@@ -313,18 +315,20 @@ ForEach(list) { todo in
                 Text(item.title).strikethrough(checked, color: .secondary)
                 if let line = Fmt.meta([Fmt.subline(item, today, in: store.state)?.foregroundStyle(Color.secondary)]
                                        + Fmt.marks(item.steps, remind: item.remindAt, today: false)) {
-                    line.font(.subheadline)
+                    line.font(.footnote)
                 }
             }
             .rowWords { editingItem = item }
-            // A focus session on it, with the timer on the Lock Screen too; nothing to focus on in
-            // something dropped.
-            if item.priority != .E {
-                PlayButton(planned: row?.session?.minutes) { m in
-                    if let row { store.startFocus(row, minutes: m) } else { store.startFocus(item, minutes: m) }
+            RowEnd {
+                // A focus session on it, with the timer on the Lock Screen too; nothing to focus on
+                // in something dropped.
+                if item.priority != .E {
+                    PlayButton(planned: row?.session?.minutes) { m in
+                        if let row { store.startFocus(row, minutes: m) } else { store.startFocus(item, minutes: m) }
+                    }
                 }
+                MarkColumn { if item.priority != nil { LetterMark(letter: item.priority, label: row?.label) } }
             }
-            MarkColumn { if item.priority != nil { LetterMark(letter: item.priority, label: row?.label) } }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))
         .swipeActions(edge: .leading) {

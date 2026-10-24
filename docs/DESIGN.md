@@ -111,7 +111,8 @@ There is no focus Live Activity on a Mac (it has no Lock Screen or Dynamic Islan
 
 All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swift` and `ios/WilList/Steps.swift` (the guided flows' page, line entry and A1 choice).
 
-- **Row:** check on the left, title, one quiet line under it, and on the right Play, then a star (to-dos) or a letter (items) in a 44-point column (`MarkColumn`, empty when there is no letter), so the Play buttons line up down a list. Tap the text to open details. Swipe right to finish, left to delete.
+- **Row:** check on the left, title, one quiet line under it in `.footnote`, and on the right Play, then a star (to-dos) or a letter (items) in a 44-point column (`MarkColumn`, empty when there is no letter), so the Play buttons line up down a list.
+  Play and the star or letter sit side by side with no gap, up against the words (`RowEnd`): at Display Zoom's 320 points the words get about 126 points, so "Due today, 17:00" (121 points at `.footnote`, with its icon) stays on one line, at the owner's ask. Tap the text to open details. Swipe right to finish, left to delete.
   E items (dropped) have no Play.
 - **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and the planned time of a study session or block among them, marked "As planned". Choosing one starts focus.
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.

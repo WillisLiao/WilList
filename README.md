@@ -12,7 +12,7 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 | | |
 |---|---|
-| **Today** | Today's date, the A1 first with a play button for a focus session, what you added to Today from Plan, then a quick checklist. Type a line and press return; "Call mum tomorrow 6pm" is due tomorrow at 6. Under the line, a letter, a reminder, a date and a repeat. |
+| **Today** | Today's date, the A1 first with a play button for a focus session, what you added to Today from Plan, then a quick checklist. Type a line and tap Add at the top right; "Call mum tomorrow 6pm" is due tomorrow at 6. Under the line, a letter, a reminder, a date and a repeat. |
 | **Plan** | Today in ABCDE order (drag to re-rank), everything later by date, and a month calendar showing what's due each day. |
 | **Progress** | The last 7 days in numbers and a chart by letter, suggestions with one action each, and the next 7 days' study blocks. |
 | **Agent** | A chat that reads files, photos and words and proposes what to add, on a card you tick; nothing goes in until you tap Add. It answers questions about your plan too. A subscription. |

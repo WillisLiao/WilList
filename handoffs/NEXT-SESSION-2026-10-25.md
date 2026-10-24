@@ -29,7 +29,7 @@ Everything is on `claude/optimistic-ride-55ift9`, pushed (check CI on its head f
 `main` is at `d911eac` (merged with the owner's OK); the old website stays live from it until GitHub Pages is turned off.
 The app has five tabs (Today, Plan, Progress, Goals, Agent) and Settings behind the profile picture.
 Today is the A1 and what was added from Plan, then the to-do checklist, with Play beside every star and letter.
-Its add line has a working +, and while a line is typed, the letters and Reminder, Date and Repeat menus under it; a lettered line goes to Plan, on today's list.
+Its add line works as in Microsoft To Do: tapping it or its + turns the + into an empty circle, Add sits at the top right in place of Search and Sort, and only Add adds (return just puts the keyboard away). While a line is typed, the letters and Reminder, Date and Repeat menus sit under it; a lettered line goes to Plan, on today's list.
 Plan tomorrow is no longer offered on Today; the optional evening notification opens it.
 Every item is a task or a study block: nothing tells exams, deadlines, readings or classes apart, whether typed, from the Agent or from a calendar link, and nothing plans study sessions (the owner, 2026-10-25: "listing them is enough").
 Progress is the last 7 days, the suggestions (start an A early, review old C to E items, a day over the daily study time) and the next 7 days' study blocks.

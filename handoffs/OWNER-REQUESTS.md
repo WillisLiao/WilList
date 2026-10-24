@@ -10,8 +10,9 @@ Read this with `HANDOFF.md` before starting; add to it whenever the owner asks f
 |---|---|
 | "no need for plan for tomorrow in today tab" | Done on the branch (`726c551`): Today no longer offers it; the optional evening notification still opens Plan tomorrow. |
 | "main goal block placeholde shouldn't have the text what one goal would change the most" | Done on the branch: an empty main goal reads "Main goal" with a plus. |
-| "today tab plus icon doesnt work, only the done button in keyboard works" | Fixed on the branch: the + adds a written line, and on a blank one puts the cursor in the field. |
+| "today tab plus icon doesnt work, only the done button in keyboard works" | Fixed on the branch, then changed at the owner's next ask (below): the + starts a to-do and Add at the top right adds it. |
 | "the add task of today tab doesnt let you choose letter, notify time, and deadline"; asked where, "controls under the line" | Done on the branch: under the line while typing, the letters and Reminder, Date and Repeat menus. A lettered line goes to Plan on Today's list. The tab bar now hides while the keyboard is up, as it covered them. |
+| "the plus sign ... make it change to the checking circle box whenever I press on the 'add a to do' input box, or the plus sign. that is what microsoft todo has, and only pressing the word add at the top right adds the task" | Done on the branch: the + turns into the to-do's empty circle while a line is written, Add takes Search and Sort's place at the top right, and only Add adds; return just puts the keyboard away. |
 | "we dont need to distinguish exam, deadline, presentation, reading, class or task as a whole ... listing them is enough, organizing them based on those kinds are useless" | Done on the branch: every item is a task (study blocks the student adds stay), from the Agent and calendar links too. The study sessions, Progress's exams and deadlines, grade weights, effort and the suggested letter are gone; older saves still load, their kinds read as tasks. |
 
 ## After trying the build (2026-10-24)

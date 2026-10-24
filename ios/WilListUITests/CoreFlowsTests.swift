@@ -12,14 +12,21 @@ final class CoreFlowsTests: XCTestCase {
     /// while one look at the screen there took 20.
     private let wait: TimeInterval = 15
 
+    /// Return only puts the keyboard away; Add at the top right adds the line.
     func testAddATodoAndTickItOff() {
         let app = launch(plan: "empty")
-        add("Buy stamps", in: app)
+        let field = app.textFields["Add a to-do"]
+        XCTAssertTrue(field.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
+        field.typeText("Buy stamps\n")
+        XCTAssertTrue(app.navigationBars.buttons["Add"].waitForExistence(timeout: wait))
+        XCTAssertFalse(title("Buy stamps", in: app).exists, "return doesn't add it")
+        XCTAssertTrue(tap(app.navigationBars.buttons["Add"], shows: title("Buy stamps", in: app)))
         XCTAssertTrue(tap(app.buttons["Mark done"].firstMatch, shows: app.staticTexts["Completed"]))
         XCTAssertTrue(app.buttons["Done"].exists, "the to-do's circle is filled")
     }
 
-    /// Today's line takes a letter and a reminder before it's added, and + adds it.
+    /// Today's line takes a letter and a reminder before it's added, and Add adds it.
     func testAddALetteredTaskOnToday() {
         let app = launch(plan: "empty")
         let field = app.textFields["Add a to-do"]
@@ -32,7 +39,7 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Reminder"], shows: tomorrow))
         tomorrow.tap()
         allowNotifications()
-        XCTAssertTrue(tap(app.buttons["Add"], shows: app.buttons["Start a focus session"].firstMatch), "it leads Today")
+        XCTAssertTrue(tap(app.navigationBars.buttons["Add"], shows: app.buttons["Start a focus session"].firstMatch), "it leads Today")
         XCTAssertTrue(title("Read chapter 2", in: app).exists)
         // The keyboard covers the tab bar; return on the empty line puts it away.
         field.typeText("\n")
@@ -245,13 +252,13 @@ final class CoreFlowsTests: XCTestCase {
         return app
     }
 
-    /// Types a line into Today's "Add a to-do" and presses return.
+    /// Types a line into Today's "Add a to-do" and taps Add at the top right.
     private func add(_ line: String, in app: XCUIApplication) {
         let field = app.textFields["Add a to-do"]
         XCTAssertTrue(field.waitForExistence(timeout: wait))
         XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
-        field.typeText("\(line)\n")
-        XCTAssertTrue(title(line, in: app).waitForExistence(timeout: wait))
+        field.typeText(line)
+        XCTAssertTrue(tap(app.navigationBars.buttons["Add"], shows: title(line, in: app)))
     }
 
     /// Answers the notification permission prompt, the first time there is one. Allow is its

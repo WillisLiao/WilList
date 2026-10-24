@@ -114,7 +114,10 @@ struct TodayView: View {
             .scrollDismissesKeyboard(.interactively)
             .profileButton()
             .toolbar {
-                if hasTools {
+                // While a line is being written, Add takes Search and Sort's place, as in New task.
+                if adding {
+                    ToolbarItem(placement: .confirmationAction) { Button("Add", action: add).disabled(blank) }
+                } else if hasTools {
                     ToolbarItem(placement: .primaryAction) {
                         Button("Search", systemImage: "magnifyingglass") { searching = true }
                     }
@@ -196,30 +199,33 @@ struct TodayView: View {
 
     // MARK: adding
 
-    /// Add a to-do: + (or return) adds the line. While it's being written, the letters and Remind
-    /// me, the date and Repeat sit under it; a letter makes it a task in Plan, on Today for today.
+    /// Add a to-do, as in Microsoft To Do: tapping the line or its + starts one, the + turns into the
+    /// to-do's empty circle, and Add at the top right adds it (return only puts the keyboard away).
+    /// While it's being written, the letters and Remind me, the date and Repeat sit under it; a letter
+    /// makes it a task in Plan, on Today for today.
     private var addRow: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 10) {
-                Button { if blank { typing = true } else { add() } } label: {
-                    Image(systemName: "plus.circle.fill")
+                // The field itself is the control for VoiceOver.
+                Button { typing = true } label: {
+                    Image(systemName: adding ? "circle" : "plus.circle.fill")
                         .font(.title2)
-                        .foregroundStyle(Color.brand)
+                        .foregroundStyle(adding ? Color(.tertiaryLabel) : Color.brand)
+                        .contentTransition(.symbolEffect(.replace))
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
-                .accessibilityLabel("Add")
+                .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     TextField("Add a to-do", text: $draft)
                         .focused($typing)
                         .submitLabel(.done)
-                        .onSubmit(add)
                     // What the line will be saved as: its day, repeat and reminder.
                     if let reads { reads.font(.footnote).foregroundStyle(Color.brand) }
                 }
             }
-            if typing || !blank || letter != nil || remindAt != nil || chosenDate != nil || chosenRecur != nil {
+            if adding {
                 VStack(alignment: .leading, spacing: 4) {
                     LetterChips(letter: letter) { letter = $0 }
                     HStack(spacing: 0) {
@@ -254,6 +260,8 @@ struct TodayView: View {
     }
 
     private var blank: Bool { draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    /// A to-do is being written: the line has the keyboard, words, or something chosen under it.
+    private var adding: Bool { typing || !blank || letter != nil || remindAt != nil || chosenDate != nil || chosenRecur != nil }
     private var parsed: Parsed? {
         readDates && !blank ? quickAdd(draft, today: today, minute: nowMinutes(), dateOrder: store.dateOrder) : nil
     }
@@ -276,7 +284,7 @@ struct TodayView: View {
 
     private func add() {
         guard !blank else { typing = false; return }
-        let text = draft, letter = letter, remindAt = remindAt, recur = recur.wrappedValue
+        let text = draft, letter = letter, remindAt = remindAt, recur = recur.wrappedValue, wasTyping = typing
         let date = date.wrappedValue, time = date == nil ? nil : parsed?.time
         withAnimation(.snappy) {
             store.change { s in
@@ -295,15 +303,14 @@ struct TodayView: View {
         self.remindAt = nil
         chosenDate = nil
         chosenRecur = nil
-        typing = true // keep the keyboard up for the next one
+        typing = wasTyping // a keyboard that was up stays up for the next one
     }
 
     // MARK: rows
 
     private func rows(_ list: [Todo], movable: Bool) -> some View {
         let reorder: ((IndexSet, Int) -> Void)? = movable ? { (from: IndexSet, to: Int) in move(from, to) } : nil
-        return 
-ForEach(list) { todo in
+        return ForEach(list) { todo in
             row(todo)
                 .swipeActions(edge: .leading) {
                     if !todo.done {

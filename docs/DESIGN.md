@@ -76,7 +76,7 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Under today's date, the A1 first on a card and anything added to Today from Plan under it, Plan tomorrow in the evening until tomorrow is planned, then a quick checklist; Play beside every task | Tick the A1; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Under today's date, the A1 first on a card and anything added to Today from Plan under it, then a quick checklist; Play beside every task | Tick the A1; type a line in "Add a to-do" and tap Add (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), everything that isn't on today's list under Later (soonest first, with or without a letter), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
 | Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with at most one action each (Add to Today, Review), then the next 7 days' study blocks against the daily study time | Act on a suggestion |
 | Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
@@ -94,7 +94,8 @@ Today has no title in its bar: its date sits in the list, in the large title's f
 Search (magnifying glass) sits on Today and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
 
-Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan, Plan tomorrow in the evening on a card of its own, then the to-dos with Add a to-do at their top, then each group.
+Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan, then the to-dos with Add a to-do at their top, then each group.
+Tapping Add a to-do or its + starts a to-do, as in Microsoft To Do: the + turns into the to-do's empty circle, Add takes Search and Sort's place at the top right (grey until there are words), and only Add adds it; return just puts the keyboard away (the owner's call, 2026-10-25).
 Plan's date sits on the ground the same way, under the tab's title.
 Section titles and footers stay on the ground between the cards, in the ground's ink.
 

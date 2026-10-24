@@ -88,10 +88,12 @@ enum Fmt {
         }
     }
 
-    /// A to-do's due date: "Due today", "Due Fri, 6:00 PM", "Overdue, Mon".
-    static func dueLine(_ date: Day?, _ time: String?, _ today: Day) -> String? {
+    /// A to-do's due date: "Due today", "Due Fri, 6:00 PM", "Overdue, Mon". Beside the calendar
+    /// icon, which says it already (`word` false), only when: "Today", "Fri, 6:00 PM", "Mon".
+    static func dueLine(_ date: Day?, _ time: String?, _ today: Day, word: Bool = true) -> String? {
         guard let date else { return nil }
-        let at = [day(date, today, inSentence: true), time.flatMap { self.time($0) }].compactMap { $0 }.joined(separator: ", ")
+        let at = [day(date, today, inSentence: word), time.flatMap { self.time($0) }].compactMap { $0 }.joined(separator: ", ")
+        guard word else { return at }
         return diffDays(today, date) < 0 ? "Overdue, \(at)" : "Due \(at)"
     }
 

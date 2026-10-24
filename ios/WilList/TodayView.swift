@@ -367,7 +367,8 @@ ForEach(list) { todo in
         if !t.steps.isEmpty {
             parts.append(Text("\(t.steps.filter(\.done).count)\u{00A0}of\u{00A0}\(t.steps.count)").foregroundStyle(Color.secondary))
         }
-        if let due = Fmt.dueLine(t.date, t.time, today) {
+        // Red says it's overdue, as the calendar icon says it's due.
+        if let due = Fmt.dueLine(t.date, t.time, today, word: false) {
             let late = !t.done && diffDays(today, t.date ?? today) < 0
             parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.brand : Color.secondary))
         }

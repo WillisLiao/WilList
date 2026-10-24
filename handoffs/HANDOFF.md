@@ -3,17 +3,24 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-24, night)
+## Now (2026-10-24, late night)
 
-**Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed.
+**Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed; CI ("Test") is green on its last code commit, `fbe9251`.
 `main` is at `d911eac` (fast-forwarded with the owner's OK, "yes merge", on 2026-10-24); everything after it is on the branch only, and each merge is the owner's call.
 The older website is still live at https://willisliao.github.io/WilList/ from `main`; the branch has removed it from the code and from CI, so merging no longer redeploys it, and it goes for good only when GitHub Pages is turned off in the repository's settings (the owner's call).
 
-**This session (night):** the screens the last session hadn't looked at were reviewed and fixed (Today's bar now matches the other tabs; Settings and Your goals have the inline titles they asked for, which `readableColumn()` had been overriding; a due time no longer breaks across lines); every prompt to letter an item is gone at the owner's ask, and an unlettered item has no mark; the website is gone from the code, with the shots' sample week moved into the app (`-plan sample`); the Agent's server contract is written (`docs/AGENT-SERVER.md`); and the Mac app (Mac Catalyst) builds and was looked at through its own snapshots.
-**Then, the same night, at the owner's ask:** **Play** beside every task on Today and in Plan asks how long, then starts focus (to-dos and items off the day's list included); **study blocks** are added by hand from Plan's + (Task or Study block), with an Every week switch, listed under Later in Plan and counted in Progress's week chart; the **Goals tab** is back between Progress and Agent (Settings no longer holds the goals); and item details lost the Kind picker.
-A time-ordered Today (the website's column, with Coming up) was built and then taken out again at the owner's ask: "revert all and not use the time column ... just include play button", "no need time column". Today is as it was, plus Play.
-The owner kept the letter sorter behind Review on Progress, for old C to E tasks.
-**Still to do:** sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app); the Agent's server itself (until then a release build shows Coming soon); the subscription and its price in App Store Connect, and a privacy policy URL; signing and shipping the Mac app; a live test of the Agent with a key.
+**This session, in order:**
+- The screens the last session hadn't looked at were reviewed and fixed (Today's bar matches the other tabs; Settings has its inline title, which `readableColumn()` had overridden; a due time no longer breaks across lines).
+- Every prompt to letter an item is gone, and an item without a letter has no mark (the owner's call).
+- The website is gone from the code, with the shots' sample week moved into the app (`-plan sample`); the Agent's server contract is written (`docs/AGENT-SERVER.md`); the Mac app (Mac Catalyst) builds.
+- **Play** beside every task on Today and in Plan (not on E's) asks how long (15, 25, 45 min, 1 h, 1 h 30 min, or the planned time) and starts focus, on to-dos too.
+- **Study blocks** are added by hand from Plan's + (Task or Study block), with Every week; they are listed under Later in Plan and count in Progress's week chart, but don't show on Today.
+- The **Goals tab** is back between Progress and Agent; Settings no longer holds the goals. Item details lost the Kind picker. The letter sorter stays behind Review on Progress (the owner's answer).
+- A time-ordered Today (the website's column, with Coming up) was built and then **taken back out** at the owner's ask: "revert all and not use the time column ... just include play button". Today is as it was, plus Play. Lesson: build only what the owner names, and ask which part before reshaping a screen.
+- At the owner's ask, the line under a row's title is a size smaller (`.footnote`), Play sits up against the star or letter (`RowEnd`), and a to-do's date beside the calendar icon drops the word Due ("Today, 17:00", "Tomorrow, 10:00", "Yesterday" in red), so it fits on one line at their Display Zoom (320 points).
+- The research on the Agent's price: OpenCode Go's terms allow only "your own internal use", and Claude Pro and ChatGPT Plus have no API access, so the Agent stays on a pay-as-you-go Anthropic key behind WilList's server.
+
+**Still to do:** the owner's answers in `handoffs/NEXT-SESSION-2026-10-24.md`; sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app); the Agent's server itself (until then a release build shows Coming soon); the subscription and its price in App Store Connect, and a privacy policy URL; signing and shipping the Mac app; a live test of the Agent with a key.
 
 **The owner's new direction (2026-10-24, late):** iPhone and Mac App Store only (the website is to be deleted), no iCloud (sign in with Google or Facebook, plus Apple as the App Store requires), a profile picture at the top left opening Settings, More becomes an Agent tab (a chat that logs anything from any file, with guardrails, as a subscription), every import option and the Claude key field go, and Study becomes Progress (analytics, forecasts, suggestions).
 Every request and its status is in `handoffs/OWNER-REQUESTS.md`; work through it in that order.
@@ -36,6 +43,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Today:** the date in large bold type with how the day stands, then a card with the A1 first and anything from Plan added to Today under it.
   Below: Plan tomorrow in the evening until it's done; then the quick checklist (typed dates are read, five sorts, stars, completed).
   Every task has Play (a teal triangle) beside its star or letter: it asks how long, then starts focus.
+  The line under each title is `.footnote`; a to-do's date sits beside a calendar icon without the word Due.
   No time column and no Coming up (the owner's call, 2026-10-24).
   The profile picture, Search and Sort sit in the navigation bar as on every tab, and the date takes the large title's place.
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
@@ -61,17 +69,18 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
   Undo sits in a toast that stays long enough to read, and VoiceOver reads it out.
   On a widget, the ticked line shows done for a moment (the box fills, the words grey and are struck through), then leaves.
-- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 18 of them), every control is at least 44 points, words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the teal deepens with Increase Contrast.
+- **Accessibility:** every screen and sheet passes Apple's accessibility audit (`AuditTests`, 18 of them), every control is at least 44 points, a row's title and line are one element that opens it (`rowWords`), words stay whole at the largest text sizes down to the iPhone SE (big buttons drop their icons there), and the teal deepens with Increase Contrast.
 - **Search** opens ready to type, keyboard up; its X closes it.
 - **iPad:** every list keeps to a centred readable column, the Agent's message field too.
 - **Mac:** the same app through Mac Catalyst, with the Mac idiom, in a window; no focus Live Activity there. It builds and was looked at through its own snapshots; it hasn't been signed or shipped.
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
-**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `ce44d4f` (installed with `npm run ios` on 2026-10-24, at the owner's OK); Xcode is signed in to team `45MSS5RXML` again.
-Both were paired and reachable over Wi-Fi; the iPad was locked, so WilList wasn't opened on it.
+**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `fbe9251` (installed with `npm run ios` on 2026-10-24, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
+The iPhone drops off the Wi-Fi tunnel when it sleeps (`xcrun devicectl list devices` shows it "unavailable"): ask the owner to unlock it, then `npm run ios -- iphone`.
 
-**Checked (2026-10-24, night):** 101 Swift core tests, lint, the UI tests (see the devlog for the last run), a zero-warning release build for iPhone and a zero-warning Mac Catalyst build, and every changed screen at the default text size on the iPhone 17 simulator, plus the Mac app through its own snapshots (`-snapshot`).
+**Checked (2026-10-24, late night):** 102 Swift core tests, lint, all 14 UI tests on `4909d65` (13 pass, `WidgetTests` skipped as usual), a zero-warning release build on `fbe9251` (its one-word change wasn't UI-tested locally; CI is green), and Today at 320 points by narrowing the simulator's window, plus the iPhone SE and iPhone 17.
+The Play menu itself was never seen on screen: the desktop app's simulator panel can't tap until `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer` is run on this Mac; `testFocusOnTheA1` goes through it.
 Earlier: the iPhone SE (375 points wide) and the iPad Pro 11-inch.
 A tick on the Today widget was checked on the simulator's Home Screen with `WidgetTests` (opt-in: `TEST_RUNNER_WIDGETS=1`) and a screen recording.
 Mark done on a reminder was checked there too, with the app closed: the plan and the widgets update within two seconds.

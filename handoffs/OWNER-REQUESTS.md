@@ -19,6 +19,8 @@ Read this with `HANDOFF.md` before starting; add to it whenever the owner asks f
 | Worry Buster, 20 Ideas, Pre-game, the seven questions: "those aren't needed, we are already reintroducing the goal tab" | Done: they stay on the website only (`docs/PRINCIPLES.md`). |
 | "what letter sorter?" | Explained with a screenshot: the one-item-at-a-time A to E screen, opened only by Review on Progress for C to E items over two weeks old. The owner: "Keep the letter sorter: Review on Progress opens it for old C to E tasks." Kept as it is. |
 | A privacy policy URL | Left blank; still needed for App Store review. |
+| "why \"due today, 17:00\" is two lines, make the text smaller so it's one line comfortably" (iPhone, Display Zoom) | Done on the branch: the line under every row's title is `.footnote`, and Play sits up against the star or letter, so the words get about 126 of the screen's 320 points. |
+| "drop the word Due from the due line, the calendar icon already says it, so longer ones fit on one line too" | Done on the branch: "Today, 17:00", "Tomorrow, 10:00", and "Yesterday" in red when overdue. Search, widgets and reminders keep the word, as no icon stands beside it there. A line with a bell or repeat mark too can still take two lines at 320 points. |
 
 ## Direction from 2026-10-24 (the big change)
 

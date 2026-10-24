@@ -3,7 +3,20 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-24, late night)
+## Now (2026-10-24, after the owner tried the build)
+
+**Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
+
+**This session (the owner's two bugs from the build on their iPhone, and one direction):**
+- New task in Plan now has Remind me, the date and time, and Repeat under the letters, the item details' own rows (`ReminderRow`, `DueRow`, `RepeatRow`), so nothing waits until the task is a row. The words' read-back (title, course) moved below them so all four fit above the keyboard. `testSetAReminderWhileAddingInPlan` covers it.
+- "After 8 tasks the 9th moved to Later": the ninth was "ML test". "test" made it an exam with no day; New exam picked A for it, so tapping A, as the owner did, took the letter off; and an exam with no day never made a day's list anyway. Not the count.
+- At the owner's word ("our study tab has already been dropped so all those academic detection shouldn't remain"), typed words no longer pick a kind, a letter or a grade share: `quickAdd` returns no type or `weightPct`, everything typed (New task, to-dos, first run, Plan tomorrow, Siri) is a task, and New study block sets its own kind. `detectType` stays for calendar links only.
+- A lettered exam or presentation with no day (the Agent can still make one) is now on the day's list like any task (`dayRows`), with a test.
+
+**Checked:** 103 core tests, lint, the UI tests (15: 14 passed, the widget test skipped as usual) and a zero-warning release build; New task looked at in the simulator. The code is `5e7b89f`; the owner's iPhone and iPad still have `fbe9251`.
+**To ask the owner:** whether the Agent and calendar links should stop setting kinds too (they feed Progress's exams and deadlines and the study sessions); plus the four open questions in `handoffs/NEXT-SESSION-2026-10-24.md`.
+
+## Before that (2026-10-24, late night)
 
 **Branch:** all work is on `claude/optimistic-ride-55ift9`, pushed; CI ("Test") is green on its last code commit, `fbe9251`.
 `main` is at `d911eac` (fast-forwarded with the owner's OK, "yes merge", on 2026-10-24); everything after it is on the branch only, and each merge is the owner's call.
@@ -49,8 +62,11 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Course colours:** each course keeps one of eight colours (blue, tangerine, plum, green, raspberry, ochre, slate, teal), stored in the plan (`settings.courseColors`) so it is the same on every device and the website keeps it.
   Course names on rows are written in their colour.
 - **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), everything that isn't on today's list under **Later** (soonest first, the letter without a number, nothing at all for an item without a letter), and a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it).
-  An empty day says "Nothing planned". Every row has Play except E's. Its + asks Task or Study block; neither has a Kind picker, and nor do item details: the kind is read from the words (the owner's call).
-  A study block is a set time to study something ("Organic chem tue 7pm 2h", or any line starting "Study" with a time), once or every week; it is listed under Later in Plan with Play (its own length offered) and counts in Progress's week chart. It doesn't show on Today.
+  An empty day says "Nothing planned". Every row has Play except E's. Its + asks Task or Study block; neither has a Kind picker, and nor do item details.
+  New task has the letters, Remind me, the date (with its time) and Repeat, the same rows as the item's details, so all of it is set before Add; the words still fill in the date, time and repeat.
+  Anything typed is a task: no words make an exam, deadline, reading, talk, class or study block, pick a letter or plan study sessions (the owner's call, 2026-10-24, "our study tab has already been dropped").
+  Only the Agent and calendar links still set those kinds.
+  A study block is a set time to study something ("Organic chem tue 7pm 2h", from Plan's + only), once or every week; it is listed under Later in Plan with Play (its own length offered) and counts in Progress's week chart. It doesn't show on Today.
   The owner's rule (2026-10-24): all plans in Plan, only today's in Today.
 - **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Review, Adjust), the next 7 days' study load by course colour against the daily budget, and exams and deadlines coming up with whether each is on track.
 - **Agent:** a chat that takes files, photos and words, proposes what to add on a card to tick and Add (Undo works), follows a calendar link the student types, and answers questions about the plan; plain text only, guardrails in the devlog. Behind a StoreKit 2 subscription (`com.lull.willist.agent.monthly`), and it asks once before sending anything to Anthropic. Requests go to WilList's server (`WLAgentServer` in Info.plist, empty for now, so release builds show Coming soon); debug builds use `ANTHROPIC_API_KEY` or `-agentDemo YES`. Not yet tried against the live API.

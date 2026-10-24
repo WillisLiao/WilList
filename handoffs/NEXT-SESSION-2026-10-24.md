@@ -5,19 +5,19 @@
 Paste this into a fresh session to start it:
 
 ```
-Continue WilList on branch claude/optimistic-ride-55ift9 (pushed; its last code commit is fbe9251, with the handoff commit on top).
+Continue WilList on branch claude/optimistic-ride-55ift9 (pushed; its last code commit is 5e7b89f, with the handoff commit on top).
 Work on that branch and push to it.
 Do not merge into main or open a pull request without asking me first.
 Ask me before anything outward-facing or hard to undo (publishing, deleting, messaging, purchases, App Store Connect, Firebase).
 
 Read first, in this order: CLAUDE.md, handoffs/OWNER-REQUESTS.md (it wins wherever anything else disagrees), handoffs/HANDOFF.md, handoffs/NEXT-SESSION-2026-10-24.md, docs/DESIGN.md, docs/PRINCIPLES.md and docs/AGENT-SERVER.md.
-Then confirm CI is green on the branch's head (gh run list --commit needs the full SHA) and prove the baseline: swift test in ios/WilListCore (102), npm run lint, the UI tests (14) and a zero-warning release build.
+Then confirm CI is green on the branch's head (gh run list --commit needs the full SHA) and prove the baseline: swift test in ios/WilListCore (103), npm run lint, the UI tests (15) and a zero-warning release build.
 
 Build only what I ask for, in the smallest form that does it.
 On 2026-10-24 I asked for a play button next to the star and Today "like the website"; the whole time column that got built was too much and was taken back out.
 If a request could mean reshaping a screen, ask me which part first, with a quick preview.
 
-Ask me, don't guess: whether debug builds on my iPhone should use my OpenCode Go key for testing; whether study blocks should show on Today on their day; merging the branch into main again and turning GitHub Pages off; a privacy policy URL.
+Ask me, don't guess: whether the Agent and calendar links should stop setting exams, deadlines and readings too (typed lines no longer do); whether debug builds on my iPhone should use my OpenCode Go key for testing; whether study blocks should show on Today on their day; merging the branch into main again and turning GitHub Pages off; a privacy policy URL.
 Then work through the list in NEXT-SESSION, starting with whatever my answers unblock.
 
 Rules: commit messages are plain, with no AI co-author line or any agent attribution; no em dashes anywhere; one sentence per line in Markdown; output/ stays out of commits.
@@ -26,23 +26,25 @@ Before stopping, update HANDOFF, OWNER-REQUESTS, the devlog and NEXT-SESSION, th
 
 ## Where things stand
 
-Everything is on `claude/optimistic-ride-55ift9`, pushed; CI is green on `fbe9251`.
+Everything is on `claude/optimistic-ride-55ift9`, pushed; the last code commit is `5e7b89f` (check CI on it first).
 `main` is at `d911eac` (merged with the owner's OK); the old website stays live from it until GitHub Pages is turned off.
 The app has five tabs (Today, Plan, Progress, Goals, Agent) and Settings behind the profile picture.
 Today is the A1 and what was added from Plan, then the to-do checklist, with Play beside every star and letter; no time column and no Coming up, at the owner's ask.
 Play asks how long and starts focus on any task; study blocks are added from Plan's + and listed under Later.
+New task in Plan sets the letter, Remind me, the date and Repeat before Add, and anything typed is a task: no words make an exam, deadline, reading, class or study block (the owner's call, 2026-10-24); only the Agent and calendar links still set kinds.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The owner's iPhone and iPad have `fbe9251`.
+The owner's iPhone and iPad have `fbe9251`, without the New task rows and the typed-words change: offer `npm run ios` to put `5e7b89f` on them.
 The owner uses Display Zoom (Larger Text, about 320 points wide): check rows there by narrowing the window (below), not only on the iPhone 17.
 
 ## Start here
 
 1. Confirm CI is green on the branch's head (`gh run list --commit <full SHA>`).
-2. Prove the baseline: `cd ios/WilListCore && swift test` (102), `npm run lint`, the UI tests (`xcodebuild test -project ios/WilList.xcodeproj -scheme WilList -destination 'platform=iOS Simulator,name=iPhone 17'`, 14, about 7 minutes), and the release build (`-configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`).
+2. Prove the baseline: `cd ios/WilListCore && swift test` (103), `npm run lint`, the UI tests (`xcodebuild test -project ios/WilList.xcodeproj -scheme WilList -destination 'platform=iOS Simulator,name=iPhone 17'`, 15, about 8 minutes), and the release build (`-configuration Release -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO`).
 3. If the desktop app's simulator panel says Xcode is "not selected", ask the owner to run `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`: until then nothing can be tapped in the simulator, and the Play menu has never been seen on screen.
 
 ## Ask the owner first
 
+- Whether the Agent and calendar links should stop setting kinds too: they still make exams, deadlines and readings with study sessions, which feed Progress's exams and deadlines; typed lines no longer do.
 - Whether debug builds on their own iPhone should use their OpenCode Go key for testing (its terms allow only their own use, so never for other students).
 - Whether study blocks should show on Today on their day (they don't since the time column went); any change to Today, ask with a preview first.
 - How Play and study blocks feel in hand.

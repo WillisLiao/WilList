@@ -4,6 +4,14 @@ Every request the owner (Willis) has made, newest direction first, with where it
 The owner's later words always win over earlier ones and over `handoffs/GOAL.md`.
 Read this with `HANDOFF.md` before starting; add to it whenever the owner asks for something.
 
+## After trying the build (2026-10-24)
+
+| Request (the owner's words, lightly trimmed) | Status |
+|---|---|
+| "when entering task in plan tab, I can only enter letter, not notify date or deadline date, or repeat, i can only do those after i click add and it's a row, fix it" | Done on the branch: New task has Remind me, the date (and time) and Repeat under the letters, set before Add. |
+| "after Ive added 8 tasks, the 9th is now moved to the later section, which shouldn't be the case" | Fixed on the branch. The ninth was "ML test" (the owner's answer): "test" made it an exam with no day, A came pre-picked so tapping A took it off, and an undated exam never made the day's list. Not the count: nine plain tasks all stayed. |
+| "Our study tab has already been dropped so all those academic detection shouldnt remain" | Done on the branch for everything typed: no exams, deadlines, readings, talks, classes or study blocks from the words, no letter picked for you, no study plan or grade share. The Agent and calendar links still set kinds (and so feed Progress's exams and deadlines); whether those go too is the owner's call. |
+
 ## Night of 2026-10-24: Today in time order, Play, study blocks, Goals
 
 | Request (the owner's words, lightly trimmed) | Status |

@@ -36,7 +36,7 @@ They stay as the list of every idea to keep; the ones the app doesn't have yet a
 | **Concentration of power / single handling**: first things first, one at a time, stay until 100% complete. | S17, S20 | Focus mode: one task, one timer, nothing else. |
 | **Do it now; sense of urgency; fast tempo.** Finishing gives a jolt of energy and self-esteem. | S17 | "Start" beside the A1 on Today; short done messages. |
 | **Take action, launch.** The first 20% of a job accounts for 80% of its value; well begun is half done. | S20 | Every planned item has a start date that puts its first session on Today well before the due date. |
-| **Set a deadline, then many sub-deadlines; establish a reward schedule.** | S16 | Every exam, presentation, assignment and reading is split into dated sessions (sub-deadlines). Goals → More → Reward. |
+| **Set a deadline, then many sub-deadlines; establish a reward schedule.** | S16 | Every exam, presentation, assignment and reading is split into dated sessions (sub-deadlines). Since 2026-10-24 those kinds come only from the Agent or a calendar link: anything typed is a task. Goals → More → Reward. |
 | **Inspect what you expect**: delegation is not abdication. | S20 | D items stay on Today, below the end of the day, with who has them. |
 | **Act your way into feeling.** | S10 | Starting is one tap. |
 | **Discipline**: do what you should, when you should, whether you feel like it or not. | S9 | Done messages. |

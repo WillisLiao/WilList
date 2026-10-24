@@ -63,9 +63,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
 **On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `ce44d4f` (installed with `npm run ios` on 2026-10-24, at the owner's OK); Xcode is signed in to team `45MSS5RXML` again.
-The next `npm run ios` registers the app group, the widget extension (`com.lull.willist.widgets`), Live Activities, the iCloud container and push under team `45MSS5RXML`, so Xcode needs that team signed in.
-On 2026-10-23 Xcode had lost the owner's credentials ("No Accounts"): sign in again in Xcode, Settings, Accounts, and accept Apple's latest Program License Agreement if Xcode still reports "PLA Update available"; compile checks use `CODE_SIGNING_ALLOWED=NO` meanwhile.
-The iPad was paired and reachable then; the iPhone was not.
+Both were paired and reachable over Wi-Fi; the iPad was locked, so WilList wasn't opened on it.
 
 **Checked (2026-10-24, night):** 101 Swift core tests, lint, the UI tests (see the devlog for the last run), a zero-warning release build for iPhone and a zero-warning Mac Catalyst build, and every changed screen at the default text size on the iPhone 17 simulator, plus the Mac app through its own snapshots (`-snapshot`).
 Earlier: the iPhone SE (375 points wide) and the iPad Pro 11-inch.

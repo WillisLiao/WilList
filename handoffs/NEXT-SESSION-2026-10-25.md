@@ -34,7 +34,7 @@ Plan tomorrow is no longer offered on Today; the optional evening notification o
 Every item is a task or a study block: nothing tells exams, deadlines, readings or classes apart, whether typed, from the Agent or from a calendar link, and nothing plans study sessions (the owner, 2026-10-25: "listing them is enough").
 Progress is the last 7 days, the suggestions (start an A early, review old C to E items, a day over the daily study time) and the next 7 days' study blocks.
 The Agent's server doesn't exist, so a release build shows Coming soon; debug builds use `-agentDemo YES` or `ANTHROPIC_API_KEY`.
-The owner's iPhone has `62789f0`, everything above; the iPad still has `fbe9251`: offer `npm run ios -- ipad` when it's awake.
+The owner's iPhone and iPad both have `56af015`, everything above.
 The owner uses Display Zoom (Larger Text, about 320 points wide): check rows there by narrowing the window (below), not only on the iPhone 17.
 
 ## Start here

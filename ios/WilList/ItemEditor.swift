@@ -1,7 +1,7 @@
 import SwiftUI
 import WilListCore
 
-/// Everything about one item, with its study plan.
+/// Everything about one item.
 struct ItemEditor: View {
     @Environment(Store.self) private var store
     @Environment(\.dismiss) private var dismiss
@@ -10,15 +10,13 @@ struct ItemEditor: View {
 
     init(item: Item) { _item = State(initialValue: item) }
 
-    private var planned: Bool { plannedTypes.contains(item.type) && item.recur == nil }
-
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Title", text: $item.title, axis: .vertical).font(.title3)
-                    // A class or study block has its time instead of a letter.
-                    if !item.type.isBlock {
+                    // A study block has its time instead of a letter.
+                    if item.type != .study {
                         Picker("Letter", selection: $item.priority) {
                             Text("None").tag(Letter?.none)
                             ForEach(Letter.allCases, id: \.self) { Text("\($0.rawValue)  \($0.name)").tag(Letter?.some($0)) }
@@ -36,12 +34,12 @@ struct ItemEditor: View {
                 }
 
                 Section {
-                    if !item.type.isBlock { AddToTodayRow(myDay: $item.myDay, today: store.today) }
+                    if item.type != .study { AddToTodayRow(myDay: $item.myDay, today: store.today) }
                     ReminderRow(at: $item.remindAt, today: store.today)
                     DueRow(date: $item.date, time: $item.time, today: store.today,
                            title: item.type.dueWord, add: "Add a date")
                     RepeatRow(recur: $item.recur, date: $item.date, today: store.today)
-                    if item.type.isBlock {
+                    if item.type == .study {
                         Stepper("Lasts \(Fmt.minutes(item.durationMin ?? 60))", value: Binding(get: { item.durationMin ?? 60 }, set: { item.durationMin = $0 }), in: 5...600, step: 5)
                     }
                     Label {
@@ -50,32 +48,6 @@ struct ItemEditor: View {
                         // In the course's colour, once it has one: a course already in the plan shows
                         // its colour as it's typed.
                         Image(systemName: "graduationcap").foregroundStyle(CourseColor.of(store.state.courseColor(item.course)))
-                    }
-                }
-
-                if planned {
-                    Section {
-                        Stepper("Prep \(Fmt.minutes(item.effortMin))", value: $item.effortMin, in: 0...6000, step: 30)
-                        if let w = item.weightPct { LabeledContent("Share of grade", value: "\(w.formatted())%") }
-                        ForEach(item.sessions) { s in
-                            HStack {
-                                Image(systemName: s.done ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(s.done ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(s.label)
-                                    Text("\(Fmt.day(s.date, store.today)), \(Fmt.minutes(s.minutes))")
-                                        .font(.subheadline).foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                    } header: {
-                        Text("Study plan")
-                    } footer: {
-                        if item.shortfallMin > 0 {
-                            Text("\(Fmt.minutes(item.shortfallMin)) short. Raise daily study in Settings.")
-                        } else if item.sessions.isEmpty && item.effortMin > 0 {
-                            Text("Planned when saved.")
-                        }
                     }
                 }
 

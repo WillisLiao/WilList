@@ -7,14 +7,13 @@ import WilListCore
 
 /// The letters to choose from, each with its meaning. Used in menus and context menus.
 struct LetterChoices: View {
-    let suggested: Letter?
     var allowNone = false
     let choose: (Letter?) -> Void
 
     var body: some View {
         ForEach(Letter.allCases, id: \.self) { l in
             Button { choose(l) } label: {
-                Text("\(l.rawValue)  \(l.name)\(l == suggested ? " (suggested)" : "")")
+                Text("\(l.rawValue)  \(l.name)")
                 Text(l.detail)
             }
         }

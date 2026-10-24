@@ -1,20 +1,10 @@
 import SwiftUI
 import WilListCore
 
-// How dates, kinds and rows read everywhere, in the app and on the widgets.
+// How dates and rows read everywhere, in the app and on the widgets.
 
 extension ItemType {
-    var name: String {
-        switch self {
-        case .task: "Task"
-        case .deadline: "Deadline"
-        case .exam: "Exam or test"
-        case .presentation: "Presentation"
-        case .reading: "Reading"
-        case .event: "Class or event"
-        case .study: "Study block"
-        }
-    }
+    var name: String { self == .study ? "Study block" : "Task" }
 }
 
 enum Fmt {
@@ -74,18 +64,11 @@ enum Fmt {
         }
     }
 
-    /// When an item happens, worded for its kind: "Exam Fri, 9:00 AM", "Due tomorrow".
+    /// When an item is: "Fri, 9:00 AM", "Tomorrow", "Every Mon, 10:00 AM".
     static func when(_ it: Item, _ today: Day) -> String? {
         if let r = it.recur { return [recur(r), time(it.time)].compactMap { $0 }.joined(separator: ", ") }
         guard let d = it.date else { return nil }
-        let at = [day(d, today, inSentence: true), time(it.time)].compactMap { $0 }.joined(separator: ", ")
-        return switch it.type {
-        case .exam: "Exam \(at)"
-        case .deadline: "Due \(at)"
-        case .presentation: "Presenting \(at)"
-        case .reading: "Read by \(at)"
-        case .task, .event, .study: day(d, today) + (time(it.time).map { ", \($0)" } ?? "")
-        }
+        return day(d, today) + (time(it.time).map { ", \($0)" } ?? "")
     }
 
     /// A to-do's due date: "Due today", "Due Fri, 6:00 PM", "Overdue, Mon". Beside the calendar
@@ -122,25 +105,14 @@ enum Fmt {
         }
     }
 
-    /// `detail`, its course in the course's colour; a study session names its course too, like
-    /// the rows around it.
+    /// `detail`, its course in the course's colour.
     static func detail(_ row: Row, _ today: Day, in s: AppState) -> Text? {
-        if row.session == nil && !(row.item.priority == .D && !row.item.delegateTo.isEmpty) { return subline(row.item, today, in: s) }
-        guard let session = row.session, let course = row.item.course else { return detail(row, today).map { Text($0) } }
-        // The time and the course keep together: a line too long breaks before "50 min, MATH201",
-        // not before the course alone.
-        let together = { (words: String) in words.replacingOccurrences(of: " ", with: "\u{00A0}") }
-        let time = together(minutes(session.minutes) + (row.extra > 0 ? " (+\(row.extra) more)" : ""))
-        let name = Text(together(course)).foregroundStyle(CourseColor.of(s.courseColor(course)))
-        return Text("\(session.label), \(time),\u{00A0}\(name)")
+        if row.item.priority == .D, !row.item.delegateTo.isEmpty { return Text("Ask \(row.item.delegateTo)") }
+        return subline(row.item, today, in: s)
     }
 
-    /// What a row of the day's list is about: the study session that is due, who has it, or when it is.
+    /// What a row of the day's list is about: who has it, or when it is.
     static func detail(_ row: Row, _ today: Day) -> String? {
-        if let s = row.session {
-            let more = row.extra > 0 ? " (+\(row.extra) more)" : ""
-            return "\(s.label), \(minutes(s.minutes))\(more)"
-        }
         if row.item.priority == .D, !row.item.delegateTo.isEmpty { return "Ask \(row.item.delegateTo)" }
         let sub = subline(row.item, today)
         return sub.isEmpty ? nil : sub

@@ -37,19 +37,6 @@ private let shortDays: [String: [Int]] = ["mwf": [1, 3, 5], "mw": [1, 3], "wf": 
 private let counters: Set<String> = ["week", "wk", "unit", "chapter", "chapters", "ch", "lecture", "module", "part", "session", "day", "lab", "quiz", "set", "hw", "test", "exam", "assignment", "problem", "no", "#"]
 private let connectors: Set<String> = ["due", "by", "on", "at", "@", "before", "from", "for", "this", "starting", "every", "each"]
 
-/// What a calendar entry is, from its title. Only calendar links use it: anything typed is a task.
-public func detectType(_ text: String) -> ItemType {
-    let t = text.lowercased()
-    func has(_ p: String) -> Bool { matches(t, p) }
-    if has(#"\b(present|presentation|presenting|talk|pitch|defen[cs]e|demo|speech|slides|poster session)\b"#) { return .presentation }
-    let deliverable = #"\b(report|essay|project|paper|thesis|draft|assignment|portfolio)\b"#
-    if has(#"\b(exams?|midterms?|quiz(zes)?|tests?|finals?|oral exam|mock exam)\b"#) && !has(deliverable) { return .exam }
-    if has(#"\b(read|reading|skim|chapters?|ch\.?\s?\d+|textbook|article|literature)\b"#) { return .reading }
-    if has(#"\b(hw\d*|homework|assignment|essay|project|report|psets?|problem sets?|worksheet|paper|thesis|draft|submit|submission|application|apply|due|portfolio|lab report)\b"#) { return .deadline }
-    if has(#"\b(meeting|meet|class|lecture|seminar|tutorial|lab|office hours?|club|practice|rehearsal|call|sync|standup|appointment|interview|recitation|discussion section|study group|training|shift|game)\b"#) { return .event }
-    return .task
-}
-
 private func clean(_ tok: String) -> String {
     replacing(tok.lowercased(), #"^[("'\[]+|[)"'\].,;:!?]+$"#, with: "")
 }

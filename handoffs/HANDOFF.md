@@ -3,7 +3,19 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-24, after the owner tried the build)
+## Now (2026-10-25)
+
+**Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
+
+**This session (after the owner tried `5e7b89f`):**
+- Today: Plan tomorrow is no longer offered there (the evening notification still opens it); an empty main goal reads "Main goal" with a plus; the + on the add line works; and while a line is typed, the letters and Reminder, Date and Repeat menus sit under it, so a to-do can be lettered, reminded, dated and repeated before it is added (a lettered one goes to Plan, on today's list). The tab bar hides while the keyboard is up. Committed as `726c551`.
+- No more kinds, at the owner's word ("listing them is enough, organizing them based on those kinds are useless"): every item is a task or a study block, from typed words, the Agent and calendar links alike. The study planner (prep sessions, start dates, pace calibration, replanning), Progress's exams and deadlines, grade weights, effort and the suggested letter are gone; older saves still load, any old kind read as a task. Progress is the last 7 days, the suggestions and the next 7 days' study blocks.
+
+**Checked:** 73 core tests (the planner's went with it), lint, the UI tests (16: 15 passed, `WidgetTests` skipped as usual) and a zero-warning release build; Progress, Plan, Later, a task's and a study block's details, Settings, the Agent's card (demo), Today and New task looked at in the simulator (iPhone 17).
+**On the owner's devices:** the iPhone has `5e7b89f`, the iPad `fbe9251`; neither has today's work. Offer `npm run ios` when they are awake.
+**To ask the owner:** the four open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
+
+## Before that (2026-10-24, after the owner tried the build)
 
 **Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
 
@@ -14,7 +26,7 @@ Read it first; update the top section at the end of every substantial session.
 - A lettered exam or presentation with no day (the Agent can still make one) is now on the day's list like any task (`dayRows`), with a test.
 
 **Checked:** 103 core tests, lint, the UI tests (15: 14 passed, the widget test skipped as usual) and a zero-warning release build; New task looked at in the simulator. The code is `5e7b89f`, installed on the owner's iPhone (`npm run ios -- iphone`); the iPad was asleep and still has `fbe9251`.
-**To ask the owner:** whether the Agent and calendar links should stop setting kinds too (they feed Progress's exams and deadlines and the study sessions); plus the four open questions in `handoffs/NEXT-SESSION-2026-10-24.md`.
+**To ask the owner:** whether the Agent and calendar links should stop setting kinds too (they feed Progress's exams and deadlines and the study sessions); plus the four open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
 
 ## Before that (2026-10-24, late night)
 
@@ -33,7 +45,7 @@ The older website is still live at https://willisliao.github.io/WilList/ from `m
 - At the owner's ask, the line under a row's title is a size smaller (`.footnote`), Play sits up against the star or letter (`RowEnd`), and a to-do's date beside the calendar icon drops the word Due ("Today, 17:00", "Tomorrow, 10:00", "Yesterday" in red), so it fits on one line at their Display Zoom (320 points).
 - The research on the Agent's price: OpenCode Go's terms allow only "your own internal use", and Claude Pro and ChatGPT Plus have no API access, so the Agent stays on a pay-as-you-go Anthropic key behind WilList's server.
 
-**Still to do:** the owner's answers in `handoffs/NEXT-SESSION-2026-10-24.md`; sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app); the Agent's server itself (until then a release build shows Coming soon); the subscription and its price in App Store Connect, and a privacy policy URL; signing and shipping the Mac app; a live test of the Agent with a key.
+**Still to do:** the owner's answers in `handoffs/NEXT-SESSION-2026-10-25.md`; sign-in and account sync (Firebase, needs the owner's Firebase project and Facebook app); the Agent's server itself (until then a release build shows Coming soon); the subscription and its price in App Store Connect, and a privacy policy URL; signing and shipping the Mac app; a live test of the Agent with a key.
 
 **The owner's new direction (2026-10-24, late):** iPhone and Mac App Store only (the website is to be deleted), no iCloud (sign in with Google or Facebook, plus Apple as the App Store requires), a profile picture at the top left opening Settings, More becomes an Agent tab (a chat that logs anything from any file, with guardrails, as a subscription), every import option and the Claude key field go, and Study becomes Progress (analytics, forecasts, suggestions).
 Every request and its status is in `handoffs/OWNER-REQUESTS.md`; work through it in that order.
@@ -54,7 +66,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
 - **Today:** the date in large bold type with how the day stands, then a card with the A1 first and anything from Plan added to Today under it.
-  Below: Plan tomorrow in the evening until it's done; then the quick checklist (typed dates are read, five sorts, stars, completed).
+  Below: the quick checklist (typed dates are read, five sorts, stars, completed); while a line is typed, the letters and Reminder, Date and Repeat menus sit under it, and a lettered line goes to Plan, on today's list.
   Every task has Play (a teal triangle) beside its star or letter: it asks how long, then starts focus.
   The line under each title is `.footnote`; a to-do's date sits beside a calendar icon without the word Due.
   No time column and no Coming up (the owner's call, 2026-10-24).
@@ -64,22 +76,21 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **Plan:** everything planned: today's date, today in ABCDE order with the A1 first (drag to re-rank; a new A comes after the A's already there), everything that isn't on today's list under **Later** (soonest first, the letter without a number, nothing at all for an item without a letter), and a month calendar showing what's due each day as small titles in their letter's colours (tap a day to list it).
   An empty day says "Nothing planned". Every row has Play except E's. Its + asks Task or Study block; neither has a Kind picker, and nor do item details.
   New task has the letters, Remind me, the date (with its time) and Repeat, the same rows as the item's details, so all of it is set before Add; the words still fill in the date, time and repeat.
-  Anything typed is a task: no words make an exam, deadline, reading, talk, class or study block, pick a letter or plan study sessions (the owner's call, 2026-10-24, "our study tab has already been dropped").
-  Only the Agent and calendar links still set those kinds.
+  Every item is a task or a study block: nothing tells exams, deadlines, readings or classes apart, whether typed, from the Agent or from a calendar link, and nothing plans study sessions (the owner's calls, 2026-10-24 and 2026-10-25: "listing them is enough").
   A study block is a set time to study something ("Organic chem tue 7pm 2h", from Plan's + only), once or every week; it is listed under Later in Plan with Play (its own length offered) and counts in Progress's week chart. It doesn't show on Today.
   The owner's rule (2026-10-24): all plans in Plan, only today's in Today.
-- **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Review, Adjust), the next 7 days' study load by course colour against the daily budget, and exams and deadlines coming up with whether each is on track.
+- **Progress:** the last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions (start an A early: Add to Today; old C to E items: Review; a day over the daily study time), and the next 7 days' study blocks by course colour against the daily study time.
 - **Agent:** a chat that takes files, photos and words, proposes what to add on a card to tick and Add (Undo works), follows a calendar link the student types, and answers questions about the plan; plain text only, guardrails in the devlog. Behind a StoreKit 2 subscription (`com.lull.willist.agent.monthly`), and it asks once before sending anything to Anthropic. Requests go to WilList's server (`WLAgentServer` in Info.plist, empty for now, so release builds show Coming soon); debug builds use `ANTHROPIC_API_KEY` or `-agentDemo YES`. Not yet tried against the live API.
 - **Goals** (a tab again, between Progress and Agent, at the owner's ask): the main goal large on teal, the other goals, the last 21 days.
-- **Settings** (the profile picture on every tab): to-do and study settings, the day's clocks, calendar links the Agent followed, backup and restore.
+- **Settings** (the profile picture on every tab): to-do settings, the daily study time, the planning time and its reminder, calendar links the Agent followed, backup and restore.
 - **Focus** (from Play, for 15 minutes to an hour and a half or the planned time): the whole screen in the task's course colour, the time spent rising from the bottom in a deeper shade like a glass filling, the time left in large bold type, with Pause, Mark done and Stop; the Lock Screen Live Activity and the Dynamic Island take the same colour.
   The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island, with Mark done on it.
   A notice says when to take a break, and the real minutes are logged.
 - **Letters are optional** (the owner's call, 2026-10-24): nothing asks for one, and an item without one has no mark. Its details give it one.
-- **Letter sorter:** one item at a time, the five letters with what each means, the suggested one marked; the last page names your A1. Opened from Review in Progress.
+- **Letter sorter:** one item at a time, the five letters with what each means; the last page names your A1. Opened from Review in Progress.
 - **Plan tomorrow:** Tracy's evening habit in two steps on a night-indigo field: anything new for tomorrow (one line each, dates read), then which one first.
   It ends on "Tomorrow starts with" and the A1's title, the whole page in that A1's course colour; that page rises over the night like a sunrise.
-  Today offers it from the planning time (8:30 PM unless changed) until tomorrow is planned, and the evening notification opens it.
+  The optional evening notification, at the planning time (8:30 PM unless changed), opens it; Today no longer offers it (the owner's call, 2026-10-25).
 - **Give it a letter:** a to-do that turns out to matter moves into Plan with its steps, dates and note.
 - **Widgets:** Do this first (your A1 with Mark done, on a pale teal: small, medium, Lock Screen rectangular and inline) and Today (to-dos with ticks: medium, large, Lock Screen circular), sharing the plan through the app group `group.com.lull.willist`.
 - **Ticking off:** the box fills with a ring and six sparks, a chime and a haptic.
@@ -92,7 +103,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 - **No sync for now:** iCloud sync was removed at the owner's ask (2026-10-24); sync comes back with sign-in. `PlanMerge` in the core still merges two copies of a plan against the one both last agreed on.
 - Still there: task details on every to-do and item (steps, Remind me with Mark done and snooze on the notification, due date and time, repeat, note), Search, Siri and Shortcuts, the share sheet, home-screen quick actions, and an app icon in the teal with dark and tinted versions.
 
-**On the owner's devices:** the iPhone 15 Pro and the iPad Pro 12.9-inch both have `fbe9251` (installed with `npm run ios` on 2026-10-24, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
+**On the owner's devices:** the iPhone 15 Pro has `5e7b89f` and the iPad Pro 12.9-inch `fbe9251` (installed with `npm run ios`, at the owner's ask); Xcode is signed in to team `45MSS5RXML`.
 The iPhone drops off the Wi-Fi tunnel when it sleeps (`xcrun devicectl list devices` shows it "unavailable"): ask the owner to unlock it, then `npm run ios -- iphone`.
 
 **Checked (2026-10-24, late night):** 102 Swift core tests, lint, all 14 UI tests on `4909d65` (13 pass, `WidgetTests` skipped as usual), a zero-warning release build on `fbe9251` (its one-word change wasn't UI-tested locally; CI is green), and Today at 320 points by narrowing the simulator's window, plus the iPhone SE and iPhone 17.

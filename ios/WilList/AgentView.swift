@@ -542,16 +542,15 @@ enum AgentDemo {
         try await Task.sleep(for: .seconds(1))
         let body = try JSONDecoder().decode(JSONValue.self, from: request.httpBody ?? Data())
         let last = body["messages"]?.array?.last?["content"]?.array ?? []
-        func item(_ title: String, _ type: String, _ days: Int, _ time: String, _ hours: Int) -> JSONValue {
-            ["title": .string(title), "type": .string(type), "date": .string(addDays(WilListCore.today(), days)), "time": .string(time),
-             "course": "CHEM110", "weightPct": 0, "effortHours": .number(Double(hours)), "repeatDays": [], "durationMin": 0]
+        func item(_ title: String, _ days: Int, _ time: String) -> JSONValue {
+            ["title": .string(title), "date": .string(addDays(WilListCore.today(), days)), "time": .string(time), "course": "CHEM110", "repeatDays": []]
         }
         let shared = last.contains { $0["type"] == "document" || $0["type"] == "image" || $0["text"]?.string?.lowercased().contains("syllabus") == true }
         let content: JSONValue
         switch last.last(where: { $0["type"] == "tool_result" })?["tool_use_id"]?.string {
         case "demo1":
             content = [["type": "tool_use", "id": "demo2", "name": "propose_items", "input": ["items": [
-                item("Quiz 3", "exam", 3, "09:00", 3), item("Lab report", "deadline", 6, "23:59", 4), item("Read chapter 7", "reading", 2, "", 2),
+                item("Quiz 3", 3, "09:00"), item("Lab report", 6, "23:59"), item("Read chapter 7", 2, ""),
             ]]]]
         case "demo2":
             content = [["type": "text", "text": "I found a quiz, a lab report and a reading. Tick what you want and tap Add."]]

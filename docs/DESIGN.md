@@ -63,7 +63,7 @@ As few words as do the job: on 2026-10-23 the owner said "each item, thing, desc
 - Labels drop what the screen already says: "Starred on top", not "Move starred to-dos to top"; "7 to do, 1 overdue, 1 done" on Today, not "1 done today.".
 - Tracy's terms keep two plain words beside them: "A  Must do: serious consequences".
 - No explanatory footers. A footer is there only when it changes what the user does next ("50 min short. Raise daily study in Settings.").
-- Say a status only when it needs attention, in as few words as it takes: "2 sessions behind", "Missed yesterday", never "On track".
+- Say a status only when it needs attention, in as few words as it takes: "Over your 2 h a day", "Missed yesterday", never "On track".
 - An empty place says what is there in two or three words ("Nothing planned"), or gives its one button, never a paragraph or a lesson in the method.
 - Errors say what to do: "Turn on notifications for WilList in Settings."
 - Fragments, not sentences, in labels and statuses; no full stop after a fragment ("3-day streak", "Dashed line: 2 h a day").
@@ -78,7 +78,7 @@ Each screen has one job and one primary action.
 |---|---|---|
 | Today | Under today's date, the A1 first on a card and anything added to Today from Plan under it, Plan tomorrow in the evening until tomorrow is planned, then a quick checklist; Play beside every task | Tick the A1; type a line in "Add a to-do" (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), everything that isn't on today's list under Later (soonest first, with or without a letter), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
-| Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with one action each (Replan, Add to Today, Review, Adjust), the next 7 days' study load, then exams and deadlines coming up and whether each is on track | Act on a suggestion |
+| Progress | The last 7 days in four numbers (done, A's, days started with an A, focus time) over a chart of the same days stacked by letter, suggestions with at most one action each (Add to Today, Review), then the next 7 days' study blocks against the daily study time | Act on a suggestion |
 | Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
 | Agent | A chat: hand it a file, a photo or words and it proposes what to add, on a card to tick and Add; ask it about your plan and progress. Behind a subscription, and it asks once before anything is sent to Anthropic | Send |
 
@@ -114,7 +114,7 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **Row:** check on the left, title, one quiet line under it in `.footnote`, and on the right Play, then a star (to-dos) or a letter (items) in a 44-point column (`MarkColumn`, empty when there is no letter), so the Play buttons line up down a list.
   Play and the star or letter sit side by side with no gap, up against the words (`RowEnd`): at Display Zoom's 320 points the words get about 126 points, so a to-do's due date stays on one line, at the owner's ask. Tap the text to open details. Swipe right to finish, left to delete.
   E items (dropped) have no Play.
-- **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and the planned time of a study session or block among them, marked "As planned". Choosing one starts focus.
+- **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and a study block's planned time among them, marked "As planned". Choosing one starts focus.
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date beside a calendar icon, without the word Due, which the icon says ("Tomorrow, 10:00 AM", teal when today, red when overdue, "Yesterday"; the owner's call, 2026-10-24), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
 - **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
@@ -125,13 +125,13 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 96 pt bold, and white buttons.
   Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`).
   The Dynamic Island stays black: the letter is white with the course colour in it, and the time, bar and keyline use the course colour lifted with 35% white (`CourseColor.onDark`, 5.5:1 or better on black).
-- **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 7 days' finished items, sessions and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top, with the day and its count under it ("Today" in bold).
+- **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 7 days' finished items and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top, with the day and its count under it ("Today" in bold).
   It is drawn by hand like the week chart, not with Swift Charts, whose bars left out the empty days at either end; its scale starts at three, so one thing done doesn't fill the card.
 - **Week chart** (`WeekChart` in `ProgressTab.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
 - **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left, the screen filling from the bottom as the chosen minutes pass, Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Agent** (`AgentView.swift`): the student's words in deep teal bubbles on the right, the Agent's in white bubbles on the left, always as plain text (`Text(verbatim:)`, never Markdown or links, so nothing a file says becomes something to tap).
-  What it proposes comes as a white card of rows to tick, each with its kind and date, and one Add button; once added it says Added, and Undo brings the button back.
+  What it proposes comes as a white card of rows to tick, each with its date and course, and one Add button; once added it says Added, and Undo brings the button back.
   A calendar link the student typed comes as a card with Follow.
   The message field is a white rounded bar above the tab bar with + (a file or a photo) and Send; attached files show as chips above it, five at most.
   Before the first message the title card says what it does, with two questions to ask; until the student has agreed, it asks instead whether to send things to Anthropic, with Continue.
@@ -148,7 +148,7 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   - Add to Today (items only), Note, Give it a letter (to-dos only: it moves into Plan with everything it has, and stays on Today for today), Delete at the bottom.
   - A menu in a form row answers a tap anywhere on the row (`fillsRow()`), not only on its words.
   - Every set value has a grey clear button on the right.
-- **Sheets:** inline bold title (`readableColumn(inline: true)`, see pitfall 30). To-dos save as you type and close with Done. Items edit a copy and use Cancel and Save, because saving can re-plan the study sessions.
+- **Sheets:** inline bold title (`readableColumn(inline: true)`, see pitfall 30). To-dos save as you type and close with Done. Items edit a copy and use Cancel and Save, so a change can be thrown away.
 - **Toast:** at the bottom, with Undo after a delete or a tick. Liquid Glass on iOS 26, the regular material before.
   It stays long enough to read (five seconds, up to ten for a long message), and VoiceOver reads it out.
   With VoiceOver on, a toast with Undo stays until Undo is reached or something replaces it.

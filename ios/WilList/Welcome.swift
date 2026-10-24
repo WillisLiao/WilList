@@ -100,7 +100,7 @@ struct WelcomeView: View {
             for (i, line) in all.enumerated() {
                 var draft = Item(quickAdd(line, today: today, minute: nowMinutes(), dateOrder: order))
                 if i == chosen { draft.priority = .A }
-                s.items.append(makeItem(draft, s.settings, today, s.items))
+                s.items.append(makeItem(draft, today, s.items))
             }
             if !goal.isEmpty { s.mdp = goal }
             s.meta.onboarded = true

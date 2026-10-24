@@ -59,20 +59,11 @@ struct SettingsView: View {
 
                 Section {
                     Stepper("Per day: \(Fmt.minutes(store.state.settings.perDayMin))", value: setting(\.perDayMin), in: 30...480, step: 15)
-                    Stepper("Sessions: \(Fmt.minutes(store.state.settings.sessionMin))", value: setting(\.sessionMin), in: 15...120, step: 5)
-                    Stepper("Finish \(store.state.settings.bufferDays) \(store.state.settings.bufferDays == 1 ? "day" : "days") early", value: setting(\.bufferDays), in: 0...3)
-                    Button("Replan everything") {
-                        let n = store.state.items.count
-                        store.change { $0.replanAll(today: store.today) }
-                        store.say(n == 0 ? "Nothing to plan" : "Replanned, A’s first")
-                    }
                 } header: {
                     Text("Study").onGround()
                 }
 
                 Section {
-                    clock("Day starts", \.dayStart)
-                    clock("Day ends", \.dayEnd)
                     clock("Plan tomorrow from", \.planTime)
                     Toggle("Remind me to plan", isOn: Binding(get: { store.state.settings.notify }, set: { on in store.change { $0.settings.notify = on } }))
                         .tint(.brand)

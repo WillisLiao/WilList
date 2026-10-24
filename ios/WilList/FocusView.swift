@@ -135,10 +135,10 @@ struct FocusView: View {
 
 extension Store {
     /// Starts a focus session on a row: the timer screen, a Live Activity, and a notice when the
-    /// minutes are up. The minutes chosen, or a study session's own length, or the usual task length.
+    /// minutes are up. The minutes chosen, or the usual task length.
     func startFocus(_ row: Row, minutes: Int? = nil) {
         begin(FocusSession(key: row.key, itemId: row.item.id, type: row.item.type, title: row.item.title,
-                           label: row.label, minutes: minutes ?? row.session?.minutes ?? state.settings.taskMin),
+                           label: row.label, minutes: minutes ?? state.settings.taskMin),
               course: row.item.course)
     }
 

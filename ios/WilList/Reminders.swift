@@ -109,7 +109,7 @@ enum Badge: String, CaseIterable, Identifiable {
         case .due:
             let todos = s.todos.filter { !$0.done && ($0.date.map { diffDays(today, $0) <= 0 } ?? false) }.count
             let items = s.items.filter { it in
-                !it.done && it.recur == nil && it.type != .event && (it.date.map { diffDays(today, $0) <= 0 } ?? false) && !isPast(it, today)
+                !it.done && it.recur == nil && it.type != .study && (it.date.map { diffDays(today, $0) <= 0 } ?? false) && !isPast(it, today)
             }.count
             return todos + items
         }

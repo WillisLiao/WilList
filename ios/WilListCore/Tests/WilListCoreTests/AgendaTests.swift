@@ -2,13 +2,13 @@ import Foundation
 import Testing
 @testable import WilListCore
 
-private func mk(_ title: String, _ type: ItemType, date: Day? = nil, effort: Int = 0, priority: Letter? = nil,
+private func mk(_ title: String, _ type: ItemType = .task, date: Day? = nil, priority: Letter? = nil,
                 recur: Recur? = nil, time: String? = nil, items: [Item] = []) -> Item {
-    makeItem(draft(title, type, date: date, effort: effort, priority: priority, recur: recur, time: time), testSettings, monday, items)
+    makeItem(draft(title, type, date: date, priority: priority, recur: recur, time: time), monday, items)
 }
 
 private func on(_ start: Day, _ recur: Recur, skips: [Day] = []) -> Item {
-    var it = draft("Thing", .event, date: start, recur: recur)
+    var it = draft("Thing", date: start, recur: recur)
     it.skips = skips
     return it
 }
@@ -36,58 +36,21 @@ private func state(_ items: Item...) -> AppState {
 }
 
 @Test func unletteredItemsWaitToBeSorted() {
-    let t = mk("Buy groceries", .task)
+    let t = mk("Buy groceries")
     #expect(dayRows([t], monday).isEmpty)
     #expect(unsorted([t], monday).count == 1)
 }
 
 @Test func listIsOrderedByLetterNotDueDate() {
-    let urgentC = mk("Return library book", .task, date: monday, priority: .C)
-    let importantA = mk("Essay", .task, date: "2026-10-28", priority: .A)
+    let urgentC = mk("Return library book", date: monday, priority: .C)
+    let importantA = mk("Essay", date: "2026-10-28", priority: .A)
     let rows = dayRows([urgentC, importantA], monday)
     #expect(rows.map(\.label) == ["A1", "C1"])
     #expect(rows[0].item.title == "Essay")
 }
 
-@Test func importantExamsSurfaceThroughTodaysSession() {
-    let exam = mk("Calc midterm", .exam, date: "2026-10-23", effort: 240, priority: .A)
-    let rows = dayRows([exam], monday)
-    #expect(!rows.isEmpty)
-    #expect(rows.allSatisfy { $0.session != nil })
-    #expect(importantNotUrgent([exam], monday).count == 1)
-}
-
-@Test func futureSessionsStayOffToday() {
-    let exam = mk("Final", .exam, date: "2026-12-10", effort: 150, priority: .A)
-    #expect(dayRows([exam], monday).isEmpty)
-    #expect(!dayRows([exam], exam.sessions[0].date).isEmpty)
-}
-
-@Test func anUndatedTestWithALetterIsOnTheDaysList() {
-    // "ML test" reads as an exam; with no day yet it once fell under Later, letter and all.
-    let exam = mk("ML test", .exam, priority: .A)
-    #expect(dayRows([exam], monday).map(\.item.title) == ["ML test"])
-    #expect(laterItems([exam], monday).isEmpty)
-}
-
-@Test func lastSessionOfADeadlineCompletesIt() {
-    let hw = mk("Problem set", .deadline, date: "2026-10-21", effort: 50, priority: .A)
-    var s = state(hw)
-    #expect(hw.sessions.count == 1)
-    let finished = s.complete(itemId: hw.id, sessionId: hw.sessions[0].id, today: hw.sessions[0].date)
-    #expect(finished)
-    #expect(s.items[0].done)
-}
-
-@Test func dueTodayDeadlineShowsOnce() {
-    let hw = mk("Lab report", .deadline, date: monday, effort: 100, priority: .A)
-    let rows = dayRows([hw], monday)
-    #expect(rows.count == 1)
-    #expect(rows[0].session == nil)
-}
-
 @Test func repeatingTasksCompletePerDay() {
-    var s = state(mk("Review flashcards", .task, date: monday, priority: .B, recur: Recur(.daily)))
+    var s = state(mk("Review flashcards", date: monday, priority: .B, recur: Recur(.daily)))
     let rows = dayRows(s.items, monday)
     #expect(rows.count == 1)
     s.complete(rows[0], today: monday)
@@ -96,7 +59,7 @@ private func state(_ items: Item...) -> AppState {
 }
 
 @Test func reRankingSwapsA1AndA2() {
-    var s = state(mk("First", .task, date: "2026-10-20", priority: .A), mk("Second", .task, date: "2026-10-22", priority: .A))
+    var s = state(mk("First", date: "2026-10-20", priority: .A), mk("Second", date: "2026-10-22", priority: .A))
     var rows = dayRows(s.items, monday)
     #expect(rows[0].item.title == "First")
     s.move(rows, key: rows[1].key, by: -1)
@@ -105,24 +68,21 @@ private func state(_ items: Item...) -> AppState {
     #expect(rows[0].label == "A1")
 }
 
-@Test func planKeepsWhatStartsLater() {
+@Test func laterHoldsWhatIsNotOnTheDaysList() {
     var s = AppState()
-    var reading = Item(id: "", title: "Medical ad reading", type: .reading)
-    reading.date = addDays(monday, 21)
-    reading.priority = .A
-    s.items.append(makeItem(reading, s.settings, monday, s.items))
-    s.items.append(mk("Essay", .task, date: monday, priority: .A))
-    s.items.append(mk("Chem final", .exam, date: addDays(monday, 30), priority: .A))
-    s.items.append(mk("Someday", .task))
-    // Their study starts later, so they aren't on the day's list, but the plan still holds them.
-    #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay"])
-    #expect(Set(laterItems(s.items, monday).map(\.title)) == ["Medical ad reading", "Chem final", "Someday"])
+    s.items.append(mk("Essay", date: monday, priority: .A))
+    // A lettered task is on the list from the day it's added, however far off its date.
+    s.items.append(mk("Chem final", date: addDays(monday, 30), priority: .A))
+    s.items.append(mk("Someday"))
+    s.items.append(mk("Gym", date: addDays(monday, 1), priority: .B, recur: Recur(.weekly, days: [2])))
+    #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay", "Chem final"])
+    #expect(laterItems(s.items, monday).map(\.title) == ["Gym", "Someday"])
 }
 
 @Test func tickingOffSomethingLater() {
     var s = AppState()
-    s.items.append(mk("Chem final", .exam, date: addDays(monday, 30), priority: .A))
-    s.items.append(mk("Call home", .task, date: monday, priority: .B, recur: Recur(.weekly, days: [0])))
+    s.items.append(mk("Chem final", date: addDays(monday, 30), priority: .A))
+    s.items.append(mk("Call home", date: monday, priority: .B, recur: Recur(.weekly, days: [0])))
     let final = s.items[0].id, call = s.items[1].id
     s.completeLater(final, today: monday)
     #expect(s.items[0].done)
@@ -131,108 +91,63 @@ private func state(_ items: Item...) -> AppState {
     #expect(!s.items[1].done && s.items[1].doneDates == [addDays(monday, 6)])
 }
 
-@Test func studyListsWorkWithoutADate() {
-    var s = AppState()
-    s.items.append(mk("Bio exam", .exam, priority: .A))
-    s.items.append(mk("Chem final", .exam, date: addDays(monday, 10), priority: .A))
-    // An exam added without its day yet still shows in Study, after the dated ones.
-    #expect(readiness(s.items, monday).map(\.item.title) == ["Chem final", "Bio exam"])
-}
-
 @Test func theLetterAddedLastComesLast() {
     var s = AppState()
     for (title, date) in [("Essay", nil), ("Lab", nil), ("Quiz prep", Optional(monday))] {
         var draft = Item(id: "", title: title, type: .task)
         draft.date = date
         draft.priority = .A
-        s.items.append(makeItem(draft, s.settings, monday, s.items))
+        s.items.append(makeItem(draft, monday, s.items))
     }
     #expect(dayRows(s.items, monday).map(\.label) == ["A1", "A2", "A3"])
     #expect(dayRows(s.items, monday).map(\.item.title) == ["Essay", "Lab", "Quiz prep"])
     var todo = Item(id: "", title: "Call the bank", type: .task)
-    todo = makeItem(todo, s.settings, monday, s.items)
+    todo = makeItem(todo, monday, s.items)
     s.items.append(todo)
     s.setLetter(todo.id, .A)
     #expect(dayRows(s.items, monday).last?.item.title == "Call the bank")
 }
 
 @Test func theSameLetterAgainKeepsItsPlace() {
-    var s = state(mk("Essay", .task), mk("Lab", .task))
+    var s = state(mk("Essay"), mk("Lab"))
     s.setLetter(s.items[0].id, .A)
     s.setLetter(s.items[1].id, .A)
-    s.makeA1(s.items[1].id, today: monday)
+    s.makeA1(s.items[1].id)
     s.setLetter(s.items[1].id, .A)
     #expect(dayRows(s.items, monday).map(\.item.title) == ["Lab", "Essay"])
 }
 
 @Test func settingALetterMovesItOutOfTheTray() {
-    var s = state(mk("Email professor", .task))
+    var s = state(mk("Email professor"))
     s.setLetter(s.items[0].id, .A)
     #expect(unsorted(s.items, monday).isEmpty)
     #expect(dayRows(s.items, monday)[0].label == "A1")
 }
 
-@Test func scheduleMergesByTime() {
-    let cls = mk("Lecture", .event, date: monday, recur: Recur(.weekly, days: [1]), time: "10:00")
-    let exam = mk("Quiz", .exam, date: monday, time: "09:00")
-    #expect(scheduleOn([cls, exam], monday).map(\.title) == ["Quiz", "Lecture"])
-    #expect(isPast(exam, "2026-10-20"))
-    #expect(!isPast(cls, "2026-10-20"))
-}
-
-@Test func radarFlagsOverloadAndStartDays() {
-    let a = mk("Exam A", .exam, date: "2026-10-21", effort: 240, priority: .A)
-    let b = mk("Exam B", .exam, date: "2026-10-21", effort: 240, priority: .A)
-    let days = radar([a, b], monday, days: 3, perDayMin: 120)
-    #expect(days.contains { $0.over })
-    #expect(!days[0].starts.isEmpty)
-}
-
-@Test func vitalFewReportsProgress() {
-    let exam = mk("Midterm", .exam, date: "2026-10-30", effort: 240, priority: .A)
-    var s = state(exam)
-    let v = vitalFew(s.items, monday)[0]
-    #expect(v.total == exam.sessions.count)
-    #expect(v.done == 0)
-    // Missing a session marks it behind; replanning fixes that.
-    let dayAfter: Day = "2026-10-29"
-    #expect(vitalFew(s.items, dayAfter)[0].status == (exam.sessions[0].date < dayAfter ? .behind : .onTrack))
-    s.replan(exam.id, today: dayAfter)
-    #expect(vitalFew(s.items, dayAfter)[0].status != .behind)
-}
-
-@Test func oneRowPerItemEvenWithSeveralSessionsDue() {
-    let exam = mk("Big final", .exam, date: "2026-10-21", effort: 400, priority: .A)
-    let rows = dayRows([exam], monday)
-    #expect(rows.count == 1)
-    #expect(rows[0].extra >= 1)
-}
-
 @Test func lookingAtTomorrowCarriesTodayOver() {
-    var hw = mk("Essay", .deadline, date: "2026-10-24", effort: 50, priority: .A)
-    hw.sessions[0].date = monday
+    let hw = mk("Essay", date: monday, priority: .A)
     #expect(dayRows([hw], "2026-10-20", realToday: monday)[0].overdue == false)
     #expect(dayRows([hw], "2026-10-20")[0].overdue == true)
 }
 
-@Test func balancingGivesAsFirstClaim() {
-    // The B was added first and took the free study time; the A arrived later and got pushed aside.
-    var s = state(mk("B reading", .reading, date: "2026-10-21", effort: 200, priority: .B))
-    s.items.append(mk("A exam", .exam, date: "2026-10-27", effort: 240, priority: .A, items: s.items))
-    let alone = buildPlan(draft("Thing", .exam, date: "2026-10-27", effort: 240), testSettings, monday).sessions.map(\.date)
-    #expect(s.items[1].sessions.map(\.date) != alone, "precondition: the B pushed the A off its best days")
-    s.replanAll(today: monday)
-    #expect(s.items[1].sessions.map(\.date) == alone)
-    #expect(s.items[1].shortfallMin == 0)
-}
-
-@Test func delegatedAndEliminatedGetNoSessions() {
-    var s = state(mk("Group poster", .deadline, date: "2026-10-28", effort: 180))
-    #expect(!s.items[0].sessions.isEmpty)
-    s.setLetter(s.items[0].id, .D, today: monday)
-    #expect(s.items[0].sessions.isEmpty)
-    s.setLetter(s.items[0].id, .A, today: monday)
-    #expect(!s.items[0].sessions.isEmpty)
+@Test func studyBlocksCountAsStudy() {
+    // As Plan's New study block adds it: the words give the time, the menu the kind.
+    let p = quickAdd("Organic chem every tue thu 7pm 2h", today: monday, minute: 9 * 60)
+    #expect(p.time == "19:00" && p.recur?.days == [2, 4])
+    var draft = Item(p)
+    draft.type = .study
+    let block = makeItem(draft, monday)
+    #expect(block.durationMin == 120)
+    let tuesday = addDays(monday, 1)
+    // Not a line of the day's list; Plan lists it under Later, where it can be changed any day.
+    #expect(dayRows([block], tuesday).isEmpty && laterItems([block], tuesday).map(\.id) == [block.id])
+    #expect(radar([block], monday, days: 3, perDayMin: 120).map(\.load) == [0, 120, 0])
+    #expect(radar([block], monday, days: 3, perDayMin: 90).map(\.over) == [false, true, false])
+    // Ticked off on Tuesday, it is done for that day only.
+    var s = AppState()
+    s.items = [block]
+    s.completeLater(block.id, today: tuesday)
+    #expect(s.items[0].doneDates == [tuesday] && !s.items[0].done)
 }
 
 @Test func oldSavesLoadAndJunkRowsAreDropped() throws {
@@ -247,12 +162,10 @@ private func state(_ items: Item...) -> AppState {
     """
     let s = try JSONDecoder().decode(AppState.self, from: Data(json.utf8))
     #expect(s.items.count == 1)
-    #expect(s.items[0].effortMin == 180)
-    #expect(s.items[0].sessions.count == 1)
+    #expect(s.items[0].type == .task && s.items[0].date == "2026-10-24")
     #expect(s.items[0].priority == .A)
     #expect(s.todos == [Todo(id: "t1", title: "Buy stamps")])
-    #expect(s.settings.perDayMin == 90 && s.settings.sessionMin == 50)
-    #expect(s.settings.calib["deadline"] == 1.5)
+    #expect(s.settings.perDayMin == 90)
     #expect(s.meta.firstDone["2026-10-19"] == "A")
     #expect(s.exercise["0"] == "Graduate")
     // What the app does not use itself comes back out unchanged.
@@ -298,18 +211,18 @@ private func state(_ items: Item...) -> AppState {
 @Test func theOneThatMattersMostBecomesTheA1() {
     var s = AppState()
     for (title, letter) in [("Essay", Letter.A), ("Lab", .A), ("Email", .B)] {
-        var it = makeItem(Item(id: "", title: title), s.settings, monday, s.items)
+        var it = makeItem(Item(id: "", title: title), monday, s.items)
         it.priority = letter
         s.items.append(it)
     }
     let email = s.items[2].id, lab = s.items[1].id
-    s.makeA1(email, today: monday)
+    s.makeA1(email)
     #expect(doRows(s.items, monday).map(\.item.title) == ["Email", "Essay", "Lab"])
     #expect(doRows(s.items, monday).first?.label == "A1")
-    s.makeA1(lab, today: monday)
+    s.makeA1(lab)
     #expect(doRows(s.items, monday).map(\.label) == ["A1", "A2", "A3"])
     #expect(doRows(s.items, monday).first?.item.title == "Lab")
-    s.makeA1("gone", today: monday)
+    s.makeA1("gone")
     #expect(doRows(s.items, monday).first?.item.title == "Lab")
 }
 
@@ -369,14 +282,3 @@ private func state(_ items: Item...) -> AppState {
     #expect(shiftReminder("2026-10-19T08:30", by: 7) == "2026-10-26T08:30")
 }
 
-@Test func studyTodayAndReadiness() {
-    let exam = mk("Calc midterm", .exam, date: "2026-10-21", effort: 200)
-    let dropped = mk("Old reading", .reading, date: "2026-10-22", effort: 60, priority: .E)
-    let essay = mk("Essay", .deadline, date: "2026-12-10", effort: 120, priority: .A)
-    let rows = studyRows([essay, exam, dropped], monday)
-    #expect(rows.map(\.item.title) == ["Calc midterm"], "unlettered work counts; dropped and future work does not")
-    #expect(rows[0].extra >= 1)
-    #expect(readiness([essay, exam, dropped], monday).map(\.item.title) == ["Calc midterm"], "45-day horizon, nothing dropped")
-    #expect(readiness([essay, exam], monday, horizon: 60).map(\.item.title) == ["Calc midterm", "Essay"])
-    #expect(vitalFew([essay, exam], monday, horizon: 60).map(\.item.title) == ["Essay"])
-}

@@ -121,9 +121,9 @@ private func call(_ id: String, _ name: String, _ input: JSONValue) -> JSONValue
     ["type": "tool_use", "id": .string(id), "name": .string(name), "input": input]
 }
 
-private func found(_ title: String, _ type: String = "exam", date: String = "2026-11-13", time: String = "", repeatDays: [Int] = [], durationMin: Int = 0) -> JSONValue {
-    ["title": .string(title), "type": .string(type), "date": .string(date), "time": .string(time), "course": "HIST150",
-     "weightPct": 25, "effortHours": 8, "repeatDays": .array(repeatDays.map { .number(Double($0)) }), "durationMin": .number(Double(durationMin))]
+private func found(_ title: String, date: String = "2026-11-13", time: String = "", repeatDays: [Int] = []) -> JSONValue {
+    ["title": .string(title), "date": .string(date), "time": .string(time), "course": "HIST150",
+     "repeatDays": .array(repeatDays.map { .number(Double($0)) })]
 }
 
 /// Replies the fake service gives in order, and the requests it saw.
@@ -139,14 +139,14 @@ private final class Fake: @unchecked Sendable {
 
 @Test func aTurnReadsThePlanProposesAndStops() async throws {
     var state = AppState()
-    state.items = [Item(id: "a", title: "Essay", type: .deadline)]
+    state.items = [Item(id: "a", title: "Essay")]
     state.items[0].date = "2026-10-30"
     state.items[0].priority = .A
     state.items[0].notes = "private"
     let fake = Fake([
         reply([["type": "thinking", "thinking": "", "signature": "s1"], call("t1", "read_plan", [:])], stop: "tool_use"),
-        reply([call("t2", "propose_items", ["items": [found("Midterm"), found("Lecture", "event", date: "2026-10-21", time: "10:00", repeatDays: [3, 1, 1, 9], durationMin: 50),
-                                                     found("Undated reading", "reading", date: ""), found("Buy a lab coat", "task", date: "", time: "25:00")]]),
+        reply([call("t2", "propose_items", ["items": [found("Midterm"), found("Lecture", date: "2026-10-21", time: "10:00", repeatDays: [3, 1, 1, 9]),
+                                                     found("Buy a lab coat", date: "", time: "25:00"), found("  ")]]),
                call("t3", "follow_calendar", ["url": "https://evil.test/feed.ics", "name": "Evil"])], stop: "tool_use"),
         reply([["type": "text", "text": "Found 3 things."]]),
     ])
@@ -154,9 +154,10 @@ private final class Fake: @unchecked Sendable {
     let turn = try await Agent.run(start, state: state, today: "2026-10-20", typed: "Here's my syllabus", route: .direct(key: "k"), send: fake.send)
     guard turn.shown.count == 2, case .proposal(.items(let items)) = turn.shown[0] else { Issue.record(); return }
     #expect(turn.shown[1] == .text("Found 3 things."))
+    // Every one a plain task: nothing is told apart by kind.
     #expect(items.map(\.title) == ["Midterm", "Lecture", "Buy a lab coat"])
-    #expect(items[0].effortMin == 480 && items[0].weightPct == 25 && items[0].course == "HIST150")
-    #expect(items[1].recur == Recur(.weekly, days: [1, 3]) && items[1].durationMin == 50)
+    #expect(items.allSatisfy { $0.type == .task } && items[0].course == "HIST150" && items[0].date == "2026-11-13")
+    #expect(items[1].recur == Recur(.weekly, days: [1, 3]) && items[1].time == "10:00")
     #expect(items[2].date == nil && items[2].time == nil)
     // The assistant's turns go back unchanged, thinking and all; all results go in one message.
     #expect(turn.messages.count == 6 && fake.seen.count == 3)
@@ -166,7 +167,7 @@ private final class Fake: @unchecked Sendable {
     #expect(plan?["content"]?.string?.contains(#""letter":"A""#) == true && plan?["content"]?.string?.contains("private") == false)
     let results = turn.messages[4]["content"]?.array ?? []
     #expect(results.map { $0["tool_use_id"]?.string } == ["t2", "t3"])
-    #expect(results[0]["is_error"] == nil && results[0]["content"]?.string?.contains("1 without a valid date") == true)
+    #expect(results[0]["is_error"] == nil && results[0]["content"]?.string?.contains("1 without a title") == true)
     // A link the student didn't type, such as one planted in a file, is never offered.
     #expect(results[1]["is_error"] == true)
 }

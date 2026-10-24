@@ -4,13 +4,23 @@ Every request the owner (Willis) has made, newest direction first, with where it
 The owner's later words always win over earlier ones and over `handoffs/GOAL.md`.
 Read this with `HANDOFF.md` before starting; add to it whenever the owner asks for something.
 
+## After trying `5e7b89f` (2026-10-25)
+
+| Request (the owner's words, lightly trimmed) | Status |
+|---|---|
+| "no need for plan for tomorrow in today tab" | Done on the branch (`726c551`): Today no longer offers it; the optional evening notification still opens Plan tomorrow. |
+| "main goal block placeholde shouldn't have the text what one goal would change the most" | Done on the branch: an empty main goal reads "Main goal" with a plus. |
+| "today tab plus icon doesnt work, only the done button in keyboard works" | Fixed on the branch: the + adds a written line, and on a blank one puts the cursor in the field. |
+| "the add task of today tab doesnt let you choose letter, notify time, and deadline"; asked where, "controls under the line" | Done on the branch: under the line while typing, the letters and Reminder, Date and Repeat menus. A lettered line goes to Plan on Today's list. The tab bar now hides while the keyboard is up, as it covered them. |
+| "we dont need to distinguish exam, deadline, presentation, reading, class or task as a whole ... listing them is enough, organizing them based on those kinds are useless" | Done on the branch: every item is a task (study blocks the student adds stay), from the Agent and calendar links too. The study sessions, Progress's exams and deadlines, grade weights, effort and the suggested letter are gone; older saves still load, their kinds read as tasks. |
+
 ## After trying the build (2026-10-24)
 
 | Request (the owner's words, lightly trimmed) | Status |
 |---|---|
 | "when entering task in plan tab, I can only enter letter, not notify date or deadline date, or repeat, i can only do those after i click add and it's a row, fix it" | Done on the branch: New task has Remind me, the date (and time) and Repeat under the letters, set before Add. |
 | "after Ive added 8 tasks, the 9th is now moved to the later section, which shouldn't be the case" | Fixed on the branch. The ninth was "ML test" (the owner's answer): "test" made it an exam with no day, A came pre-picked so tapping A took it off, and an undated exam never made the day's list. Not the count: nine plain tasks all stayed. |
-| "Our study tab has already been dropped so all those academic detection shouldnt remain" | Done on the branch for everything typed: no exams, deadlines, readings, talks, classes or study blocks from the words, no letter picked for you, no study plan or grade share. The Agent and calendar links still set kinds (and so feed Progress's exams and deadlines); whether those go too is the owner's call. |
+| "Our study tab has already been dropped so all those academic detection shouldnt remain" | Done on the branch for everything typed: no exams, deadlines, readings, talks, classes or study blocks from the words, no letter picked for you, no study plan or grade share. The Agent and calendar links went the same way on 2026-10-25. |
 
 ## Night of 2026-10-24: Today in time order, Play, study blocks, Goals
 

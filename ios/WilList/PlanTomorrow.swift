@@ -135,13 +135,13 @@ struct PlanTomorrow: View {
         store.change { s in
             var added: [String] = []
             for line in lines {
-                let it = makeItem(Item(quickAdd(line, today: today, minute: nowMinutes(), dateOrder: order)), s.settings, today, s.items)
+                let it = makeItem(Item(quickAdd(line, today: today, minute: nowMinutes(), dateOrder: order)), today, s.items)
                 s.items.append(it)
                 added.append(it.id)
             }
             switch pick {
-            case .item(let id): s.makeA1(id, today: today)
-            case .line(let i) where added.indices.contains(i): s.makeA1(added[i], today: today)
+            case .item(let id): s.makeA1(id)
+            case .line(let i) where added.indices.contains(i): s.makeA1(added[i])
             default: break
             }
         }

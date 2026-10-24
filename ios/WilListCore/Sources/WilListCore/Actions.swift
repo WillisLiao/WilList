@@ -3,16 +3,7 @@ import Foundation
 // What you can do to the planner. Each change is a plain function of the state, so the app
 // can save, undo and test them the same way.
 
-/// The suggested letter when sorting. A share of the grade is the clearest consequence a
-/// student has; without one, fall back on what kind of thing it is.
-public func suggestedLetter(_ type: ItemType, weightPct: Double? = nil) -> Letter? {
-    if let w = weightPct, w > 0 { return w >= 10 ? .A : w >= 3 ? .B : .C }
-    switch type {
-    case .exam, .presentation, .deadline: return .A
-    case .reading: return .B
-    default: return nil
-    }
-}
+public func newID() -> String { UUID().uuidString.lowercased() }
 
 /// A new letter lands after every item that already has it: the A added last is the last A,
 /// and dragging it up ranks it higher.
@@ -20,15 +11,10 @@ func defaultOrder(_ it: Item, after items: [Item]) -> Double {
     (items.filter { $0.priority == it.priority && $0.id != it.id }.map(\.order).max() ?? 0) + 1
 }
 
-private func calibrated(_ type: ItemType, _ title: String, _ settings: Settings) -> Int {
-    let ratio = settings.calib[type.rawValue].flatMap { $0 > 0 ? $0 : nil } ?? 1
-    return Int((Double(suggestEffort(type, title)) * ratio / 5).rounded()) * 5
-}
-
 extension Item {
     /// A draft from typed text, ready for makeItem.
     public init(_ p: Parsed) {
-        self.init(id: "", title: p.title, type: .task)
+        self.init(id: "", title: p.title)
         course = p.course
         date = p.date
         time = p.time
@@ -38,42 +24,18 @@ extension Item {
     }
 }
 
-/// A new item from a draft: effort estimated, ranked in due-date order and planned around
-/// everything else already booked.
-public func makeItem(_ draft: Item, _ settings: Settings, _ today: Day, _ items: [Item] = []) -> Item {
+/// A new item from a draft, ranked after the others with its letter.
+public func makeItem(_ draft: Item, _ today: Day, _ items: [Item] = []) -> Item {
     var it = draft
     it.id = newID()
     if it.title.isEmpty { it.title = "Untitled" }
-    it.durationMin = it.type.isBlock ? (draft.durationMin ?? 60) : nil
-    // For planned work a typed duration ("essay due fri 4h") means effort.
-    it.effortMin = plannedTypes.contains(it.type)
-        ? [draft.effortMin, draft.durationMin ?? 0].first { $0 > 0 } ?? calibrated(it.type, it.title, settings)
-        : 0
-    it.sessions = []
-    it.startBy = nil
-    it.shortfallMin = 0
+    it.durationMin = it.type == .study ? (draft.durationMin ?? 60) : nil
     it.done = false
     it.doneAt = nil
     it.doneDates = []
     it.createdAt = today
     it.order = defaultOrder(it, after: items)
-    applyPlan(&it, settings, today, items)
     return it
-}
-
-/// Plans the work that is left around everything else already booked. Repeating, delegated
-/// and eliminated items get no study time of their own.
-public func applyPlan(_ it: inout Item, _ settings: Settings, _ today: Day, _ items: [Item] = []) {
-    if !plannedTypes.contains(it.type) || it.recur != nil || it.priority == .D || it.priority == .E {
-        it.sessions = plannedTypes.contains(it.type) ? it.sessions.filter(\.done) : []
-        it.startBy = it.date
-        it.shortfallMin = 0
-        return
-    }
-    let r = buildPlan(it, settings, today, load: studyLoad(items, excluding: it.id))
-    it.sessions = r.sessions
-    it.startBy = r.startBy
-    it.shortfallMin = r.shortfallMin
 }
 
 extension AppState {
@@ -103,58 +65,37 @@ extension AppState {
 
     public func index(of id: String) -> Int? { items.firstIndex { $0.id == id } }
 
-    public mutating func setLetter(_ id: String, _ letter: Letter?, today: Day? = nil) {
+    public mutating func setLetter(_ id: String, _ letter: Letter?) {
         // The same letter again keeps its place: A2 stays A2 rather than being shuffled by date.
         guard let i = index(of: id), items[i].priority != letter else { return }
-        let wasIdle = items[i].priority == .D || items[i].priority == .E
         items[i].priority = letter
         items[i].order = defaultOrder(items[i], after: items)
-        if let today, letter == .D || letter == .E || wasIdle { replan(id, today: today) }
     }
 
     /// Makes an item the A1: an A, ranked ahead of every other A.
-    public mutating func makeA1(_ id: String, today: Day) {
+    public mutating func makeA1(_ id: String) {
         guard let i = index(of: id) else { return }
-        if items[i].priority != .A { setLetter(id, .A, today: today) }
+        if items[i].priority != .A { setLetter(id, .A) }
         if let first = items.filter({ $0.priority == .A && $0.id != id }).map(\.order).min(), items[i].order >= first {
             items[i].order = first - 1
         }
     }
 
-    /// Ticks off a row. True when that finished the whole item.
-    @discardableResult
-    public mutating func complete(_ row: Row, today: Day) -> Bool {
-        complete(itemId: row.item.id, sessionId: row.session?.id, recurring: row.recurring, today: today)
+    /// Ticks off a row: the item, or today's time of a repeating one.
+    public mutating func complete(_ row: Row, today: Day) {
+        complete(itemId: row.item.id, recurring: row.recurring, today: today)
     }
 
-    @discardableResult
-    public mutating func complete(itemId: String, sessionId: String? = nil, recurring: Bool = false, today: Day) -> Bool {
-        guard let i = index(of: itemId) else { return false }
+    public mutating func complete(itemId: String, recurring: Bool = false, today: Day) {
+        guard let i = index(of: itemId) else { return }
         meta.doneCount += 1
         noteFirstDone(today, items[i].priority)
         if recurring {
             if !items[i].doneDates.contains(today) { items[i].doneDates.append(today) }
-            return false
-        }
-        if let sessionId {
-            if let k = items[i].sessions.firstIndex(where: { $0.id == sessionId }) {
-                items[i].sessions[k].done = true
-                items[i].sessions[k].doneAt = today
-            }
-            let finished = !items[i].sessions.contains { !$0.done } && (items[i].type == .deadline || items[i].type == .reading)
-            if finished {
-                items[i].done = true
-                items[i].doneAt = today
-            }
-            return finished
+            return
         }
         items[i].done = true
         items[i].doneAt = today
-        for k in items[i].sessions.indices where !items[i].sessions[k].done {
-            items[i].sessions[k].done = true
-            items[i].sessions[k].doneAt = today
-        }
-        return true
     }
 
     /// Ticks off an item that isn't on the day's list: the whole item, or a repeat's next time.
@@ -177,34 +118,6 @@ extension AppState {
               let a = index(of: me.item.id), let b = index(of: rows[j].item.id) else { return }
         if items[a].order == items[b].order { items[b].order += Double(dir) }
         (items[a].order, items[b].order) = (items[b].order, items[a].order)
-    }
-
-    /// Keeps finished sessions; everything left, missed or not, is spread again from today.
-    public mutating func replan(_ id: String, today: Day) {
-        guard let i = index(of: id) else { return }
-        items[i].sessions = items[i].sessions.filter(\.done)
-        var it = items[i]
-        applyPlan(&it, settings, today, items)
-        items[i] = it
-    }
-
-    /// Spreads all upcoming work again. A's get first claim on each day's study time, then
-    /// B's, then the rest; within a letter, the earliest deadline goes first.
-    @discardableResult
-    public mutating func replanAll(today: Day) -> Int {
-        let open = items.indices.filter { i in
-            let it = items[i]
-            guard !it.done, plannedTypes.contains(it.type), it.recur == nil, let d = it.date else { return false }
-            return diffDays(today, d) >= 0
-        }
-        for i in open { items[i].sessions = items[i].sessions.filter(\.done) }
-        func claim(_ p: Letter?) -> Int { p.map { min($0.rank, 3) } ?? 3 }
-        for i in open.sorted(by: { (claim(items[$0].priority), items[$0].date!) < (claim(items[$1].priority), items[$1].date!) }) {
-            var it = items[i]
-            applyPlan(&it, settings, today, items)
-            items[i] = it
-        }
-        return open.count
     }
 
     // Plain to-dos on Today.
@@ -272,7 +185,7 @@ extension AppState {
         draft.remindAt = t.remindAt
         draft.steps = t.steps
         draft.myDay = today
-        let it = makeItem(draft, settings, today, items)
+        let it = makeItem(draft, today, items)
         items.append(it)
         removeTodo(id)
         return it

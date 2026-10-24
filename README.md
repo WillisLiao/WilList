@@ -4,7 +4,7 @@
 
 1. **Write it down.** Type it the way you'd say it ("Chem quiz thu 2pm"), or hand the Agent a syllabus or a photo of a timetable.
 2. **Give the things that matter a letter.** A means serious if skipped, B mild, C nothing happens, D someone else can, E it doesn't matter.
-3. **Do the A1 first.** WilList plans study sessions back from every exam and deadline, and Today leads with the one thing to do first.
+3. **Do the A1 first.** Today leads with the one thing to do first.
 
 Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.md](docs/PRINCIPLES.md).
 
@@ -12,9 +12,9 @@ Every feature maps to an idea from Tracy's *Phoenix Seminar*: [docs/PRINCIPLES.m
 
 | | |
 |---|---|
-| **Today** | Today's date, the A1 first with a play button for a focus session, what you added to Today from Plan, then a quick checklist. Type a line and press return; "Call mum tomorrow 6pm" is due tomorrow at 6. In the evening it offers Plan tomorrow. |
+| **Today** | Today's date, the A1 first with a play button for a focus session, what you added to Today from Plan, then a quick checklist. Type a line and press return; "Call mum tomorrow 6pm" is due tomorrow at 6. Under the line, a letter, a reminder, a date and a repeat. |
 | **Plan** | Today in ABCDE order (drag to re-rank), everything later by date, and a month calendar showing what's due each day. |
-| **Progress** | The last 7 days in numbers and a chart by letter, suggestions with one action each, the next 7 days' study load, and whether each exam and deadline is on track. |
+| **Progress** | The last 7 days in numbers and a chart by letter, suggestions with one action each, and the next 7 days' study blocks. |
 | **Agent** | A chat that reads files, photos and words and proposes what to add, on a card you tick; nothing goes in until you tap Add. It answers questions about your plan too. A subscription. |
 
 The profile picture at the top left of every tab opens Settings: your main goal and goals, to-do and study settings, the day's clocks and backups.

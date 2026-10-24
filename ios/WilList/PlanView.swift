@@ -24,7 +24,7 @@ struct PlanList: View {
     private var later: [Item] { laterItems(store.state.items, today) }
     /// What's planned on each day: the open items due or set for it, by letter.
     private var byDay: [Day: [Item]] {
-        Dictionary(grouping: store.state.items.filter { $0.type != .event && $0.recur == nil && $0.date != nil && isOpen($0, today) }) { $0.date! }
+        Dictionary(grouping: store.state.items.filter { $0.recur == nil && $0.date != nil && isOpen($0, today) }) { $0.date! }
             .mapValues { $0.sorted { letterKey($0) < letterKey($1) } }
     }
 
@@ -126,7 +126,7 @@ struct PlanList: View {
             }
             .rowWords { editing = row.item }
             RowEnd {
-                if row.priority != .E { PlayButton(planned: row.session?.minutes) { store.startFocus(row, minutes: $0) } }
+                if row.priority != .E { PlayButton { store.startFocus(row, minutes: $0) } }
                 letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
             }
         }
@@ -164,7 +164,7 @@ struct PlanList: View {
             .rowWords { editing = item }
             RowEnd {
                 if item.priority != .E {
-                    PlayButton(planned: item.sessions.first { !$0.done }?.minutes ?? (item.type == .study ? item.durationMin : nil)) {
+                    PlayButton(planned: item.type == .study ? item.durationMin : nil) {
                         store.startFocus(item, minutes: $0)
                     }
                 }
@@ -181,8 +181,8 @@ struct PlanList: View {
     /// Tapping a letter lists the five with what each one means, and None.
     private func letterMenu(_ item: Item, @ViewBuilder label: () -> some View) -> some View {
         Menu {
-            LetterChoices(suggested: nil, allowNone: true) { l in
-                withAnimation(.snappy) { store.change { $0.setLetter(item.id, l, today: today) } }
+            LetterChoices(allowNone: true) { l in
+                withAnimation(.snappy) { store.change { $0.setLetter(item.id, l) } }
             }
         } label: {
             label().frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())

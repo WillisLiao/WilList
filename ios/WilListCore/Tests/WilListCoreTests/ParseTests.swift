@@ -120,18 +120,6 @@ private func p(_ s: String, dateOrder: String = "mdy") -> Parsed {
     #expect(p("Problem set 5").hints.isEmpty)
 }
 
-@Test func typeDetection() {
-    #expect(detectType("Final project report") == .deadline)
-    #expect(detectType("Final exam") == .exam)
-    #expect(detectType("Group presentation slides") == .presentation)
-    #expect(detectType("Office hours") == .event)
-    #expect(detectType("Lab report") == .deadline)
-    #expect(detectType("Buy groceries") == .task)
-    #expect(detectType("Review chapter 5") == .reading)
-    // Words run into other scripts still count, as they do on the web.
-    #expect(detectType("期中exam") == .exam)
-}
-
 @Test func typedWordsAreAlwaysATask() {
     // No exams, deadlines, readings, talks, classes or study blocks read from the words, and no
     // share of the grade: "ML test" once became an undated exam that Plan put under Later.

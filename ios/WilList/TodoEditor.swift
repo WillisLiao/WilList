@@ -59,7 +59,7 @@ struct TodoEditor: View {
             if !todo.done {
                 Section {
                     Menu {
-                        LetterChoices(suggested: nil) { letter in letter.map { give(todo, $0) } }
+                        LetterChoices { letter in letter.map { give(todo, $0) } }
                     } label: {
                         Label("Give it a letter", systemImage: "list.number").fillsRow()
                     }

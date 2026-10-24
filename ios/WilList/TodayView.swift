@@ -361,7 +361,7 @@ ForEach(list) { todo in
                 // A focus session on it, with the timer on the Lock Screen too; nothing to focus on
                 // in something dropped.
                 if item.priority != .E {
-                    PlayButton(planned: row?.session?.minutes) { m in
+                    PlayButton { m in
                         if let row { store.startFocus(row, minutes: m) } else { store.startFocus(item, minutes: m) }
                     }
                 }

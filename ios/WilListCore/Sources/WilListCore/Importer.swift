@@ -66,13 +66,6 @@ public func icsDateTime(_ prop: ICSProp?, calendar: Calendar = .current) -> (dat
     return ("\(c.year!)-\(pad(c.month!))-\(pad(c.day!))", "\(pad(c.hour!)):\(pad(c.minute!))")
 }
 
-private func durationProp(_ v: String?) -> Int? {
-    guard let v, let m = match(v, #"^P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?"#) else { return nil }
-    let part = { (i: Int) -> Int in Int(m[i] ?? "0") ?? 0 }
-    let n: Int = part(1) * 1440 + part(2) * 60 + part(3)
-    return n > 0 ? n : nil
-}
-
 private let byDay = ["SU": 0, "MO": 1, "TU": 2, "WE": 3, "TH": 4, "FR": 5, "SA": 6]
 
 /// An RRULE as a WilList repeat, or nil for rules WilList can't show (yearly, every third week…).
@@ -147,11 +140,6 @@ public func icsEntry(_ comp: ICSComponent, today: Day, calendar: Calendar = .cur
     }
 
     guard let start = icsDateTime(comp.first("DUE"), calendar: calendar) ?? icsDateTime(comp.first("DTSTART"), calendar: calendar) else { return skip(.noDate) }
-    let end = icsDateTime(comp.first("DTEND"), calendar: calendar)
-    var durationMin = durationProp(comp.first("DURATION")?.value)
-    if durationMin == nil, let s = timeToMin(start.time), let e = timeToMin(end?.time) {
-        durationMin = diffDays(start.date, end!.date) * 1440 + e - s
-    }
     let recur = comp.first("RRULE").flatMap { mapRRule($0.value, start: start.date, calendar: calendar) }
     let skips = (comp.props["EXDATE"] ?? []).flatMap { x in
         x.value.split(separator: ",").compactMap { icsDateTime(ICSProp(params: x.params, value: String($0)), calendar: calendar)?.date }
@@ -160,22 +148,15 @@ public func icsEntry(_ comp: ICSComponent, today: Day, calendar: Calendar = .cur
     if recur == nil && diffDays(today, start.date) < 0 { return skip(.past) }
     if comp.kind == "VTODO" && matches(comp.first("STATUS")?.value ?? "", "COMPLETED", ignoreCase: true) { return skip(.done) }
 
-    var type = detectType(title)
+    // Every entry is a task: nothing is told apart by kind.
     let uid = comp.first("UID")?.value ?? ""
-    let assignment = comp.kind == "VTODO" || matches(uid, "assignment|submission", ignoreCase: true)
-    if assignment && (type == .task || type == .event) { type = .deadline }
-    if type == .task {
-        if recur != nil || (durationMin ?? 0) >= 15 { type = .event }
-        else if start.time != nil { type = .deadline }
-    }
     let desc = stripHtml(unescapeText(comp.first("DESCRIPTION")?.value ?? ""))
-    var it = Item(id: "", title: title.isEmpty ? summary : title, type: type)
+    var it = Item(id: "", title: title.isEmpty ? summary : title)
     it.externalId = uid.isEmpty ? nil : "ics:\(uid)"
     it.course = course
     it.date = start.date
     it.time = start.time
-    it.durationMin = type == .event ? ((durationMin ?? 0) > 0 ? durationMin : 60) : nil
-    it.recur = type == .event || type == .task ? recur : nil
+    it.recur = recur
     it.skips = skips
     it.notes = desc.count > 400 ? desc.prefix(400) + "…" : desc
     return .item(it)
@@ -256,9 +237,8 @@ extension AppState {
                 case .recur: items[i].recur = u.incoming.recur
                 }
             }
-            if u.fields.contains(.date) && !items[i].done { replan(u.id, today: today) }
         }
-        for f in plan.adds { items.append(makeItem(f, settings, today, items)) }
+        for f in plan.adds { items.append(makeItem(f, today, items)) }
         return plan.adds.count + plan.updates.count
     }
 }

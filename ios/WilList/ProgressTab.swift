@@ -1,16 +1,13 @@
 import SwiftUI
 import WilListCore
 
-/// Progress: what got done lately, how the next week looks, whether each exam and deadline is on
-/// track, and what to do about anything that isn't.
+/// Progress: what got done lately, how much study the next week holds, and what to do about
+/// anything that needs it.
 struct ProgressTab: View {
     @Environment(Store.self) private var store
-    @Environment(\.dynamicTypeSize) private var typeSize
-    @State private var editing: Item?
     @State private var sorting: LetterSorter.Batch?
 
     private var today: Day { store.today }
-    private var ahead: [Vital] { readiness(store.state.items, today) }
     private var week: [Ahead] { radar(store.state.items, today, days: 7, perDayMin: store.state.settings.perDayMin) }
 
     var body: some View {
@@ -53,28 +50,18 @@ struct ProgressTab: View {
                     Text("Next 7 days").onGround()
                 }
                 .id("next")
-
-                if !ahead.isEmpty {
-                    Section {
-                        ForEach(ahead, id: \.item.id) { readinessRow($0) }
-                    } header: {
-                        Text("Coming up").onGround()
-                    }
-                    .id("coming")
-                }
             }
             .listStyle(.insetGrouped)
             .listSectionSpacing(.compact)
             .ground()
             .readableColumn()
             #if DEBUG
-            // `-scroll next|coming` on launch, for screenshots.
+            // `-scroll next` on launch, for screenshots.
             .onAppear { UserDefaults.standard.string(forKey: "scroll").map { proxy.scrollTo($0, anchor: .top) } }
             #endif
             }
             .navigationTitle("Progress")
             .profileButton()
-            .sheet(item: $editing) { ItemEditor(item: $0) }
             .sheet(item: $sorting) { LetterSorter(ids: $0.ids) }
             .toastHost()
         }
@@ -136,56 +123,41 @@ struct ProgressTab: View {
 
     private func symbol(_ tip: Suggestion) -> String {
         switch tip {
-        case .replan: "arrow.triangle.2.circlepath"
         case .overloaded: "exclamationmark.triangle"
         case .startEarly: "flag"
         case .review: "tray.full"
-        case .calibrate: "timer"
         }
     }
 
-    /// Red only for a problem: missed work and a day past its time.
+    /// Red only for a problem: a day past its time.
     private func tint(_ tip: Suggestion) -> Color {
         switch tip {
-        case .replan, .overloaded: .red
+        case .overloaded: .red
         default: .brand
         }
     }
 
     private func words(_ tip: Suggestion) -> (title: String, detail: String?) {
         switch tip {
-        case .replan(let n): ("\(n) missed \(n == 1 ? "session" : "sessions")", "Spread them over the days left")
         case .overloaded(let day, let minutes, let budget):
             ("\(Fmt.day(day, today)): \(Fmt.minutes(minutes)) of study", "Over your \(Fmt.minutes(budget)) a day")
         case .startEarly(let it): ("Start \u{201C}\(it.title)\u{201D}", it.date.map { "Due \(Fmt.day($0, today, inSentence: true))" })
         case .review(let ids): ("\(ids.count) old C to E \(ids.count == 1 ? "item" : "items")", "Still worth it?")
-        case .calibrate(let c): ("\(c.label) takes you \(c.ratio.formatted())× as long", "From \(c.n) focus sessions")
         }
     }
 
     private func action(_ tip: Suggestion) -> (String, () -> Void)? {
         switch tip {
-        case .replan:
-            ("Replan", { withAnimation { store.change(undo: "Replanned") { _ = $0.replanAll(today: today) } } })
         case .overloaded:
             nil
         case .startEarly(let it):
             ("Add to Today", { withAnimation { store.change(undo: "Added to Today") { s in if let i = s.index(of: it.id) { s.items[i].myDay = today } } } })
         case .review(let ids):
             ("Review", { sorting = LetterSorter.Batch(ids: ids) })
-        case .calibrate(let c):
-            ("Adjust", {
-                withAnimation {
-                    store.change(undo: "Adjusted") { s in
-                        s.settings.calib[c.type.rawValue] = c.ratio
-                        _ = s.replanAll(today: today)
-                    }
-                }
-            })
         }
     }
 
-    // MARK: next 7 days and coming up
+    // MARK: next 7 days
 
     /// The courses in the week's bars, each by its colour; none when no study has a course.
     private var courseKey: Text? {
@@ -200,44 +172,6 @@ struct ProgressTab: View {
             Text("\(Text(Image(systemName: "circle.fill")).font(.system(size: 9)).baselineOffset(1).foregroundStyle(CourseColor.of(color)))\u{00A0}\(name.replacingOccurrences(of: " ", with: "\u{00A0}"))")
         }
         .reduce(nil) { line, part in line.map { Text("\($0)   \(part)") } ?? part }
-    }
-
-    private func readinessRow(_ v: Vital) -> some View {
-        Button { editing = v.item } label: {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(v.item.title).foregroundStyle(.primary)
-                    Fmt.subline(v.item, today, in: store.state)?.font(.subheadline).foregroundStyle(.secondary)
-                    if let status = status(v) {
-                        Text(status).font(.subheadline).foregroundStyle(v.status == .short || v.status == .behind ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
-                    }
-                    if v.total > 0 && typeSize.isAccessibilitySize {
-                        Text("\(v.done) of \(v.total) sessions").font(.subheadline).monospacedDigit().foregroundStyle(.secondary)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                if v.total > 0 && !typeSize.isAccessibilitySize {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(v.done) of \(v.total)").monospacedDigit().foregroundStyle(.primary)
-                        Text("sessions").font(.footnote).foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .tint(.primary)
-    }
-
-    /// Only what needs attention; on track says nothing.
-    private func status(_ v: Vital) -> String? {
-        let missed = v.item.sessions.filter { !$0.done && diffDays(today, $0.date) < 0 }.count
-        if v.item.date == nil { return "No date" }
-        return switch v.status {
-        case .short: "\(Fmt.minutes(v.item.shortfallMin)) short"
-        case .behind: "\(missed) \(missed == 1 ? "session" : "sessions") behind"
-        case .notStarted: "Starts \(v.startBy.map { Fmt.day($0, today, inSentence: true) } ?? "soon")"
-        case .noPlan: "No study planned"
-        case .onTrack: nil
-        }
     }
 }
 

@@ -270,13 +270,7 @@ struct DueRow: View {
 
 extension ItemType {
     /// What an item's date means, as the date row names it.
-    var dueWord: String {
-        switch self {
-        case .deadline, .reading: "Due"
-        case .exam, .presentation, .event, .study: "On"
-        case .task: "Date"
-        }
-    }
+    var dueWord: String { self == .study ? "On" : "Date" }
 }
 
 /// A day as a chip, "Oct 26" (the year only when it isn't this year), that opens the calendar like
@@ -537,7 +531,7 @@ struct StarButton: View {
 /// Play beside a task: choose how long, and a focus session on it starts. The planned length, when
 /// there is one, comes with the usual ones.
 struct PlayButton: View {
-    /// A study session's or a block's own length.
+    /// A study block's own length.
     var planned: Int?
     let start: (Int) -> Void
 

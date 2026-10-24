@@ -80,8 +80,8 @@ public enum Agent {
     How to work:
     - Each of the student's messages starts with today's date. Resolve relative and partial dates against it and leave out anything already in the past.
     - Call read_plan before proposing items, so you don't propose what is already there, and before answering questions about the plan.
-    - One item per exam or test, deadline or deliverable, presentation, reading, recurring class, meeting or shift, appointment, or concrete to-do. Recurring classes, meetings and shifts are type "event" with repeatDays, a time and durationMin. Leave out topics, holidays and "no class" days unless something is due.
-    - Never invent items, dates or grade weights the source does not support. If a date is unclear, say so instead of guessing.
+    - One item per thing to do or be at: each exam or test, deadline, presentation, reading, class, meeting, shift, appointment or concrete to-do. Every item is a plain task with its date and time; WilList doesn't sort them by kind. Weekly classes, meetings and shifts get repeatDays and the date of the first one. Leave out topics, holidays and "no class" days unless something is due.
+    - Never invent items or dates the source does not support. If a date is unclear, say so instead of guessing.
     - Nothing is saved until the student taps Add. After proposing, say in one short sentence what you found. Never say you added or saved anything.
     - Only use follow_calendar for a link the student typed in their own message.
     - Answer in short plain sentences in the student's language, without Markdown, headings, tables or links.
@@ -96,23 +96,19 @@ public enum Agent {
 
     static let tools = try! JSONDecoder().decode(JSONValue.self, from: Data(#"""
     [{"name": "read_plan", "strict": true,
-      "description": "The student's plan as it is now: open and recently done items with their letters, dates, courses and study progress, to-dos, goals, and how much got done each day lately.",
+      "description": "The student's plan as it is now: open and recently done items with their letters, dates and courses, to-dos, goals, and how much got done each day lately.",
       "input_schema": {"type": "object", "additionalProperties": false, "properties": {}, "required": []}},
      {"name": "propose_items", "strict": true,
       "description": "Show the student items to add to their plan. Nothing is saved until they tap Add.",
       "input_schema": {"type": "object", "additionalProperties": false, "required": ["items"], "properties": {"items": {"type": "array", "items": {
         "type": "object", "additionalProperties": false,
-        "required": ["title", "type", "date", "time", "course", "weightPct", "effortHours", "repeatDays", "durationMin"],
+        "required": ["title", "date", "time", "course", "repeatDays"],
         "properties": {
           "title": {"type": "string", "description": "Short name in the source's own words, at most 60 characters."},
-          "type": {"type": "string", "enum": ["exam", "deadline", "presentation", "reading", "event", "task"]},
           "date": {"type": "string", "description": "YYYY-MM-DD, or \"\" if the source gives none."},
           "time": {"type": "string", "description": "24-hour HH:MM, or \"\" if none."},
           "course": {"type": "string", "description": "Short label for the course, project or team, such as MATH201, or \"\"."},
-          "weightPct": {"type": "number", "description": "Share of the final grade if stated, else 0."},
-          "effortHours": {"type": "number", "description": "Realistic preparation hours for exams, deadlines, presentations and readings; 0 for classes, meetings and small tasks."},
-          "repeatDays": {"type": "array", "items": {"type": "integer"}, "description": "For weekly classes, meetings or shifts: weekdays 0=Sun … 6=Sat. Otherwise empty."},
-          "durationMin": {"type": "integer", "description": "Length of a class, meeting or shift in minutes, else 0."}
+          "repeatDays": {"type": "array", "items": {"type": "integer"}, "description": "For weekly classes, meetings or shifts: weekdays 0=Sun … 6=Sat. Otherwise empty."}
         }}}}}},
      {"name": "follow_calendar", "strict": true,
       "description": "Offer to follow a calendar link the student typed, such as a Canvas, Moodle or Google Calendar .ics or webcal address. WilList reads it again every half hour. Nothing happens until they tap Follow.",
@@ -285,10 +281,10 @@ public enum Agent {
             }
             guard found.count <= maxItems else { return ("Propose at most \(maxItems) items at a time.", nil) }
             let drafts = found.compactMap(\.draft)
-            guard !drafts.isEmpty else { return ("None of these items had a valid date (YYYY-MM-DD).", nil) }
+            guard !drafts.isEmpty else { return ("None of these items had a title.", nil) }
             let left = found.count - drafts.count
             return ("Shown to the student: \(drafts.count) \(drafts.count == 1 ? "item" : "items"). Nothing is saved until they tap Add."
-                + (left > 0 ? " \(left) without a valid date were left out." : ""), .items(drafts))
+                + (left > 0 ? " \(left) without a title were left out." : ""), .items(drafts))
         case "follow_calendar":
             let link = call.input["url"]?.string?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let name = String((call.input["name"]?.string ?? "").prefix(40))
@@ -304,23 +300,19 @@ public enum Agent {
     }
 
     private struct Found: Decodable {
-        let title: String, type: String, date: String, time: String, course: String
-        let weightPct: Double, effortHours: Double, repeatDays: [Int], durationMin: Int
+        let title: String, date: String, time: String, course: String, repeatDays: [Int]
 
         var draft: Item? {
-            let type = ItemType(rawValue: type) ?? .task
             let date = isValidDay(date) ? date : nil
             let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-            if title.isEmpty || date == nil && type != .task { return nil }
+            if title.isEmpty { return nil }
             let days = Set(repeatDays.filter { (0...6).contains($0) }).sorted()
-            var it = Item(id: "", title: String(title.prefix(80)), type: type)
+            var it = Item(id: "", title: String(title.prefix(80)))
             it.date = date
             it.time = matches(time, #"^\d{2}:\d{2}$"#) && timeToMin(time)! < 1440 ? time : nil
             it.course = course.isEmpty ? nil : String(course.prefix(20))
-            it.weightPct = weightPct > 0 && weightPct <= 100 ? weightPct : nil
-            it.effortMin = effortHours > 0 ? Int((min(effortHours, 200) * 60).rounded()) : 0
-            it.recur = type == .event && !days.isEmpty ? Recur(.weekly, days: days) : nil
-            it.durationMin = type == .event && durationMin > 0 ? min(durationMin, 1440) : nil
+            // A weekly repeat counts from its first day.
+            it.recur = date != nil && !days.isEmpty ? Recur(.weekly, days: days) : nil
             return it
         }
     }
@@ -333,17 +325,13 @@ public enum Agent {
         let since = addDays(today, -28)
         func recent(_ done: Bool, _ at: Day?) -> Bool { !done || (at ?? "") >= since }
         let items: [JSONValue] = s.items.filter { recent($0.done, $0.doneAt) }.sorted { ($0.date ?? "9999") < ($1.date ?? "9999") }.prefix(300).map { i in
-            var o: [String: JSONValue] = ["title": .string(i.title), "type": .string(i.type.rawValue)]
+            var o: [String: JSONValue] = ["title": .string(i.title)]
+            if i.type == .study { o["studyBlock"] = true }
             if let p = i.priority { o["letter"] = .string(p.rawValue) }
             if let d = i.date { o["date"] = .string(d) }
             if let t = i.time { o["time"] = .string(t) }
             if let c = i.course { o["course"] = .string(c) }
-            if let w = i.weightPct { o["weightPct"] = .number(w) }
             if let r = i.recur { o["repeats"] = .string(r.freq.rawValue) }
-            if i.effortMin > 0 {
-                o["effortMin"] = .number(Double(i.effortMin))
-                o["studiedMin"] = .number(Double(i.sessions.filter(\.done).reduce(0) { $0 + $1.minutes }))
-            }
             if i.myDay == today { o["onTodayList"] = true }
             if i.done { o["doneOn"] = .string(i.doneAt ?? "") }
             return .object(o)

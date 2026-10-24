@@ -4,18 +4,16 @@ import Foundation
 // from the old app decodes unchanged. Decoding is forgiving: a missing or odd field takes its
 // default, and a broken row is dropped instead of failing the whole file.
 
-public enum ItemType: String, Codable, Sendable, CaseIterable, Identifiable {
-    /// `study` is a study block: a set time to study something, added by hand, maybe every week.
-    case task, deadline, exam, presentation, reading, event, study
-
-    public init(from decoder: Decoder) throws {
-        self = ItemType(rawValue: (try? decoder.singleValueContainer().decode(String.self)) ?? "") ?? .task
-    }
-
+/// A task, or a study block: a set time to study something, added by hand, maybe every week.
+/// Nothing is told apart by kind (the owner, 2026-10-25: "listing them is enough"), so the exams,
+/// deadlines, readings, presentations and classes of older saves are read as tasks.
+public enum ItemType: String, Codable, Sendable, Identifiable {
+    case task, study
     public var id: Self { self }
 
-    /// A block of time on the calendar (a class, a study block), not a line of the lettered list.
-    public var isBlock: Bool { self == .event || self == .study }
+    public init(from decoder: Decoder) throws {
+        self = (try? decoder.singleValueContainer().decode(String.self)) == "study" ? .study : .task
+    }
 }
 
 public enum Letter: String, Codable, Sendable, CaseIterable, Comparable {
@@ -65,34 +63,6 @@ public struct Step: Codable, Equatable, Sendable, Identifiable {
     }
 }
 
-public struct Session: Codable, Equatable, Sendable, Identifiable {
-    public var id: String
-    public var date: Day
-    public var minutes: Int
-    public var label: String
-    public var done = false
-    public var doneAt: Day?
-
-    public init(id: String, date: Day, minutes: Int, label: String, done: Bool = false, doneAt: Day? = nil) {
-        self.id = id
-        self.date = date
-        self.minutes = minutes
-        self.label = label
-        self.done = done
-        self.doneAt = doneAt
-    }
-
-    public init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        id = try c.decode(String.self, forKey: .id)
-        date = try c.decode(Day.self, forKey: .date)
-        minutes = c.int(.minutes) ?? 50
-        label = c.get(.label, "Study")
-        done = c.get(.done, false)
-        doneAt = c.get(.doneAt)
-    }
-}
-
 public struct Item: Codable, Equatable, Sendable, Identifiable {
     public var id: String
     public var title: String
@@ -104,15 +74,10 @@ public struct Item: Codable, Equatable, Sendable, Identifiable {
     public var recur: Recur?
     public var skips: [Day] = []
     public var externalId: String?
-    public var weightPct: Double?
     public var priority: Letter?
     public var order: Double = 0
     public var delegateTo = ""
     public var notes = ""
-    public var effortMin = 0
-    public var sessions: [Session] = []
-    public var startBy: Day?
-    public var shortfallMin = 0
     public var plan: Day?
     public var done = false
     public var doneAt: Day?
@@ -143,15 +108,10 @@ public struct Item: Codable, Equatable, Sendable, Identifiable {
         recur = c.get(.recur)
         skips = c.get(.skips, [])
         externalId = c.get(.externalId)
-        weightPct = c.get(.weightPct)
         priority = c.get(.priority)
         order = c.get(.order, 0)
         delegateTo = c.get(.delegateTo, "")
         notes = c.get(.notes, "")
-        effortMin = c.int(.effortMin) ?? 0
-        sessions = c.list(.sessions)
-        startBy = c.get(.startBy)
-        shortfallMin = c.int(.shortfallMin) ?? 0
         plan = c.get(.plan)
         done = c.get(.done, false)
         doneAt = c.get(.doneAt)
@@ -289,18 +249,12 @@ public struct Feed: Codable, Equatable, Sendable, Identifiable {
 
 public struct Settings: Codable, Equatable, Sendable {
     public var perDayMin = 120
-    public var sessionMin = 50
-    public var bufferDays = 1
     public var planTime = "20:30"
     public var dateOrder: String?
     public var tips = true
     public var notify = false
     public var reward = ""
-    public var dayStart = "08:00"
-    public var dayEnd = "22:00"
     public var taskMin = 25
-    /// Per type: how long things really take compared with the plan, once you accept it.
-    public var calib: [String: Double] = [:]
     /// Each course's colour, by its key (`AppState.courseKey`), as a number into the app's palette.
     public var courseColors: [String: Int] = [:]
 
@@ -309,17 +263,12 @@ public struct Settings: Codable, Equatable, Sendable {
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         perDayMin = c.int(.perDayMin) ?? 120
-        sessionMin = c.int(.sessionMin) ?? 50
-        bufferDays = c.int(.bufferDays) ?? 1
         planTime = c.get(.planTime, "20:30")
         dateOrder = c.get(.dateOrder)
         tips = c.get(.tips, true)
         notify = c.get(.notify, false)
         reward = c.get(.reward, "")
-        dayStart = c.get(.dayStart, "08:00")
-        dayEnd = c.get(.dayEnd, "22:00")
         taskMin = c.int(.taskMin) ?? 25
-        calib = c.get(.calib, [:])
         courseColors = c.get(.courseColors, [:])
     }
 }

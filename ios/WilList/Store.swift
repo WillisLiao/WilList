@@ -141,10 +141,10 @@ final class Store {
     // MARK: items
 
     func add(_ draft: Item) {
-        change { s in s.items.append(makeItem(draft, s.settings, today, s.items)) }
+        change { s in s.items.append(makeItem(draft, today, s.items)) }
     }
 
-    /// Saves an edited item and plans it again when what the plan depends on changed.
+    /// Saves an edited item; a new letter ranks it after the others with that letter.
     func save(_ item: Item) {
         change { s in
             guard let i = s.index(of: item.id) else { return }
@@ -152,10 +152,7 @@ final class Store {
             s.items[i] = item
             if old.priority != item.priority {
                 s.items[i].priority = old.priority
-                s.setLetter(item.id, item.priority, today: today)
-            }
-            if old.date != item.date || old.effortMin != item.effortMin || old.type != item.type || old.recur != item.recur {
-                s.replan(item.id, today: today)
+                s.setLetter(item.id, item.priority)
             }
         }
     }

@@ -33,12 +33,12 @@ private func ics(_ s: String) -> ICSImport { importICS(s, today: tuesday, calend
     let ps = r.items[0]
     #expect(ps.title == "Problem Set 6")
     #expect(ps.course == "MATH201")
-    #expect(ps.type == .deadline)
+    #expect(ps.type == .task)
     #expect(ps.externalId == "ics:event-assignment-48211")
     #expect(ps.notes == "Sections 4.1–4.3, odd problems")
     // 03:59 UTC is the evening before in Los Angeles.
     #expect(ps.date == "2026-10-23" && ps.time == "20:59")
-    #expect(r.items[1].type == .exam)
+    #expect(r.items[1].type == .task)
     #expect(r.items[1].date == "2026-10-30" && r.items[1].time == nil)
     #expect(r.items[2].title.hasSuffix("Northern Europe"))
     #expect(r.items[2].course == "HIST150")
@@ -57,7 +57,7 @@ private func ics(_ s: String) -> ICSImport { importICS(s, today: tuesday, calend
     #expect(r.ignored == 1)
     #expect(r.items[0].title == "Lab report 3")
     #expect(r.items[0].course == "CHEM110")
-    #expect(r.items[0].type == .deadline)
+    #expect(r.items[0].type == .task)
 }
 
 @Test func googleClassWithZoneRuleAndException() {
@@ -68,9 +68,8 @@ private func ics(_ s: String) -> ICSImport { importICS(s, today: tuesday, calend
         "END:VEVENT", "END:VCALENDAR",
     ].joined(separator: "\r\n"))
     let ev = r.items[0]
-    #expect(ev.type == .event)
+    #expect(ev.type == .task)
     #expect(ev.recur == Recur(.weekly, days: [2, 4], until: "2026-12-11"))
-    #expect(ev.durationMin == 50)
     #expect(ev.time == "07:00", "10:00 in New York")
     #expect(ev.skips == ["2026-11-26"])
 }
@@ -111,12 +110,4 @@ private func ics(_ s: String) -> ICSImport { importICS(s, today: tuesday, calend
     #expect(s.items.count == 3)
     #expect(s.items[0].priority == .A, "your letter survives")
     #expect(s.items[0].date == "2026-10-25")
-}
-
-@Test func gradeWeightDrivesTheSuggestedLetter() {
-    #expect(suggestedLetter(.deadline, weightPct: 30) == .A)
-    #expect(suggestedLetter(.exam, weightPct: 5) == .B)
-    #expect(suggestedLetter(.deadline, weightPct: 1) == .C)
-    #expect(suggestedLetter(.exam) == .A)
-    #expect(suggestedLetter(.task) == nil)
 }

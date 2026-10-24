@@ -30,7 +30,7 @@ enum TestPlan {
         s.meta.onboarded = true
         if name == "a1" || name == "busy" {
             for (rank, title) in ["Write the essay intro", "Read chapter 4"].enumerated() {
-                var it = makeItem(Item(id: "", title: title), s.settings, today, s.items)
+                var it = makeItem(Item(id: "", title: title), today, s.items)
                 it.priority = .A
                 it.order = Double(rank)
                 s.items.append(it)
@@ -40,7 +40,7 @@ enum TestPlan {
             var todo = Todo(id: "t1", title: "Buy stamps")
             todo.createdAt = today
             s.todos.append(todo)
-            s.items.append(makeItem(Item(id: "", title: "Apply for the summer program"), s.settings, today, s.items))
+            s.items.append(makeItem(Item(id: "", title: "Apply for the summer program"), today, s.items))
         }
         if name == "sample" { sample(&s, today: today) }
         if name == "reminder" {
@@ -76,8 +76,8 @@ enum TestPlan {
         s.mdp = "I finish this semester with a 3.7 GPA"
 
         let wd = weekday(today)
-        func add(_ title: String, _ type: ItemType, _ letter: Letter? = nil, course: String? = nil, on day: Int? = nil, at time: String? = nil,
-                 for minutes: Int? = nil, weekly days: [Int]? = nil, effort: Int = 0, weight: Double? = nil, goal: String? = nil) {
+        func add(_ title: String, _ type: ItemType = .task, _ letter: Letter? = nil, course: String? = nil, on day: Int? = nil,
+                 at time: String? = nil, for minutes: Int? = nil, weekly days: [Int]? = nil, goal: String? = nil) {
             var it = Item(id: "", title: title, type: type)
             it.course = course
             it.date = day.map(d)
@@ -85,30 +85,25 @@ enum TestPlan {
             it.durationMin = minutes
             it.recur = days.map { Recur(.weekly, days: $0) }
             it.priority = letter
-            it.effortMin = effort
-            it.weightPct = weight
             it.goalId = goal
-            // Each planned on its own, so the week ahead has a heavy day to show.
-            s.items.append(makeItem(it, s.settings, today))
+            s.items.append(makeItem(it, today, s.items))
         }
-        add("Calculus lecture", .event, course: "MATH201", on: 0, at: "10:00", for: 50, weekly: [1, 3, 5])
-        add("Chemistry lab", .event, course: "CHEM110", on: 0, at: "14:00", for: 180, weekly: [wd == 0 || wd == 6 ? 3 : wd])
-        add("Research group meeting", .event, on: 0, at: "16:30", for: 60, weekly: [2])
-        add("Office hours with Prof. Lee", .event, course: "MATH201", on: 3, at: "15:00", for: 30)
+        // Two study blocks, so the week ahead has a heavy day to show.
         add("Study organic chemistry", .study, course: "CHEM110", on: 0, at: "19:00", for: 90, weekly: [wd, (wd + 2) % 7])
-        add("Calculus midterm", .exam, .A, course: "MATH201", on: 12, at: "09:00", effort: 360, weight: 25, goal: gpa.id)
-        add("Chem quiz 4", .exam, .A, course: "CHEM110", on: 3, effort: 120, weight: 5)
-        add("History presentation: the printing press", .presentation, .A, course: "HIST150", on: 9, at: "13:00", effort: 180, weight: 15)
-        add("Problem set 5", .deadline, .A, course: "MATH201", on: 2, at: "23:59", effort: 100, goal: gpa.id)
-        add("Lab report: titration", .deadline, .B, course: "CHEM110", on: 6, effort: 150, weight: 8)
-        add("Read 2 papers for research group", .reading, .B, on: 7, effort: 120)
+        add("Calculus practice problems", .study, course: "MATH201", on: 0, at: "16:00", for: 60, weekly: [wd, (wd + 4) % 7])
+        add("Problem set 5", .task, .A, course: "MATH201", on: 2, at: "23:59", goal: gpa.id)
         add("Email TA about quiz regrade", .task, .A, course: "CHEM110")
+        add("Chem quiz 4", .task, .A, course: "CHEM110", on: 3)
+        add("History presentation: the printing press", .task, .A, course: "HIST150", on: 9, at: "13:00")
+        add("Calculus midterm", .task, .A, course: "MATH201", on: 12, at: "09:00", goal: gpa.id)
+        add("Lab report: titration", .task, .B, course: "CHEM110", on: 6)
+        add("Read 2 papers for research group", .task, .B, on: 7)
         add("Call home", .task, .B, on: (7 - wd) % 7, weekly: [0], goal: family.id)
         add("Renew library books", .task, .C, on: 4)
         add("Poster template for group project", .task, .D)
         add("Reorganize desktop folders", .task, .E)
-        add("Apply for summer research program", .deadline, on: 24, effort: 120)
-        add("Buy printer ink", .task)
+        add("Apply for summer research program", on: 24)
+        add("Buy printer ink")
         func edit(_ title: String, _ change: (inout Item) -> Void) {
             if let i = s.items.firstIndex(where: { $0.title == title }) { change(&s.items[i]) }
         }
@@ -118,11 +113,13 @@ enum TestPlan {
             $0.remindAt = "\(today)T16:00"
             $0.steps = [Step(id: "x1", title: "Find the quiz", done: true), Step(id: "x2", title: "Write two lines")]
         }
-        // A few study sessions already behind you, so Progress has something to show.
-        for (title, days) in [("Calculus midterm", [-5, -3, -1]), ("History presentation: the printing press", [-2])] {
-            edit(title) { it in
-                for n in days { it.sessions.insert(Session(id: newID(), date: d(n), minutes: 50, label: "Study", done: true, doneAt: d(n)), at: 0) }
-            }
+        // A few things finished on recent days, so Progress has something to show.
+        for (title, letter, n) in [("Problem set 4", Letter.A, -1), ("Chem quiz 3", .A, -3), ("Read chapter 6", .B, -3), ("Lab safety form", .C, -5)] {
+            var it = makeItem(Item(id: "", title: title), today, s.items)
+            it.priority = letter
+            it.done = true
+            it.doneAt = d(n)
+            s.items.append(it)
         }
         // What was finished first on recent days.
         s.meta.firstDone = [d(-1): "A", d(-2): "A", d(-3): "A", d(-4): "B", d(-5): "A", d(-7): "A"]

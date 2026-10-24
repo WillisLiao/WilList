@@ -82,8 +82,7 @@ struct LetterSorter: View {
     // MARK: pages
 
     private func page(_ item: Item) -> some View {
-        let suggested = suggestedLetter(item.type, weightPct: item.weightPct)
-        return VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 10) {
             if let about = about(item) {
                 Text(about).font(.subheadline).foregroundStyle(.secondary)
             }
@@ -92,7 +91,7 @@ struct LetterSorter: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, 14)
-            ForEach(Letter.allCases, id: \.self) { letterButton($0, item: item, suggested: suggested) }
+            ForEach(Letter.allCases, id: \.self) { letterButton($0, item: item) }
             Button { go(1) } label: {
                 Text("Skip").frame(maxWidth: .infinity).tapArea()
             }
@@ -106,22 +105,17 @@ struct LetterSorter: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// What kind of thing it is and when it's due: "Assignment, Due Fri, CHEM110".
+    /// When it is and its course: "Fri, 5:00 PM, CHEM110".
     private func about(_ item: Item) -> String? {
         let sub = Fmt.subline(item, today)
-        let parts = [item.type == .task ? nil : item.type.name, sub.isEmpty ? nil : sub].compactMap { $0 }
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+        return sub.isEmpty ? nil : sub
     }
 
-    private func letterButton(_ letter: Letter, item: Item, suggested: Letter?) -> some View {
+    private func letterButton(_ letter: Letter, item: Item) -> some View {
         let current = item.priority == letter
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
         let words = VStack(alignment: .leading, spacing: 2) {
-            // The tag goes under the name when both don't fit on a line.
-            ViewThatFits(in: .horizontal) {
-                HStack(spacing: 8) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
-                VStack(alignment: .leading, spacing: 4) { Text(letter.name).font(.headline); tag(letter, suggested, current) }
-            }
+            Text(letter.name).font(.headline)
             Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
         }
         let check = Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(letter.color)
@@ -152,24 +146,11 @@ struct LetterSorter: View {
             .frame(maxWidth: .infinity, minHeight: 64, alignment: .leading)
             .background(letter.color.opacity(current ? 0.09 : 0), in: shape)
             .background(Color.white, in: shape)
-            .overlay { if letter == suggested && !current { shape.strokeBorder(Color.brand.opacity(0.45), lineWidth: 1.5) } }
             .contentShape(shape)
         }
         .buttonStyle(Pressable())
-        .accessibilityLabel("\(letter.rawValue), \(letter.name). \(letter.detail)\(letter == suggested ? ". Suggested" : "")")
+        .accessibilityLabel("\(letter.rawValue), \(letter.name). \(letter.detail)")
         .accessibilityAddTraits(current ? .isSelected : [])
-    }
-
-    @ViewBuilder private func tag(_ letter: Letter, _ suggested: Letter?, _ current: Bool) -> some View {
-        if letter == suggested && !current {
-            Text("Suggested")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Color.brand)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(Color.brand.opacity(0.12), in: Capsule())
-                .fixedSize()
-        }
     }
 
     private var finished: some View {
@@ -192,7 +173,7 @@ struct LetterSorter: View {
     // MARK: actions
 
     private func choose(_ letter: Letter, for item: Item) {
-        store.change { $0.setLetter(item.id, letter, today: today) }
+        store.change { $0.setLetter(item.id, letter) }
         go(1)
     }
 

@@ -21,7 +21,8 @@ struct FinishRowIntent: AppIntent {
         TickMark.note(key)
         PlanFile.update { s in
             guard let row = dayRows(s.items, today).first(where: { $0.key == key }) else { return }
-            if s.complete(row, today: today) { finished = row.item.id }
+            s.complete(row, today: today)
+            if !row.recurring { finished = row.item.id }
         }
         if let finished { forgetReminder(finished) }
         return .result()

@@ -167,6 +167,7 @@ private struct AgentChat: View {
     @State private var problem: String?
     @State private var work: Task<Void, Never>?
     @State private var choosingFile = false
+    @State private var choosingPhoto = false
     @State private var photo: PhotosPickerItem?
     @State private var keyboardUp = false
     @FocusState private var focused: Bool
@@ -221,6 +222,9 @@ private struct AgentChat: View {
                 }
             }
         }
+        // A PhotosPicker inside the menu never opened: the menu closes first, so the picker is
+        // presented from here.
+        .photosPicker(isPresented: $choosingPhoto, selection: $photo, matching: .images)
         .fileImporter(isPresented: $choosingFile, allowedContentTypes: [.item], allowsMultipleSelection: true) { result in
             if case .success(let urls) = result { urls.forEach(attach) }
         }
@@ -344,7 +348,7 @@ private struct AgentChat: View {
             HStack(alignment: .bottom, spacing: 4) {
                 Menu {
                     Button("Choose a file", systemImage: "doc") { choosingFile = true }
-                    PhotosPicker(selection: $photo, matching: .images) { Label("Choose a photo", systemImage: "photo") }
+                    Button("Choose a photo", systemImage: "photo") { choosingPhoto = true }
                 } label: {
                     Image(systemName: "plus")
                         .font(.title3.weight(.semibold))

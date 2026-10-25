@@ -59,7 +59,7 @@ struct FocusView: View {
                 .accessibilityIdentifier("focusDone")
             }
             .controlSize(.large)
-            .labelStyle(WordsWhenLarge())
+            .labelStyle(WordsWhenTight())
             .tint(.white)
             .padding(.horizontal, 24)
             .padding(.bottom, 12)
@@ -101,17 +101,33 @@ struct FocusView: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// The time left, large.
+    /// The time left, large, in a thin ring of the time spent that closes when the minutes are up.
     private func clock(_ f: FocusSession, left: TimeInterval) -> some View {
-        Text(left == 0 ? "Break" : Self.clock(left))
-            .font(.system(size: 96, weight: .bold))
+        let spent = min(max(1 - left / f.total, 0), 1)
+        return Text(left == 0 ? "Break" : Self.clock(left))
+            .font(.system(size: 76, weight: .bold))
             .monospacedDigit()
             .tracking(-1)
             .foregroundStyle(.white)
             .lineLimit(1)
             .minimumScaleFactor(0.5)
-            .padding(.horizontal, 24)
             .accessibilityLabel(left == 0 ? "Time for a break" : "\(Fmt.minutes(Int((left / 60).rounded(.up)))) left\(f.paused ? ", paused" : "")")
+            // Clear of the ring, which is at most 300 points across and narrower on a narrow screen.
+            .padding(.horizontal, 36)
+            .frame(maxWidth: 300, maxHeight: 300)
+            .aspectRatio(1, contentMode: .fit)
+            .background {
+                ZStack {
+                    Circle().stroke(.white.opacity(0.3), lineWidth: 8)
+                    Circle().trim(from: 0, to: spent)
+                        .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .animation(reduceMotion ? nil : .linear(duration: 1), value: spent)
+                }
+                .padding(4)
+                .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 24)
     }
 
     /// The field, and the time spent rising up it in a deeper shade of the same colour.

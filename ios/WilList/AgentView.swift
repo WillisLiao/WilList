@@ -83,15 +83,16 @@ final class AgentPass {
     private static let server = (Bundle.main.object(forInfoDictionaryKey: "WLAgentServer") as? String).flatMap { URL(string: $0) }
 
     #if DEBUG
-    /// Debug builds can talk to any provider directly with `AGENT_URL` (its chat completions
-    /// address, such as https://api.deepseek.com), `AGENT_KEY` and `AGENT_MODEL` in the environment,
-    /// or answer from a script with `-agentDemo YES` (screenshots and UI tests), with no subscription.
+    /// Debug builds can talk to a provider directly with `AGENT_KEY` in the environment: OpenCode
+    /// (the owner's pick, 2026-10-25; its terms allow only the owner's own use, so testing, never
+    /// students) unless `AGENT_URL` (a chat completions address) and `AGENT_MODEL` name another.
+    /// `-agentDemo YES` answers from a script instead (screenshots and UI tests). No subscription.
     private static let debugRoute: Agent.Route? = {
         if UserDefaults.standard.bool(forKey: "agentDemo") { return Agent.Route(base: URL(string: "https://demo.invalid")!, key: "demo") }
         let env = ProcessInfo.processInfo.environment
-        guard let base = env["AGENT_URL"].flatMap({ URL(string: $0) }), let key = env["AGENT_KEY"], !key.isEmpty,
-              let model = env["AGENT_MODEL"], !model.isEmpty else { return nil }
-        return Agent.Route(base: base, key: key, model: model)
+        guard let key = env["AGENT_KEY"], !key.isEmpty else { return nil }
+        let base = env["AGENT_URL"].flatMap { URL(string: $0) } ?? URL(string: "https://opencode.ai/inference/openai/v1")!
+        return Agent.Route(base: base, key: key, model: env["AGENT_MODEL"] ?? "deepseek-v4.1-flash")
     }()
     #else
     private static let debugRoute: Agent.Route? = nil

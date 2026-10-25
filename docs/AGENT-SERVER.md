@@ -12,7 +12,14 @@ The app sends only text: photos and scanned pages are read on the phone (Apple's
 The model needs tool calling (functions); that is all it needs.
 
 To change provider, change the server's three settings (below); the app doesn't change.
-Some providers to know: OpenCode Go's terms allow only "your own internal use", so it can't serve other students; check each provider's terms before using it for the app.
+
+## The provider
+
+The owner picked OpenCode on 2026-10-25.
+Its pay-as-you-go service (the OpenCode Console, once Zen) serves chat completions at `https://opencode.ai/inference/openai/v1` with a key from the console, for models such as DeepSeek V4.1 Flash (`deepseek-v4.1-flash`, $0.30 / $1.20 per million tokens in and out), GLM 5.3 Flash (`glm-5.3-flash`, $0.15 / $0.50), MiniMax M3, Kimi K2.6 and Mistral Large 4; its own other models answer only in other formats (Responses, Messages, Gemini), and its free models only inside OpenCode itself.
+It says those paid models keep nothing and don't train on what is sent.
+**But its terms don't let it serve students:** "You will only use the Services for your own internal use, and not on behalf of or for the benefit of any third party" (opencode.ai/legal/terms-of-service, read 2026-10-25); OpenCode Go, the subscription, is also "designed for OpenCode and other coding agents" and for a single person.
+So OpenCode is for the owner's own testing (debug builds default to it, with `deepseek-v4.1-flash`), and the shipped Agent needs either OpenCode's written OK (help@anoma.ly) or a provider whose terms allow serving an app's users, perhaps DeepSeek's own API (`https://api.deepseek.com`) for the same model; its terms haven't been read yet.
 
 ## Where it runs
 
@@ -70,5 +77,6 @@ A provider's own 401 or 402 (a wrong key, an empty balance) must not reach the a
 
 ## Trying a provider from a debug build
 
-Debug builds can skip the server: put `AGENT_URL` (the provider's chat completions address, such as `https://api.deepseek.com`), `AGENT_KEY` and `AGENT_MODEL` in the scheme's environment (Product, Scheme, Edit Scheme, Run, Arguments).
+Debug builds can skip the server: put `AGENT_KEY` in the scheme's environment (Product, Scheme, Edit Scheme, Run, Arguments), an OpenCode key by default, with `deepseek-v4.1-flash`.
+For another provider or model, add `AGENT_URL` (its chat completions address, such as `https://api.deepseek.com`) and `AGENT_MODEL`.
 Environment variables only reach the app when Xcode launches it, not from the Home Screen.

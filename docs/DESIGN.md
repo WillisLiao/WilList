@@ -124,14 +124,14 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
   New task's letter row shows each letter as a pale wash of its colour with dark words, and in full once chosen; yellow and green words can't be read on white.
 - **StarButton:** grey outline, filled teal when important.
 - **MonthCalendar** (`MonthCalendar.swift`, under the rows of Plan): the month and year with a month back and on, the days of the week in single letters, and the days in rows of seven, today's number in the teal. Under each number, what's planned that day: up to two titles in small chips of their letter's colour, or one and "+2". Tapping a day fills its number teal and lists that day in full under the calendar; tapping it again lets it go.
-- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 96 pt bold, and white buttons.
+- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 76 pt bold inside a thin white ring of the time spent (8 points, on a track of white at 30%, from the top clockwise, at most 300 points across), which closes at Break (the owner's ask, 2026-10-25); and white buttons.
   Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`).
   The Dynamic Island stays black: the letter is white with the course colour in it, and the time, bar and keyline use the course colour lifted with 35% white (`CourseColor.onDark`, 5.5:1 or better on black).
 - **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 7 days' finished items and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top, with the day and its count under it ("Today" in bold).
   It is drawn by hand like the week chart, not with Swift Charts, whose bars left out the empty days at either end; its scale starts at three, so one thing done doesn't fill the card.
 - **Week chart** (`WeekChart` in `ProgressTab.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
-- **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left, the screen filling from the bottom as the chosen minutes pass, Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
+- **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left in a ring that closes as the minutes pass, the screen filling from the bottom as the chosen minutes pass, Pause or Resume, Mark done and Stop. At the end it says to take a break, with the chime. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Agent** (`AgentView.swift`): the student's words in deep teal bubbles on the right, the Agent's in white bubbles on the left, always as plain text (`Text(verbatim:)`, never Markdown or links, so nothing a file says becomes something to tap).
   What it proposes comes as a white card of rows to tick, each with its date and course, and one Add button; once added it says Added, and Undo brings the button back.
   A calendar link the student typed comes as a card with Follow.
@@ -166,7 +166,7 @@ No decorative or entrance animation.
 - Every icon-only control has an accessibility label ("Mark done", "Mark as important", "Remove reminder").
 - Touch targets are at least 44 pt.
 - Text uses Dynamic Type styles. Only the letter marks, Today's tool icons and the circles beside the welcome's choices stop growing at the largest standard size, so they keep their shape and the words beside them line up.
-- At the accessibility sizes, big buttons show only their words (`WordsWhenLarge` in `Theme.swift`), and buttons side by side stack.
+- At the accessibility sizes, big buttons show only their words (`WordsWhenTight` in `Theme.swift`), and buttons side by side stack; a big button whose icon and words don't fit on one line (side by side at 320 points) shows only its words too.
 
 ## SwiftUI pitfalls already paid for
 
@@ -193,7 +193,7 @@ No decorative or entrance animation.
 15. **Labels at the largest text sizes:** in a list, a `Label` with two lines of text wraps them around its icon.
     Where that reads badly, lay the row out by hand and put the icon above the words at accessibility sizes, as the letter sorter does with its letters.
 16. **Big buttons at the largest text sizes:** the round ends of a large button and its icon left "Mark done" so little room that it broke mid-word, "Ma / rk do…".
-    `.labelStyle(WordsWhenLarge())` drops the icon at the accessibility sizes; Focus uses it.
+    `.labelStyle(WordsWhenTight())` drops the icon at the accessibility sizes, and whenever icon and words wouldn't fit on one line (Mark done beside Pause at 320 points); Focus uses it.
 17. **A button centres the lines it wraps:** a row-like borderless button whose words wrap at a large size centres the second line under the first.
     Add `.multilineTextAlignment(.leading)` (Today's nudge).
 18. **Line breaks after an apostrophe:** at the largest size on a 375 pt phone, iOS evened out a title's lines by breaking "What’s" after its apostrophe, curly or straight.

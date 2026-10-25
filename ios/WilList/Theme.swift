@@ -212,13 +212,21 @@ struct HeroCard: ViewModifier {
     }
 }
 
-/// A big button's icon and words; at the largest text sizes only the words, which the icon and
+/// A big button's icon and words; only the words when both don't fit on one line (two buttons
+/// side by side at Display Zoom's 320 points) and at the largest text sizes, where the icon and
 /// the round ends would otherwise squeeze until a word breaks.
-struct WordsWhenLarge: LabelStyle {
+struct WordsWhenTight: LabelStyle {
     @Environment(\.dynamicTypeSize) private var typeSize
 
     func makeBody(configuration: Configuration) -> some View {
-        if typeSize.isAccessibilitySize { configuration.title } else { Label(configuration) }
+        if typeSize.isAccessibilitySize {
+            configuration.title
+        } else {
+            ViewThatFits(in: .horizontal) {
+                Label(configuration)
+                configuration.title
+            }
+        }
     }
 }
 

@@ -531,6 +531,9 @@ struct StarButton: View {
 /// Play beside a task: choose how long, and a focus session on it starts. The planned length, when
 /// there is one, comes with the usual ones.
 struct PlayButton: View {
+    @Environment(Store.self) private var store
+    /// The task's id: while its timer runs, its time left takes Play's place.
+    var itemId: String
     /// A study block's own length.
     var planned: Int?
     let start: (Int) -> Void
@@ -538,6 +541,36 @@ struct PlayButton: View {
     @State private var typed = ""
 
     var body: some View {
+        if let f = store.focus, f.itemId == itemId {
+            running(f)
+        } else {
+            menu
+        }
+    }
+
+    /// The time left in a pill: tap to bring the timer back, or stop it.
+    private func running(_ f: FocusSession) -> some View {
+        Menu {
+            Button("Open timer", systemImage: "timer") { store.focusOpen = true }
+            Button("Stop timer", systemImage: "stop.fill", role: .destructive) { store.stopFocus() }
+        } label: {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                let left = f.remaining(at: context.date)
+                Text(left == 0 ? "Break" : FocusView.clock(left))
+                    .font(.footnote.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.brandDeep)
+                    .padding(.horizontal, 8)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+        }
+        .menuIndicator(.hidden)
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Timer running")
+    }
+
+    private var menu: some View {
         Menu {
             Section("Focus for") {
                 ForEach(Array(Set([15, 25, 45, 60, 90] + [planned].compactMap { $0 })).sorted(), id: \.self) { m in

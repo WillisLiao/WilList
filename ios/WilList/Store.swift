@@ -23,6 +23,9 @@ final class Store {
     var planningTomorrow = false
     /// The focus session running, if any (FocusView.swift). It outlives the app being closed.
     var focus: FocusSession? = FocusSession.saved
+    /// Whether the focus screen is up; the chevron lowers it and the timer keeps running, shown
+    /// on its task's Play button.
+    var focusOpen = true
 
     enum QuickAction: String { case add, search }
     private(set) var syncing = false

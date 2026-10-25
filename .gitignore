@@ -6,3 +6,4 @@ artifact/
 build/
 .build/
 .swiftpm/
+.env.local

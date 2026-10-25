@@ -27,15 +27,17 @@ struct FocusView: View {
         let over = left == 0
         let field = CourseColor.of(store.state.courseColor(store.state.items.first { $0.id == f.itemId }?.course))
         return VStack(spacing: 0) {
-            // Stop ends it early; at Break, Close below takes its place.
+            // The chevron lowers the screen and the timer runs on; it comes back from the task's Play button.
             HStack {
                 Spacer()
                 if !over {
-                    Button { store.stopFocus() } label: { Text("Stop").tapArea() }
-                        .foregroundStyle(.white)
+                    Button { store.focusOpen = false } label: {
+                        Image(systemName: "chevron.down").font(.title3.weight(.semibold)).tapArea()
+                    }
+                    .foregroundStyle(.white)
+                    .accessibilityLabel("Minimize")
                 }
             }
-            .font(.body.weight(.medium))
             .frame(minHeight: 44)
             .padding(.horizontal, 12)
             .padding(.top, 8)
@@ -170,6 +172,7 @@ extension Store {
     }
 
     private func begin(_ f: FocusSession, course: String?) {
+        focusOpen = true
         keepFocus(f)
         LiveFocus.start(f, color: state.courseColor(course))
     }

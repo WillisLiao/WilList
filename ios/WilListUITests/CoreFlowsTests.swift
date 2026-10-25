@@ -173,9 +173,13 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Start a focus session"].firstMatch, shows: app.buttons["25 min"]))
         XCTAssertTrue(tap(app.buttons["25 min"], shows: app.staticTexts["One thing until it’s done."]))
         XCTAssertTrue(tap(app.buttons["Pause"], shows: app.buttons["Resume"]))
-        // Stop closes the focus screen on Today, with the task still to do.
-        XCTAssertTrue(tap(app.buttons["Stop"], shows: title("Write the essay intro", in: app)))
-        XCTAssertFalse(app.buttons["Resume"].exists)
+        // The chevron lowers the screen: the task is still to do, its Play button now shows the time
+        // left, and tapping that brings the timer back.
+        XCTAssertTrue(tap(app.buttons["Minimize"], shows: title("Write the essay intro", in: app)))
+        let running = app.buttons["Timer running"].firstMatch
+        XCTAssertTrue(running.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(running, shows: app.buttons["Open timer"]))
+        XCTAssertTrue(tap(app.buttons["Open timer"], shows: app.buttons["Resume"]), "the paused timer is still there")
         XCTAssertFalse(title("Read chapter 4", in: app).exists, "nothing comes up from Plan")
     }
 

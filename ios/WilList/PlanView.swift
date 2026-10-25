@@ -126,7 +126,7 @@ struct PlanList: View {
             }
             .rowWords { editing = row.item }
             RowEnd {
-                if row.priority != .E { PlayButton { store.startFocus(row, minutes: $0) } }
+                if row.priority != .E { PlayButton(itemId: row.item.id) { store.startFocus(row, minutes: $0) } }
                 letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
             }
         }
@@ -164,7 +164,7 @@ struct PlanList: View {
             .rowWords { editing = item }
             RowEnd {
                 if item.priority != .E {
-                    PlayButton(planned: item.type == .study ? item.durationMin : nil) {
+                    PlayButton(itemId: item.id, planned: item.type == .study ? item.durationMin : nil) {
                         store.startFocus(item, minutes: $0)
                     }
                 }

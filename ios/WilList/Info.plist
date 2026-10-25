@@ -71,5 +71,9 @@
 	<!-- The WilList server the Agent talks to; empty until it exists, and the Agent shows Coming soon. -->
 	<key>WLAgentServer</key>
 	<string></string>
+	<!-- The owner's own DeepSeek key, set only by `npm run ios` from the untracked .env.local, for the
+	     owner's own devices; empty in every build that is committed or shipped. -->
+	<key>WLAgentKey</key>
+	<string>$(WL_AGENT_KEY)</string>
 </dict>
 </plist>

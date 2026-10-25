@@ -98,11 +98,18 @@ final class AgentPass {
     private static let debugRoute: Agent.Route? = nil
     #endif
 
-    static var available: Bool { debugRoute != nil || server != nil }
-    var unlocked: Bool { Self.debugRoute != nil || signed != nil }
+    /// The owner's own key in a build installed on their own devices (`WLAgentKey`): the same
+    /// DeepSeek route, with no subscription. Never set in a build that ships.
+    private static let ownKey: Agent.Route? = {
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "WLAgentKey") as? String, key.hasPrefix("sk-") else { return nil }
+        return Agent.Route(base: URL(string: "https://api.deepseek.com")!, key: key, model: "deepseek-flash", effort: "low")
+    }()
+
+    static var available: Bool { debugRoute != nil || ownKey != nil || server != nil }
+    var unlocked: Bool { Self.debugRoute != nil || Self.ownKey != nil || signed != nil }
 
     var route: Agent.Route? {
-        if let r = Self.debugRoute { return r }
+        if let r = Self.debugRoute ?? Self.ownKey { return r }
         guard let server = Self.server, let signed else { return nil }
         return Agent.Route(base: server, key: signed)
     }

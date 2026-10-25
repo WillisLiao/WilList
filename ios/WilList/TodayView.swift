@@ -349,7 +349,7 @@ struct TodayView: View {
             }
             .rowWords { editing = todo.id }
             RowEnd {
-                if !todo.done { PlayButton { store.startFocus(todo, minutes: $0) } }
+                if !todo.done { PlayButton(itemId: todo.id) { store.startFocus(todo, minutes: $0) } }
                 StarButton(on: Binding(get: { todo.starred }, set: { v in
                     withAnimation(.snappy) { store.change { s in
                         if let i = s.todos.firstIndex(where: { $0.id == todo.id }) { s.todos[i].starred = v }
@@ -378,7 +378,7 @@ struct TodayView: View {
                 // A focus session on it, with the timer on the Lock Screen too; nothing to focus on
                 // in something dropped.
                 if item.priority != .E {
-                    PlayButton { m in
+                    PlayButton(itemId: item.id) { m in
                         if let row { store.startFocus(row, minutes: m) } else { store.startFocus(item, minutes: m) }
                     }
                 }

@@ -154,8 +154,8 @@ struct RootView: View {
         .fullScreenCover(isPresented: Binding(get: { store.planningTomorrow }, set: { store.planningTomorrow = $0 })) {
             PlanTomorrow().tint(.brand)
         }
-        // A focus session covers everything until Stop, or Close at Break.
-        .fullScreenCover(isPresented: Binding(get: { store.focus != nil }, set: { _ in })) {
+        // A focus session covers everything until it is lowered with the chevron or closed at Break.
+        .fullScreenCover(isPresented: Binding(get: { store.focus != nil && store.focusOpen }, set: { _ in })) {
             FocusView().tint(.brand)
         }
         #if DEBUG

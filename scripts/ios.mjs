@@ -13,8 +13,12 @@ const only = (process.argv[2] || '').toLowerCase();
 const run = (cmd, args, timeout) => execFileSync(cmd, args, { stdio: 'inherit', timeout });
 
 process.chdir(path.join(path.dirname(new URL(import.meta.url).pathname), '..'));
+// The owner's own AI key (AGENT_KEY=sk-... in the untracked .env.local) goes into the build installed
+// on their own devices, so the Agent works there before its server exists. Never committed or shipped.
+const key = fs.existsSync('.env.local') ? /^AGENT_KEY=(\S+)/m.exec(fs.readFileSync('.env.local', 'utf8'))?.[1] : undefined;
 run('xcodebuild', ['-project', 'ios/WilList.xcodeproj', '-scheme', 'WilList', '-configuration', 'Release',
-  '-destination', 'generic/platform=iOS', '-derivedDataPath', 'build/ios', '-allowProvisioningUpdates', '-quiet', 'build']);
+  '-destination', 'generic/platform=iOS', '-derivedDataPath', 'build/ios', '-allowProvisioningUpdates', '-quiet', 'build',
+  ...(key ? [`WL_AGENT_KEY=${key}`] : [])]);
 
 const list = path.join(os.tmpdir(), `willist-devices-${process.pid}.json`);
 execFileSync('xcrun', ['devicectl', 'list', 'devices', '--json-output', list], { stdio: 'ignore' });

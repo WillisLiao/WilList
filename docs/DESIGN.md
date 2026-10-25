@@ -76,13 +76,13 @@ Each screen has one job and one primary action.
 
 | Tab | Job | Primary action |
 |---|---|---|
-| Today | Under today's date, the tasks added to Today on a card (never one from Plan by itself, the owner's call, 2026-10-25), then a quick checklist; Play beside every task | Tick what's first; type a line in "Add a to-do" and tap Add (dates in it are read: "Call mum tomorrow 6pm") |
+| Today | Under today's date, one card: the tasks added to Today first, in letter order (never one from Plan by itself), then the to-dos; Completed under it; Add a to-do in a bar at the foot, above the tab bar (the owner's calls, 2026-10-25, after Microsoft To Do); Play beside every task | Tick what's first; type a line in "Add a to-do" and tap Add (dates in it are read: "Call mum tomorrow 6pm") |
 | Plan | Everything you plan: today's date, today in ABCDE order with the A1 first (drag to re-rank), everything that isn't on today's list under Later (soonest first, with or without a letter), a month calendar showing what's due each day in its letter's colour (tap a day to list it in full) | Give each item a letter |
 | Progress | The last 7 days in three numbers (done, A's, focus time) over a chart of the same days stacked by letter, suggestions with at most one action each (Add to Today, Review), then the next 7 days' study blocks against the daily study time | Act on a suggestion |
 | Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
 | Agent | A chat: hand it a file, a photo or words and it proposes what to add, on a card to tick and Add; ask it about your plan and progress. Behind a subscription, and it asks once before anything is sent to Anthropic | Send |
 
-The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the planning time, calendar links the Agent followed, backups, and Delete progress (Progress and Goals' 21 days start from zero; finished tasks stay, so a mistaken tick can still be undone).
+The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the planning time, calendar links the Agent followed, backups, the Trash (every deleted task and to-do for 30 days, newest first, each with Restore and how many days are left; swipe to delete one for good, Empty at the top right), and Delete progress (Progress and Goals' 21 days start from zero; finished tasks stay, so a mistaken tick can still be undone).
 It will hold the account and sign-in once those exist.
 
 The five tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
@@ -94,7 +94,8 @@ Today has no title in its bar: its date sits in the list, in the large title's f
 Search (magnifying glass) sits on Today and covers everything.
 It opens ready to type, keyboard up, and the X beside the field closes it.
 
-Today's date and its summary sit straight on the ground; everything under them is on cards: the A1 and what was added from Plan, then the to-dos with Add a to-do at their top, then each group.
+Today's date and its summary sit straight on the ground; everything under them is on cards: one card with the lettered tasks added to Today on top and the to-dos under them (sorted by due date, the to-dos take a card per day), then Completed.
+Add a to-do is a white bar pinned at the foot, above the tab bar, with the tab bar's shadow so it floats over the cards that scroll under it; with the keyboard up it rides on the keyboard, the tab bar gone.
 Tapping Add a to-do or its + starts a to-do, as in Microsoft To Do: the + turns into the to-do's empty circle, Add takes Search and Sort's place at the top right (grey until there are words), and only Add adds it; return just puts the keyboard away (the owner's call, 2026-10-25).
 Plan's date sits on the ground the same way, under the tab's title.
 Section titles and footers stay on the ground between the cards, in the ground's ink.

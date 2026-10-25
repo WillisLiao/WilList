@@ -4,8 +4,8 @@ import WilListCore
 
 /// The plans the UI tests and screenshots start from, by name: `-plan new` (a first launch),
 /// `-plan empty` (the welcome seen, nothing added), `-plan a1` (two A's, the first added to Today), `-plan busy`
-/// (those, a to-do `t1` and an item without a letter, so every screen and sheet has something on
-/// it), `-plan reminder` (a to-do whose reminder comes within 75 seconds; it asks to send
+/// (those, a to-do `t1`, an item without a letter and a deleted to-do, so every screen and sheet
+/// has something on it), `-plan reminder` (a to-do whose reminder comes within 75 seconds; it asks to send
 /// notifications, as setting a reminder does), `-plan sample` (a full student week, for
 /// `npm run ios:shots`). Each lives in a fresh temporary file, so a test never touches a real plan,
 /// and starts from the default settings, so nothing an earlier test chose (tomorrow planned, a
@@ -42,6 +42,7 @@ enum TestPlan {
             todo.createdAt = today
             s.todos.append(todo)
             s.items.append(makeItem(Item(id: "", title: "Apply for the summer program"), today, s.items))
+            s.trash = [Trashed(deletedAt: addDays(today, -3), todo: Todo(id: "t9", title: "Print the old flyer"))]
         }
         if name == "sample" { sample(&s, today: today) }
         if name == "reminder" {

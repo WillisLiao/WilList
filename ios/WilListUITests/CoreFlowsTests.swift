@@ -67,6 +67,25 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertFalse(title("Write the essay intro", in: app).exists, "Plan's tasks stay off Today")
     }
 
+    /// A deleted to-do waits in Settings' Trash, and Restore puts it back on Today.
+    func testRestoreADeletedTodo() {
+        let app = launch(plan: "empty")
+        add("Buy stamps", in: app)
+        let row = title("Buy stamps", in: app)
+        row.swipeLeft()
+        XCTAssertTrue(tap(app.buttons["Delete"], hides: row), "it leaves Today")
+        let trash = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Trash'")).firstMatch
+        XCTAssertTrue(tap(app.buttons["Settings"].firstMatch, shows: app.navigationBars["Settings"]))
+        // The Trash is under Backup, below the first screenful.
+        app.swipeUp()
+        XCTAssertTrue(trash.waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(trash, shows: app.buttons["Restore Buy stamps"]), "it waits in the trash")
+        XCTAssertTrue(tap(app.buttons["Restore Buy stamps"], hides: app.buttons["Restore Buy stamps"]))
+        XCTAssertTrue(app.staticTexts["Nothing here"].waitForExistence(timeout: wait))
+        XCTAssertTrue(tap(app.navigationBars.buttons["Settings"].firstMatch, shows: app.buttons["Done"]))
+        XCTAssertTrue(tap(app.buttons["Done"], shows: row), "it's back on Today")
+    }
+
     func testSetAReminderOnATodo() {
         let app = launch(plan: "empty")
         add("Call the dentist", in: app)

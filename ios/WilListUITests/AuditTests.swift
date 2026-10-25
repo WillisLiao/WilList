@@ -20,6 +20,7 @@ final class AuditTests: XCTestCase {
             ("Plan tomorrow", "busy", ["-evening", "2"]),
             ("Focus", "busy", ["-focus", "YES"]),
             ("Settings", "busy", ["-open", "settings"]),
+            ("Trash", "busy", ["-open", "trash"]),
             ("Goals", "busy", ["-tab", "goals"]),
             ("Search", "busy", ["-tab", "today", "-sheet", "search"]),
             ("Letter sorter", "busy", ["-tab", "today", "-sheet", "letters"]),

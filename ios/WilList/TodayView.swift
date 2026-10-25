@@ -42,6 +42,7 @@ struct TodayView: View {
     @State private var deleting: Todo?
     @State private var editingItem: Item?
     @State private var sorting: LetterSorter.Batch?
+    @State private var keyboardUp = false
 
     private var today: Day { store.today }
     private var open: [Todo] { ordered(store.state.todos.filter { !$0.done }) }
@@ -67,16 +68,14 @@ struct TodayView: View {
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                // The tasks added to Today, in letter order.
-                if !fromPlan.isEmpty {
+                // Everything to do today on one card: the lettered tasks first, in letter order,
+                // then the to-dos (the owner's call, 2026-10-25). Sorted by due date, the to-dos
+                // go in a card for each day under it.
+                if !fromPlan.isEmpty || (sort != .due && !open.isEmpty) {
                     Section {
                         ForEach(fromPlan) { planRow($0) }
+                        if sort != .due { rows(open, movable: sort == .manual) }
                     }
-                }
-                // The checklist on one card, Add a to-do at its top, as on the Today widget.
-                Section {
-                    addRow
-                    if sort != .due { rows(open, movable: sort == .manual) }
                 }
                 if sort == .due {
                     ForEach(dueGroups, id: \.name) { group in
@@ -154,7 +153,14 @@ struct TodayView: View {
                     editing = id
                 }
             }
+            // The toast just above the add bar, and the bar above the tab bar, or on the keyboard
+            // when it's up (it covers the tab bar), as in Microsoft To Do and the Agent.
             .toastHost()
+            .environment(\.tabBarRoom, 0)
+            .safeAreaInset(edge: .bottom) {
+                addRow.padding(.bottom, keyboardUp ? 8 : TabBar.room)
+            }
+            .onGeometryChange(for: Bool.self) { $0.safeAreaInsets.bottom > 150 } action: { keyboardUp = $0 }
         }
     }
 
@@ -197,7 +203,7 @@ struct TodayView: View {
 
     // MARK: adding
 
-    /// Add a to-do, as in Microsoft To Do: tapping the line or its + starts one, the + turns into the
+    /// Add a to-do, as in Microsoft To Do: a bar at the foot of the screen. Tapping it or its + starts one, the + turns into the
     /// to-do's empty circle, and Add at the top right adds it (return only puts the keyboard away).
     /// While it's being written, the letters and Remind me, the date and Repeat sit under it; a letter
     /// makes it a task in Plan, on Today for today.
@@ -244,9 +250,15 @@ struct TodayView: View {
                 .padding(.bottom, 6)
             }
         }
-        // The line under it starts at the words, like every row's below.
-        .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] + 54 }
-        .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 20))
+        .padding(.leading, 12)
+        .padding(.trailing, 20)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        // Floating like the tab bar, so it stands off the white cards that scroll under it.
+        .shadow(color: .black.opacity(0.14), radius: 14, y: 5)
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        // In the list's column on a wide screen (iPad, Mac).
+        .frame(maxWidth: ReadableColumn.width)
     }
 
     private func option(_ symbol: String, on: Bool) -> some View {
@@ -485,7 +497,7 @@ struct TodayView: View {
     }
 
     private func delete(_ todo: Todo) {
-        withAnimation { store.change(undo: "Deleted \u{201C}\(todo.title)\u{201D}") { $0.removeTodo(todo.id) } }
+        withAnimation { store.change(undo: "Deleted \u{201C}\(todo.title)\u{201D}") { [today] in $0.trashTodo(todo.id, today: today) } }
     }
 }
 

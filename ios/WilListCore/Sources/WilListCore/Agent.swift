@@ -34,7 +34,9 @@ public enum Proposal: Equatable, Sendable {
 }
 
 public enum Agent {
-    public static let model = "claude-opus-5-5"
+    /// Haiku: the Agent only reads files and lists what's in them, so the fastest, cheapest model
+    /// does (the owner's call, 2026-10-25).
+    public static let model = "claude-haiku-5-5"
     public static let anthropic = URL(string: "https://api.anthropic.com/v1/messages")!
     /// The most rounds of tool calls in one turn before it stops.
     static let maxRounds = 6
@@ -144,13 +146,10 @@ public enum Agent {
         }
         r.httpMethod = "POST"
         r.setValue("2026-10-21", forHTTPHeaderField: "anthropic-version")
-        // A declined request is re-run on Anthropic's recommended fallback model instead of failing.
-        r.setValue("server-side-fallback-2026-07-01", forHTTPHeaderField: "anthropic-beta")
         r.setValue("application/json", forHTTPHeaderField: "content-type")
         let body: JSONValue = [
             "model": .string(model),
             "max_tokens": 16000,
-            "fallbacks": "default",
             "output_config": ["effort": "medium"],
             // The instructions and tools never change, so they are cached once; the conversation
             // after them is cached as it grows.
@@ -173,7 +172,7 @@ public enum Agent {
         /// The assistant's content as it goes back in the conversation.
         public var content: [JSONValue]
         public var stop: String
-        /// What it wrote, and the tools it called, after the last switch to a fallback model.
+        /// What it wrote, and the tools it called.
         public var text: String
         public var calls: [Call]
     }
@@ -194,18 +193,12 @@ public enum Agent {
               let stop = res["stop_reason"]?.string else { throw AIError.unreadable }
         if stop == "refusal" { throw AIError.declined }
         if stop == "max_tokens" { throw AIError.tooLong }
-        // After a switch to a fallback model, the thinking and tool calls before the switch are
-        // left out of what goes back, and only what comes after it counts.
-        let cut = content.lastIndex { $0["type"] == "fallback" }.map { $0 + 1 } ?? 0
-        let kept = content.enumerated().filter { i, b in
-            i >= cut || !["thinking", "redacted_thinking", "tool_use"].contains(b["type"]?.string ?? "")
-        }.map(\.element)
-        let after = content[cut...]
+        // Haiku has no fallback model: a declined request stays declined, above.
         return Reply(
-            content: kept,
+            content: content,
             stop: stop,
-            text: after.compactMap { $0["type"] == "text" ? $0["text"]?.string : nil }.joined(),
-            calls: after.compactMap { b in
+            text: content.compactMap { $0["type"] == "text" ? $0["text"]?.string : nil }.joined(),
+            calls: content.compactMap { b in
                 guard b["type"] == "tool_use", let id = b["id"]?.string, let name = b["name"]?.string else { return nil }
                 return Call(id: id, name: name, input: b["input"] ?? [:])
             }

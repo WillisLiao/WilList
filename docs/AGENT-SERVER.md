@@ -15,8 +15,8 @@ It needs a timeout of at least 300 seconds, as the app waits that long; the defa
 The app sends `POST` to the `WLAgentServer` address, with:
 
 - `authorization: Bearer <JWS>`: the App Store's signed transaction for the student's subscription (`jwsRepresentation` of the verified entitlement for `com.lull.willist.agent.monthly`, from StoreKit 2).
-- `anthropic-version` and `anthropic-beta` headers, which the server passes on.
-- `content-type: application/json`, and a Messages API body: `model`, `max_tokens`, `fallbacks`, `output_config`, `system`, `cache_control`, `tools` and `messages`.
+- the `anthropic-version` header (and `anthropic-beta`, should the app send one again), which the server passes on.
+- `content-type: application/json`, and a Messages API body: `model`, `max_tokens`, `output_config`, `system`, `cache_control`, `tools` and `messages`.
 
 Files and photos are inside `messages` as document and image blocks, so a body can be several megabytes.
 
@@ -30,10 +30,10 @@ Files and photos are inside `messages` as document and image blocks, so a body c
 2. **Limits each subscriber.**
    Per `originalTransactionId`: a few requests a minute and a daily ceiling, with headroom for a turn that calls tools several times (up to 6 rounds).
 3. **Keeps the body to what the app sends.**
-   It refuses any other top-level field, sets `model` to the one the app uses (`claude-opus-5-5`), and caps `max_tokens` at 16000, so the endpoint can't be used as a general Claude API.
+   It refuses any other top-level field, sets `model` to the one the app uses (`claude-haiku-5-5` since 2026-10-25, the owner's call: a simple task agent needs no more; it has no server-side fallback, so a declined request stays declined), and caps `max_tokens` at 16000, so the endpoint can't be used as a general Claude API.
    A later step can pin `system` and `tools` to the versions the app ships.
 4. **Forwards it.**
-   It adds `x-api-key` from its secret and posts the body to `https://api.anthropic.com/v1/messages` with the same `anthropic-version` and `anthropic-beta` headers.
+   It adds `x-api-key` from its secret and posts the body to `https://api.anthropic.com/v1/messages` with the same `anthropic-version` (and any `anthropic-beta`) header.
 5. **Returns Anthropic's answer as it is:** the same status and body.
 
 It never stores or logs what the student sent or what came back: only the hashed `originalTransactionId`, the status, the time and the token counts, for limits and costs.

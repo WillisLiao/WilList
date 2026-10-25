@@ -132,6 +132,10 @@ final class Store {
         if state.todos.contains(where: { $0.done && ($0.doneAt ?? today) < cutoff }) {
             change { s in s.todos.removeAll { $0.done && ($0.doneAt ?? cutoff) < cutoff } }
         }
+        // The trash keeps what was deleted for 30 days.
+        if state.trash.contains(where: { diffDays($0.deletedAt, today) >= AppState.trashDays }) {
+            change { [today] in $0.purgeTrash(today: today) }
+        }
     }
 
     var dateOrder: String {
@@ -159,7 +163,8 @@ final class Store {
 
     func delete(_ id: String) {
         let title = state.items.first { $0.id == id }?.title ?? "item"
-        change(undo: "Deleted \u{201C}\(title)\u{201D}") { s in s.items.removeAll { $0.id == id } }
+        let today = today
+        change(undo: "Deleted \u{201C}\(title)\u{201D}") { s in s.trashItem(id, today: today) }
     }
 
     // MARK: reminders

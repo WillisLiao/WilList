@@ -170,6 +170,41 @@ extension AppState {
 
     public mutating func removeTodo(_ id: String) { todos.removeAll { $0.id == id } }
 
+    // MARK: trash
+
+    /// How many days Settings' Trash keeps what was deleted.
+    public static let trashDays = 30
+
+    /// Deletes a task into the trash.
+    public mutating func trashItem(_ id: String, today: Day) {
+        guard let i = index(of: id) else { return }
+        trash.insert(Trashed(deletedAt: today, item: items.remove(at: i)), at: 0)
+    }
+
+    /// Deletes a to-do into the trash.
+    public mutating func trashTodo(_ id: String, today: Day) {
+        guard let i = todos.firstIndex(where: { $0.id == id }) else { return }
+        trash.insert(Trashed(deletedAt: today, todo: todos.remove(at: i)), at: 0)
+    }
+
+    /// Puts something from the trash back where it was: a task in Plan, a to-do on Today.
+    public mutating func restore(_ id: String) {
+        guard let k = trash.firstIndex(where: { $0.id == id }) else { return }
+        let t = trash.remove(at: k)
+        if let it = t.item { items.append(it) }
+        if let todo = t.todo { todos.append(todo) }
+    }
+
+    /// Days before something deleted on `deletedAt` leaves the trash for good, today counted.
+    public static func daysLeft(_ deletedAt: Day, _ today: Day) -> Int {
+        max(1, trashDays - diffDays(deletedAt, today))
+    }
+
+    /// Lets go of what has been in the trash for 30 days.
+    public mutating func purgeTrash(today: Day) {
+        trash.removeAll { diffDays($0.deletedAt, today) >= Self.trashDays }
+    }
+
     /// Moves a to-do that turned out to matter into the plan as a lettered task, with its steps,
     /// due date, reminder, repeat and note. It stays on Today for the rest of today. Returns the
     /// new item.

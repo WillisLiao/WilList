@@ -94,9 +94,9 @@ private func png(width: Int, height: Int) -> Data {
     #expect(r.url == Agent.anthropic)
     #expect(r.value(forHTTPHeaderField: "x-api-key") == "sk-test")
     #expect(r.value(forHTTPHeaderField: "anthropic-version") == "2026-10-21")
-    #expect(r.value(forHTTPHeaderField: "anthropic-beta") == "server-side-fallback-2026-07-01")
+    #expect(r.value(forHTTPHeaderField: "anthropic-beta") == nil)
     let body = try JSONDecoder().decode(JSONValue.self, from: r.httpBody!)
-    #expect(body["model"] == "claude-opus-5-5" && body["fallbacks"] == "default" && body["max_tokens"] == 16000)
+    #expect(body["model"] == "claude-haiku-5-5" && body["fallbacks"] == nil && body["max_tokens"] == 16000)
     #expect(body["output_config"]?["effort"] == "medium" && body["temperature"] == nil && body["thinking"] == nil)
     #expect(body["system"]?.array?.first?["cache_control"] == ["type": "ephemeral"] && body["cache_control"] == ["type": "ephemeral"])
     #expect(body["tools"]?.array?.map { $0["name"]?.string } == ["read_plan", "propose_items", "follow_calendar"])
@@ -190,14 +190,6 @@ private final class Fake: @unchecked Sendable {
     // A model that keeps calling tools is stopped.
     let loop = Fake(Array(repeating: reply([call("t", "read_plan", [:])], stop: "tool_use"), count: 10))
     await #expect(throws: AIError.wandered) { try await Agent.run(start, state: AppState(), today: "2026-10-20", typed: "", route: .direct(key: "k"), send: loop.send) }
-}
-
-@Test func afterAFallbackOnlyTheNewModelsCallsCount() throws {
-    let (data, _) = reply([["type": "thinking", "thinking": "", "signature": "old"], call("t0", "read_plan", [:]), ["type": "text", "text": "Hal"],
-                           ["type": "fallback"], ["type": "text", "text": "Hello"]])
-    let r = try Agent.reply(data, status: 200)
-    #expect(r.text == "Hello" && r.calls.isEmpty)
-    #expect(r.content.map { $0["type"]?.string } == ["text", "fallback", "text"])
 }
 
 @Test func failuresInPlainWords() {

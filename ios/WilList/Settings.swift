@@ -35,6 +35,8 @@ struct SettingsView: View {
     @State private var restoring = false
     @State private var restoreError: String?
     @State private var deletingProgress = false
+    // `-open trash` on launch opens the Trash, for tests and screenshots.
+    @State private var showingTrash = UserDefaults.standard.string(forKey: "open") == "trash"
     @AppStorage("newOnTop") private var newOnTop = false
     @AppStorage("starredOnTop") private var starredOnTop = true
     @AppStorage("confirmDelete") private var confirmDelete = false
@@ -101,6 +103,16 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    NavigationLink { TrashView() } label: {
+                        LabeledContent {
+                            if !store.state.trash.isEmpty { Text("\(store.state.trash.count)") }
+                        } label: {
+                            Label("Trash", systemImage: "trash")
+                        }
+                    }
+                }
+
+                Section {
                     // On the button, so iOS 26 points its popover here. Finished tasks and to-dos
                     // stay, so one ticked off by mistake can still be brought back.
                     Button("Delete progress", role: .destructive) { deletingProgress = true }
@@ -121,6 +133,7 @@ struct SettingsView: View {
             .ground()
             .readableColumn(inline: true)
             .navigationTitle("Settings")
+            .navigationDestination(isPresented: $showingTrash) { TrashView() }
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
             }
@@ -170,5 +183,64 @@ struct SettingsView: View {
         }
         restoreError = nil
         store.change(undo: "Restored \(state.items.count) items") { $0 = state }
+    }
+}
+
+/// What was deleted in the last 30 days, newest first: Restore puts it back, a swipe deletes it
+/// for good.
+struct TrashView: View {
+    @Environment(Store.self) private var store
+    @State private var emptying = false
+
+    var body: some View {
+        let today = store.today
+        List {
+            if store.state.trash.isEmpty {
+                Text("Nothing here").foregroundStyle(.secondary)
+            }
+            ForEach(store.state.trash) { t in
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(t.title)
+                        // Where it goes back to, and how long it stays.
+                        Text("\(t.item == nil ? "Today" : "Plan"), \(AppState.daysLeft(t.deletedAt, today)) \(AppState.daysLeft(t.deletedAt, today) == 1 ? "day" : "days") left")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                    Button("Restore") {
+                        withAnimation { store.change(undo: "Restored \u{201C}\(t.title)\u{201D}") { $0.restore(t.id) } }
+                    }
+                    .font(.subheadline.weight(.semibold))
+                    .buttonStyle(.borderless)
+                    .tapArea()
+                    .accessibilityLabel("Restore \(t.title)")
+                }
+                .swipeActions {
+                    Button("Delete", systemImage: "trash", role: .destructive) {
+                        withAnimation { store.change(undo: "Deleted for good") { s in s.trash.removeAll { $0.id == t.id } } }
+                    }
+                }
+            }
+        }
+        .ground()
+        .readableColumn(inline: true)
+        .navigationTitle("Trash")
+        .toolbar {
+            if !store.state.trash.isEmpty {
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Empty", role: .destructive) { emptying = true }
+                        .confirmationDialog("Empty the trash?", isPresented: $emptying, titleVisibility: .visible) {
+                            Button("Empty trash", role: .destructive) {
+                                withAnimation { store.change(undo: "Trash emptied") { $0.trash = [] } }
+                            }
+                        } message: {
+                            Text("Everything in it is deleted for good.")
+                        }
+                }
+            }
+        }
+        .toastHost()
     }
 }

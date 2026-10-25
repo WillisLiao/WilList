@@ -297,6 +297,21 @@ public struct Meta: Codable, Equatable, Sendable {
     }
 }
 
+/// A task or to-do that was deleted, kept in Settings' Trash for 30 days so it can be brought back.
+public struct Trashed: Codable, Equatable, Sendable, Identifiable {
+    public var deletedAt: Day
+    public var item: Item?
+    public var todo: Todo?
+    public var id: String { item?.id ?? todo?.id ?? "" }
+    public var title: String { item?.title ?? todo?.title ?? "" }
+
+    public init(deletedAt: Day, item: Item? = nil, todo: Todo? = nil) {
+        self.deletedAt = deletedAt
+        self.item = item
+        self.todo = todo
+    }
+}
+
 public struct AppState: Codable, Equatable, Sendable {
     public var v = 1
     public var items: [Item] = []
@@ -314,6 +329,8 @@ public struct AppState: Codable, Equatable, Sendable {
     public var feeds: [Feed] = []
     public var settings = Settings()
     public var meta = Meta()
+    /// What was deleted, newest first; let go of after 30 days.
+    public var trash: [Trashed] = []
 
     public init() {}
 
@@ -331,6 +348,7 @@ public struct AppState: Codable, Equatable, Sendable {
         feeds = c.list(.feeds)
         settings = c.get(.settings, Settings())
         meta = c.get(.meta, Meta())
+        trash = c.list(.trash)
         colorCourses() // a plan saved before courses had colours, or by the website
     }
 }

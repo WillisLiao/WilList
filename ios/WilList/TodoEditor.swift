@@ -106,6 +106,7 @@ struct TodoEditor: View {
 
     private func delete(_ todo: Todo) {
         dismiss()
-        withAnimation { store.change(undo: "Deleted \u{201C}\(todo.title)\u{201D}") { $0.removeTodo(todo.id) } }
+        let today = store.today
+        withAnimation { store.change(undo: "Deleted \u{201C}\(todo.title)\u{201D}") { $0.trashTodo(todo.id, today: today) } }
     }
 }

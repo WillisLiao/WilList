@@ -59,11 +59,11 @@ run('xcrun', ['simctl', 'ui', device.udid, 'appearance', 'light']);
 run('xcrun', ['simctl', 'status_bar', device.udid, 'override', '--time', '9:41', '--batteryLevel', '100', '--cellularBars', '4', '--wifiBars', '3']);
 
 // The plan: the app's own sample week (`-plan sample` in TestPlan.swift), an empty one, or none.
-const { EMPTY, FIRST } = process.env;
-const plan = FIRST ? 'new' : EMPTY ? 'empty' : 'sample';
+const { EMPTY } = process.env;
+const plan = EMPTY ? 'empty' : 'sample';
 fs.mkdirSync(OUT, { recursive: true });
 const suffix = (argv.length ? `-${argv.join(' ').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '')}` : '')
-  + (EMPTY ? '-empty' : '') + (FIRST ? '-first' : '');
+  + (EMPTY ? '-empty' : '');
 // A focus session left running by an earlier shot would cover the screen.
 if (!argv.includes('-focus')) argv.push('-focus', 'NO');
 // The Agent answers from its script: there is no server or key here.

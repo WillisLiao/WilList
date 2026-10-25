@@ -3,7 +3,7 @@ import Foundation
 import WilListCore
 
 /// The plans the UI tests and screenshots start from, by name: `-plan new` (a first launch),
-/// `-plan empty` (the welcome seen, nothing added), `-plan a1` (two A's, the first added to Today), `-plan busy`
+/// `-plan empty` (nothing added), `-plan a1` (two A's, the first added to Today), `-plan busy`
 /// (those, a to-do `t1`, an item without a letter and a deleted to-do, so every screen and sheet
 /// has something on it), `-plan reminder` (a to-do whose reminder comes within 75 seconds; it asks to send
 /// notifications, as setting a reminder does), `-plan sample` (a full student week, for

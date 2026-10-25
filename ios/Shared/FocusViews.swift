@@ -1,4 +1,3 @@
-import AppIntents
 import SwiftUI
 import WilListCore
 
@@ -6,7 +5,7 @@ import WilListCore
 // Screen and in the Dynamic Island). Shared so the app's widget gallery can draw them too.
 
 /// The Lock Screen face, on its course's colour like the Focus screen: the letter and what it is,
-/// the time left large, the bar and Mark done, all in white.
+/// the time left large, and the bar, all in white.
 struct FocusLockView: View {
     let attributes: FocusAttributes
     let state: FocusAttributes.ContentState
@@ -30,16 +29,7 @@ struct FocusLockView: View {
                     .font(.system(size: 34, weight: .semibold, design: .rounded))
                     .frame(maxWidth: 130, alignment: .trailing)
             }
-            HStack(spacing: 14) {
-                FocusBar(attributes: attributes, state: state).tint(.white)
-                Button(intent: FinishFocusIntent()) {
-                    Label("Mark done", systemImage: "checkmark")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(field)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.white)
-            }
+            FocusBar(attributes: attributes, state: state).tint(.white)
         }
         .foregroundStyle(.white)
         .environment(\.field, field)

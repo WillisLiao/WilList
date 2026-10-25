@@ -6,11 +6,11 @@ import WilListCore
 /// Focus: one task, one timer, nothing else, on a field of its course's colour. The time spent
 /// rises from the bottom in a deeper shade, like a glass filling, and reaches the top when the
 /// planned minutes are up; then it says to take a break. The same timer runs on the Lock Screen
-/// and in the Dynamic Island.
+/// and in the Dynamic Island. It never ticks the task off: only the task's own circle does (the
+/// owner, 2026-10-25, after leaving at Break ticked one off).
 struct FocusView: View {
     @Environment(Store.self) private var store
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         if let f = store.focus {
@@ -27,12 +27,16 @@ struct FocusView: View {
         let over = left == 0
         let field = CourseColor.of(store.state.courseColor(store.state.items.first { $0.id == f.itemId }?.course))
         return VStack(spacing: 0) {
+            // Stop ends it early; at Break, Close below takes its place.
             HStack {
                 Spacer()
-                Button { store.finishFocus(done: false) } label: { Text("Stop").tapArea() }
-                    .foregroundStyle(.white)
+                if !over {
+                    Button { store.stopFocus() } label: { Text("Stop").tapArea() }
+                        .foregroundStyle(.white)
+                }
             }
             .font(.body.weight(.medium))
+            .frame(minHeight: 44)
             .padding(.horizontal, 12)
             .padding(.top, 8)
             // The middle spreads out when it fits; at the largest text sizes it scrolls instead, so
@@ -41,23 +45,19 @@ struct FocusView: View {
                 middle(f, left: left, over: over).frame(maxHeight: .infinity)
                 ScrollView { middle(f, left: left, over: over) }
             }
-            (typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))) {
-                if !over {
+            // One button: Pause or Resume, and Close once the time is up.
+            Group {
+                if over {
+                    Button { store.stopFocus() } label: { Text("Close").frame(maxWidth: .infinity) }
+                } else {
                     Button { f.paused ? store.resumeFocus() : store.pauseFocus() } label: {
                         Label(f.paused ? "Resume" : "Pause", systemImage: f.paused ? "play.fill" : "pause.fill")
-                            .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                     }
-                    .outlinedOnField()
                 }
-                Button { store.finishFocus(done: true) } label: {
-                    Label("Mark done", systemImage: "checkmark")
-                        .foregroundStyle(field)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("focusDone")
             }
+            .foregroundStyle(field)
+            .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .labelStyle(WordsWhenTight())
             .tint(.white)
@@ -189,25 +189,15 @@ extension Store {
         LiveFocus.update(f)
     }
 
-    /// Ends the session and keeps its real minutes, as the website does; Done also ticks it off: the
-    /// day's row, the to-do, or the item. Mark done on the Live Activity comes here too, maybe with
-    /// the app in the background.
-    func finishFocus(done: Bool) {
+    /// Ends the session and keeps its real minutes, as the website did. The task stays as it is:
+    /// only its own circle ticks it off.
+    func stopFocus() {
         guard let f = focus else { LiveFocus.end(); return }
         reload() // a widget may have changed the plan meanwhile
         let today = today
-        change(undo: done ? "\u{201C}\(f.title)\u{201D} done" : nil) { s in
-            if done {
-                if let row = dayRows(s.items, today, realToday: today).first(where: { $0.key == f.key }) {
-                    s.complete(row, today: today)
-                } else if let t = s.todos.first(where: { $0.id == f.itemId }) {
-                    if !t.done { s.toggleTodo(t.id, today: today) }
-                } else if s.index(of: f.itemId) != nil {
-                    s.completeLater(f.itemId, today: today)
-                }
-            }
+        change(undo: nil) { s in
             s.logFocus(itemId: f.itemId, type: f.type, title: f.title, minutes: f.elapsed() / 60, planned: f.minutes,
-                       completed: done, today: today)
+                       completed: false, today: today)
         }
         keepFocus(nil)
         LiveFocus.end()

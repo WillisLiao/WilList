@@ -50,11 +50,14 @@ public enum Agent {
         public var key: String
         /// The model to ask; nil for the WilList server, which picks it.
         public var model: String?
+        /// How hard it thinks (`reasoning_effort`: low, medium, high), for providers that take it.
+        public var effort: String?
 
-        public init(base: URL, key: String, model: String? = nil) {
+        public init(base: URL, key: String, model: String? = nil, effort: String? = nil) {
             self.base = base
             self.key = key
             self.model = model
+            self.effort = effort
         }
     }
 
@@ -153,6 +156,7 @@ public enum Agent {
             "tools": tools,
         ]
         if let model = route.model { body["model"] = .string(model) }
+        if let effort = route.effort { body["reasoning_effort"] = .string(effort) }
         r.httpBody = try? JSONEncoder().encode(JSONValue.object(body))
         return r
     }

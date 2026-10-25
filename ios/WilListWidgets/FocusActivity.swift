@@ -6,7 +6,7 @@ import WilListCore
 // The focus Live Activity, on iPhone and iPad only: a Mac has no Lock Screen or Dynamic Island.
 #if !targetEnvironment(macCatalyst)
 
-/// A focus session's timer on the Lock Screen and in the Dynamic Island, with Mark done.
+/// A focus session's timer on the Lock Screen and in the Dynamic Island.
 struct FocusActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FocusAttributes.self) { context in
@@ -40,16 +40,9 @@ struct FocusActivity: Widget {
                         .lineLimit(2)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    HStack(spacing: 12) {
-                        FocusBar(attributes: a, state: s).tint(lifted)
-                        Button(intent: FinishFocusIntent()) {
-                            Label("Mark done", systemImage: "checkmark").font(.subheadline.weight(.semibold))
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(field)
-                    }
-                    .padding(.horizontal, 4)
-                    .padding(.top, 6)
+                    FocusBar(attributes: a, state: s).tint(lifted)
+                        .padding(.horizontal, 4)
+                        .padding(.top, 6)
                 }
             } compactLeading: {
                 // A to-do or anything else without a letter: the timer instead.

@@ -28,8 +28,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         // The Claude key students once typed into More is no longer used: the Agent runs on
         // WilList's own server. Leave no secret behind.
         SecItemDelete([kSecClass as String: kSecClassGenericPassword, kSecAttrAccount as String: "anthropic-api-key"] as CFDictionary)
-        // Mark done on the focus Live Activity runs here, with the app in the background if need be.
-        Focus.finish = { done in Store.shared.finishFocus(done: done) }
         if Store.shared.focus == nil { LiveFocus.end() }
         return true
     }
@@ -130,7 +128,6 @@ struct RootView: View {
     // `-tab plan` on launch opens a tab directly (screenshots, Shortcuts debugging).
     @State private var tab = UserDefaults.standard.string(forKey: "tab").flatMap(AppTab.init) ?? .today
     @AppStorage("badge") private var badge = Badge.off
-    @State private var welcoming = Store.shared.needsWelcome
     @State private var keyboardUp = false
     #if DEBUG
     @State private var gallery = UserDefaults.standard.object(forKey: "gallery") != nil
@@ -151,17 +148,13 @@ struct RootView: View {
         .onGeometryChange(for: Bool.self) { $0.safeAreaInsets.bottom > 150 } action: { keyboardUp = $0 }
         // The accent colour is the teal already; tinting with it too turns the toolbar buttons teal.
         .tint(.brand)
-        // The first launch writes the first plan, then opens Today on its A1.
         .sheet(isPresented: Binding(get: { store.showingSettings }, set: { store.showingSettings = $0 })) {
             SettingsView().tint(.brand)
-        }
-        .fullScreenCover(isPresented: $welcoming) {
-            WelcomeView { tab = .today }.tint(.brand)
         }
         .fullScreenCover(isPresented: Binding(get: { store.planningTomorrow }, set: { store.planningTomorrow = $0 })) {
             PlanTomorrow().tint(.brand)
         }
-        // A focus session covers everything until Mark done or Stop.
+        // A focus session covers everything until Stop, or Close at Break.
         .fullScreenCover(isPresented: Binding(get: { store.focus != nil }, set: { _ in })) {
             FocusView().tint(.brand)
         }

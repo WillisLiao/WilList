@@ -2,8 +2,7 @@ import XCTest
 
 /// The flows that must never break, driven the way a student would: add a to-do and tick it off,
 /// add the day's A1 in Plan, set a reminder on one (or while adding it in Plan) and Mark done on the reminder when it comes,
-/// give one a letter, tick off the A1 at the top of Today, a focus session on it, the first-run
-/// welcome, Plan tomorrow as the evening notice opens it, Search, and adding what the Agent found.
+/// give one a letter, tick off the A1 at the top of Today, a focus session on it that leaves it to do, Plan tomorrow as the evening notice opens it, Search, and adding what the Agent found.
 /// Each test starts the app from a known plan in a file of its own (`-plan`, see TestPlan.swift).
 @MainActor
 final class CoreFlowsTests: XCTestCase {
@@ -174,26 +173,10 @@ final class CoreFlowsTests: XCTestCase {
         XCTAssertTrue(tap(app.buttons["Start a focus session"].firstMatch, shows: app.buttons["25 min"]))
         XCTAssertTrue(tap(app.buttons["25 min"], shows: app.staticTexts["One thing until it’s done."]))
         XCTAssertTrue(tap(app.buttons["Pause"], shows: app.buttons["Resume"]))
-        // Mark done closes the focus screen on Today, without the task.
-        XCTAssertTrue(tap(app.buttons["focusDone"], hides: title("Write the essay intro", in: app)))
+        // Stop closes the focus screen on Today, with the task still to do.
+        XCTAssertTrue(tap(app.buttons["Stop"], shows: title("Write the essay intro", in: app)))
+        XCTAssertFalse(app.buttons["Resume"].exists)
         XCTAssertFalse(title("Read chapter 4", in: app).exists, "nothing comes up from Plan")
-    }
-
-    func testFirstRunPicksAnA1() {
-        let app = launch(plan: "new")
-        let first = app.textFields["Read chapter 4 by Monday"]
-        XCTAssertTrue(first.waitForExistence(timeout: wait))
-        first.tap()
-        first.typeText("Write the lab report\n")
-        app.textFields["And next?"].typeText("Email Prof. Chen\n")
-        XCTAssertTrue(tap(app.buttons["Next"], shows: app.buttons["Make it my A1"]))
-        choose(app.buttons["Write the lab report"], in: app)
-        XCTAssertTrue(tap(app.buttons["Make it my A1"], shows: app.buttons["Start"]))
-        XCTAssertTrue(tap(app.buttons["Start"], shows: app.textFields["Add a to-do"]), "Today opens")
-        XCTAssertTrue(title("Write the lab report", in: app).exists)
-        // The other line waits in Plan, with no letter and nothing asking for one.
-        XCTAssertTrue(tap(app.buttons["tab-plan"], shows: title("Email Prof. Chen", in: app)))
-        XCTAssertFalse(app.buttons["Give it a letter"].exists, "no mark without a letter")
     }
 
     func testPlanTomorrowPicksTheA1() {

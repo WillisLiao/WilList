@@ -1,10 +1,9 @@
 import ActivityKit
-import AppIntents
 import Foundation
 import WilListCore
 
-/// One focus session on a row of the day, the A1 usually: one thing, one timer, until Done or Stop.
-/// It is kept in the app group's defaults, so the app and the Live Activity's Mark done agree on it.
+/// One focus session on a task, the A1 usually: one thing, one timer, until Stop.
+/// It is kept in the app group's defaults, so it outlives the app being closed.
 struct FocusSession: Codable, Equatable, Identifiable {
     var key: String
     var itemId: String
@@ -62,22 +61,3 @@ struct FocusAttributes {
 #if !targetEnvironment(macCatalyst)
 extension FocusAttributes: ActivityAttributes {}
 #endif
-
-/// Mark done on the Live Activity. It runs in the app, launched in the background if need be,
-/// which hands it to its store (`Focus.finish`).
-struct FinishFocusIntent: LiveActivityIntent {
-    static let title: LocalizedStringResource = "Mark done"
-    static let isDiscoverable = false
-
-    init() {}
-
-    @MainActor func perform() async throws -> some IntentResult {
-        Focus.finish?(true)
-        return .result()
-    }
-}
-
-@MainActor enum Focus {
-    /// Ends the session, marking its row done when true. Set by the app at launch.
-    static var finish: ((Bool) -> Void)?
-}

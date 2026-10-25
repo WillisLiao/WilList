@@ -253,3 +253,7 @@ struct FinishPage<Middle: View, Buttons: View>: View {
         .fixedSize(horizontal: false, vertical: true)
     }
 }
+
+extension Int {
+    func clamped(_ low: Int, _ high: Int) -> Int { Swift.min(Swift.max(self, low), high) }
+}

@@ -243,15 +243,6 @@ extension View {
     /// A sheet's cards on its light ground (`Color.sheet`).
     func sheetGround() -> some View { scrollContentBackground(.hidden).background(Color.sheet) }
 
-    /// The second button on a field of colour (Focus, Plan tomorrow's last page): a white outline
-    /// and no wash, so its white words keep the field's own contrast; on the system's white wash
-    /// they fell to 3.9:1.
-    func outlinedOnField() -> some View {
-        buttonStyle(.bordered)
-            .tint(.clear)
-            .overlay(Capsule().strokeBorder(.white, lineWidth: 1.5))
-    }
-
     /// Words straight on a tab's slate ground (a section's title, its footer), in its deep ink.
     func onGround() -> some View { foregroundStyle(Color.groundInk) }
 

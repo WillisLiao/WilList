@@ -534,6 +534,8 @@ struct PlayButton: View {
     /// A study block's own length.
     var planned: Int?
     let start: (Int) -> Void
+    @State private var custom = false
+    @State private var typed = ""
 
     var body: some View {
         Menu {
@@ -544,6 +546,7 @@ struct PlayButton: View {
                         if m == planned { Text("As planned") }
                     }
                 }
+                Button("Custom") { typed = ""; custom = true }
             }
         } label: {
             Image(systemName: "play.fill")
@@ -556,6 +559,11 @@ struct PlayButton: View {
         .menuIndicator(.hidden)
         .buttonStyle(.borderless)
         .accessibilityLabel("Start a focus session")
+        .alert("Focus for how many minutes?", isPresented: $custom) {
+            TextField("Minutes", text: $typed).keyboardType(.numberPad)
+            Button("Start") { if let m = Int(typed), (1...600).contains(m) { start(m) } }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 }
 

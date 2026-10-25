@@ -15,11 +15,12 @@ To change provider, change the server's three settings (below); the app doesn't 
 
 ## The provider
 
-The owner picked OpenCode on 2026-10-25.
-Its pay-as-you-go service (the OpenCode Console, once Zen) serves chat completions at `https://opencode.ai/inference/openai/v1` with a key from the console, for models such as DeepSeek V4.1 Flash (`deepseek-v4.1-flash`, $0.30 / $1.20 per million tokens in and out), GLM 5.3 Flash (`glm-5.3-flash`, $0.15 / $0.50), MiniMax M3, Kimi K2.6 and Mistral Large 4; its own other models answer only in other formats (Responses, Messages, Gemini), and its free models only inside OpenCode itself.
-It says those paid models keep nothing and don't train on what is sent.
-**But its terms don't let it serve students:** "You will only use the Services for your own internal use, and not on behalf of or for the benefit of any third party" (opencode.ai/legal/terms-of-service, read 2026-10-25); OpenCode Go, the subscription, is also "designed for OpenCode and other coding agents" and for a single person.
-So OpenCode is for the owner's own testing (debug builds default to it, with `deepseek-v4.1-flash`), and the shipped Agent needs either OpenCode's written OK (help@anoma.ly) or a provider whose terms allow serving an app's users, perhaps DeepSeek's own API (`https://api.deepseek.com`) for the same model; its terms haven't been read yet.
+The owner chose DeepSeek on 2026-10-25, after OpenCode's terms turned out to allow only their own use ("for your own internal use, and not on behalf of or for the benefit of any third party").
+The model is `deepseek-flash` (V4.1 Flash, 1M context, tool calls, $0.15 / $0.60 per million tokens in and out at off-peak, double at peak, cached input $0.003) at `https://api.deepseek.com`, on `reasoning_effort` `low`.
+Its replies carry `reasoning_content`, which must go back in the conversation or the next request fails: the app keeps each assistant message exactly as it came.
+Tried live on 2026-10-25: it read a syllabus, proposed the right three items, ignored an instruction planted in the file and answered a follow-up about the plan.
+DeepSeek's own terms for serving an app's users haven't been read yet; check them, and its data handling for the privacy policy, before launch.
+The key the owner gave is only for debug builds; the server gets its own, held in Secret Manager.
 
 ## Where it runs
 
@@ -77,6 +78,6 @@ A provider's own 401 or 402 (a wrong key, an empty balance) must not reach the a
 
 ## Trying a provider from a debug build
 
-Debug builds can skip the server: put `AGENT_KEY` in the scheme's environment (Product, Scheme, Edit Scheme, Run, Arguments), an OpenCode key by default, with `deepseek-v4.1-flash`.
-For another provider or model, add `AGENT_URL` (its chat completions address, such as `https://api.deepseek.com`) and `AGENT_MODEL`.
+Debug builds can skip the server: put `AGENT_KEY` in the scheme's environment (Product, Scheme, Edit Scheme, Run, Arguments), a DeepSeek key by default, with `deepseek-flash` on low effort.
+For another provider or model, add `AGENT_URL` (its chat completions address), `AGENT_MODEL` and `AGENT_EFFORT`.
 Environment variables only reach the app when Xcode launches it, not from the Home Screen.

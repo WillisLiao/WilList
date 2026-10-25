@@ -12,16 +12,18 @@ Read it first; update the top section at the end of every substantial session.
 - Then, at the owner's ask, Today's add line works as in Microsoft To Do: tapping the line or its + turns the + into the to-do's empty circle, Add takes Search and Sort's place at the top right, and only Add adds the line; return just puts the keyboard away.
 - No more kinds, at the owner's word ("listing them is enough, organizing them based on those kinds are useless"): every item is a task or a study block, from typed words, the Agent and calendar links alike. The study planner (prep sessions, start dates, pace calibration, replanning), Progress's exams and deadlines, grade weights, effort and the suggested letter are gone; older saves still load, any old kind read as a task. Progress is the last 7 days, the suggestions and the next 7 days' study blocks.
 
-- Then, at the owner's asks: Today shows only what is added to it (no A1 comes up from Plan by itself; the A1 picked in the first run or in Plan tomorrow is added for its day); Settings has Delete progress (Progress and Goals' 21 days from zero, finished tasks kept so a misclick can be undone); Progress lost "A first"; every tab lies on a light galaxy silver. On this Mac, outside the repo, taste-skill became the default design skill and ui-ux-pro-max went to the Trash.
+- Then, at the owner's asks: Today shows only what is added to it (no A1 comes up from Plan by itself; the A1 picked in Plan tomorrow is added for its day); Settings has Delete progress (Progress and Goals' 21 days from zero, finished tasks kept so a misclick can be undone); Progress lost "A first"; every tab lies on a light galaxy silver. On this Mac, outside the repo, taste-skill became the default design skill and ui-ux-pro-max went to the Trash.
 - Then: a Trash in Settings keeps every deleted task and to-do for 30 days (`AppState.trash`, optional in the save file), with Restore; Today is one card (lettered tasks on top, to-dos under them) with Add a to-do in a bar at the foot, as in Microsoft To Do; and the Agent runs on Claude Haiku 5.5 (`claude-haiku-5-5`), not Opus 5.5, at the owner's word ("it's a simple task agent"), without the server-side fallback Haiku doesn't have.
 - Then, at the owner's word ("it should be key agnostic so the api key just provides the model, but the agent framework should be the same"): the Agent speaks the chat completions format nearly every provider takes and sends only text, so any provider's key works with the same prompt, tools and cards. Photos and scanned PDF pages are read on the phone (Apple's text recognition, rows kept); PDFs give their own text. The provider, key and model are the server's settings; debug builds use `AGENT_URL`, `AGENT_KEY` and `AGENT_MODEL`. Nothing names Anthropic in the app any more.
 - Then: the owner picked OpenCode, whose terms allow only their own use, so debug builds default to it (`AGENT_KEY` alone, DeepSeek V4.1 Flash) and the shipped Agent still needs OpenCode's written OK or another provider. The focus timer has a thin white ring around the time that closes as the minutes pass.
+- Then: Focus lost Mark done everywhere (only Pause, Stop, and Close at Break; nothing ticks a task but its own circle); Play's menu has a Custom time; the Agent's debug route is DeepSeek `deepseek-flash` on low effort, tried live (right items, planted instruction ignored).
+- Then: the first-run welcome (questions picking an A1) is gone, at the owner's word ("no need for tutorial"); a new install opens on an empty Today.
 - CI failed once on `56af015`: the accessibility audit caught an empty keyboard suggestion slot that came back with no element; the audit now skips that too.
 
 **Checked (latest round, `a824d01`):** 77 core tests (two read a rendered timetable photo and a scanned PDF page through the real recognizer), lint, every UI test (17: 16 passed, `WidgetTests` skipped as usual), a zero-warning release build, and the Agent's screens in the simulator (demo). Never tried against a live provider: no key on this Mac.
 **Checked before:** 73 core tests (the planner's went with it), lint, the UI tests (16: 15 passed, `WidgetTests` skipped as usual) and a zero-warning release build; Progress, Plan, Later, a task's and a study block's details, Settings, the Agent's card (demo), Today and New task looked at in the simulator (iPhone 17).
 **On the owner's devices:** the iPhone and the iPad both have `4de1d6d` (installed 2026-10-25).
-**To ask the owner:** OpenCode's terms allow only their own use, so for the shipped Agent: ask OpenCode for written permission, or pick a provider whose terms allow serving students; and the open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
+**To ask the owner:** the shipped Agent's DeepSeek terms haven't been read yet (and a server key is needed, the owner's test key is for debug builds); and the open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
 
 ## Before that (2026-10-24, after the owner tried the build)
 
@@ -73,7 +75,7 @@ The owner said on 2026-10-23 that there are no fixed rules, for anything, and as
 
 - **First run:** three short steps, each question in white on the teal field: what do you have to do (one line each, dates are read), which one matters most (that's your A1), what is your main goal. Skippable, under a minute.
   Between steps the band stays put and the new question rises in; the step count sits in the middle and rolls on.
-- **Today:** the date in large bold type with how the day stands, then a card with the tasks added to Today (Add to Today, a line given a letter here, or the A1 picked in the first run or in Plan tomorrow); nothing comes from Plan by itself (the owner's call, 2026-10-25).
+- **Today:** the date in large bold type with how the day stands, then a card with the tasks added to Today (Add to Today, a line given a letter here, or the A1 picked in Plan tomorrow); nothing comes from Plan by itself (the owner's call, 2026-10-25).
   Below: the quick checklist (typed dates are read, five sorts, stars, completed); while a line is typed, the letters and Reminder, Date and Repeat menus sit under it, and a lettered line goes to Plan, on today's list.
   Every task has Play (a teal triangle) beside its star or letter: it asks how long, then starts focus.
   The line under each title is `.footnote`; a to-do's date sits beside a calendar icon without the word Due.
@@ -144,7 +146,7 @@ The one hard limit kept is that saved plans (`willist.v1`) must keep loading.
 
 - `ios/WilList/`: the app.
   Tabs: `TodayView`, `PlanView` (`PlanList`, `MonthCalendar`), `ProgressTab` (`DoneChart`, `WeekChart`), `AgentView` (the chat, `AgentPass` for the subscription, `AgentDemo` in debug). `Settings` holds the profile picture and the Settings sheet; `GoalsList` opens from it.
-  Flows: `Welcome` and `PlanTomorrow` (sharing `Steps`), `LetterSorter`, `FocusView` (with `LiveFocus` and `FocusNotice`).
+  Flows: `PlanTomorrow` (with `Steps`), `LetterSorter`, `FocusView` (with `LiveFocus` and `FocusNotice`).
   Details: `TodoEditor`, `ItemEditor`, `TaskFields`.
   `Theme` holds the shared pieces (the check button and its burst, the toast, the hero card, the readable column, letter menus); `Store` is the one source of truth (saves on every change, undo).
   Also `Reminders`, `AddItemSheet`, `SearchView`, `Intents`; `TestPlan` and `WidgetGallery` are debug-only.

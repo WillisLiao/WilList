@@ -119,11 +119,6 @@ final class Store {
         UIAccessibility.post(notification: .announcement, argument: text)
     }
 
-    /// A first launch: nothing saved yet and the welcome not seen.
-    var needsWelcome: Bool {
-        !state.meta.onboarded && state.items.isEmpty && state.todos.isEmpty && state.goals.isEmpty && state.mdp.isEmpty
-    }
-
     /// Called when the app comes to the front and at midnight.
     func refreshDay() {
         today = WilListCore.today()

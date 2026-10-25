@@ -6,7 +6,7 @@ import WilListCore
 
 /// The Agent: a chat that takes anything with dates in it (a file, a photo, words), proposes what
 /// to add, and answers questions about the plan. It is a subscription, and asks before anything is
-/// first sent to Anthropic; nothing goes into the plan without a tap.
+/// first sent to the AI model; nothing goes into the plan without a tap.
 struct AgentView: View {
     @State private var pass = AgentPass.shared
     @AppStorage("agentConsent") private var consented = false
@@ -83,11 +83,15 @@ final class AgentPass {
     private static let server = (Bundle.main.object(forInfoDictionaryKey: "WLAgentServer") as? String).flatMap { URL(string: $0) }
 
     #if DEBUG
-    /// Debug builds can talk to Anthropic directly with `ANTHROPIC_API_KEY` in the environment, or
-    /// answer from a script with `-agentDemo YES` (screenshots and UI tests), with no subscription.
+    /// Debug builds can talk to any provider directly with `AGENT_URL` (its chat completions
+    /// address, such as https://api.deepseek.com), `AGENT_KEY` and `AGENT_MODEL` in the environment,
+    /// or answer from a script with `-agentDemo YES` (screenshots and UI tests), with no subscription.
     private static let debugRoute: Agent.Route? = {
-        if UserDefaults.standard.bool(forKey: "agentDemo") { return .direct(key: "demo") }
-        return ProcessInfo.processInfo.environment["ANTHROPIC_API_KEY"].flatMap { $0.isEmpty ? nil : .direct(key: $0) }
+        if UserDefaults.standard.bool(forKey: "agentDemo") { return Agent.Route(base: URL(string: "https://demo.invalid")!, key: "demo") }
+        let env = ProcessInfo.processInfo.environment
+        guard let base = env["AGENT_URL"].flatMap({ URL(string: $0) }), let key = env["AGENT_KEY"], !key.isEmpty,
+              let model = env["AGENT_MODEL"], !model.isEmpty else { return nil }
+        return Agent.Route(base: base, key: key, model: model)
     }()
     #else
     private static let debugRoute: Agent.Route? = nil
@@ -99,7 +103,7 @@ final class AgentPass {
     var route: Agent.Route? {
         if let r = Self.debugRoute { return r }
         guard let server = Self.server, let signed else { return nil }
-        return .server(server, pass: signed)
+        return Agent.Route(base: server, key: signed)
     }
 
     /// Checks the subscription now and again whenever the App Store reports a change, from launch on.
@@ -150,6 +154,8 @@ private struct AgentChat: View {
     @State private var typed = ""
     @State private var draft = ""
     @State private var files: [Agent.Attachment] = []
+    /// The files still being read.
+    @State private var reading: [String] = []
     @State private var problem: String?
     @State private var work: Task<Void, Never>?
     @State private var choosingFile = false
@@ -158,7 +164,7 @@ private struct AgentChat: View {
     @FocusState private var focused: Bool
 
     private var busy: Bool { work != nil }
-    private var canSend: Bool { !busy && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !files.isEmpty) }
+    private var canSend: Bool { !busy && reading.isEmpty && (!draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !files.isEmpty) }
 
     var body: some View {
         ScrollView {
@@ -237,7 +243,7 @@ private struct AgentChat: View {
 
     // MARK: rows
 
-    /// Before the first message: what the Agent does, and the consent to send things to Anthropic.
+    /// Before the first message: what the Agent does, and the consent to send things to the AI model.
     @ViewBuilder private var start: some View {
         if consented {
             AgentIntro(title: "Hand it anything with dates", detail: "A syllabus, timetable, photo or email. You choose what goes in.")
@@ -252,7 +258,7 @@ private struct AgentChat: View {
             }
         } else {
             VStack(alignment: .leading, spacing: 16) {
-                AgentIntro(title: "Before you start", detail: "The Agent sends what you share, and your plan, to Anthropic’s Claude to answer. Nothing goes into your plan until you tap Add.")
+                AgentIntro(title: "Before you start", detail: "Your phone reads what you share and sends the text, with your plan, to an AI model to answer. Nothing goes into your plan until you tap Add.")
                 Button { withAnimation { consented = true } } label: {
                     Text("Continue").frame(maxWidth: .infinity)
                 }
@@ -296,9 +302,21 @@ private struct AgentChat: View {
 
     private var composer: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !files.isEmpty {
+            if !files.isEmpty || !reading.isEmpty {
                 ScrollView(.horizontal) {
                     HStack(spacing: 8) {
+                        ForEach(reading, id: \.self) { name in
+                            HStack(spacing: 8) {
+                                ProgressView().controlSize(.small)
+                                Text(name).lineLimit(1)
+                            }
+                            .font(.subheadline.weight(.medium))
+                            .padding(.horizontal, 12)
+                            .frame(minHeight: 44)
+                            .background(Color.white, in: Capsule())
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("Reading \(name)")
+                        }
                         ForEach(files, id: \.name) { f in
                             HStack(spacing: 4) {
                                 Label(f.name, systemImage: "paperclip").lineLimit(1)
@@ -433,11 +451,15 @@ private struct AgentChat: View {
                 : itemsEntry(r.items.sorted { ($0.date ?? "9999") < ($1.date ?? "9999") }))
             return
         }
-        guard files.count < 5 else { problem = "Five files at a time at most."; return }
-        do {
-            files.append(Agent.Attachment(name: name, blocks: try fileBlocks(data, name: name)))
-        } catch {
-            problem = (error as? LocalizedError)?.errorDescription ?? "Couldn’t read that file."
+        guard files.count + reading.count < 5 else { problem = "Five files at a time at most."; return }
+        reading.append(name)
+        Task {
+            do {
+                files.append(Agent.Attachment(name: name, text: try await fileText(data, name: name)))
+            } catch {
+                problem = (error as? LocalizedError)?.errorDescription ?? "Couldn’t read that file."
+            }
+            reading.removeAll { $0 == name }
         }
     }
 }
@@ -541,26 +563,29 @@ enum AgentDemo {
     static func send(_ request: URLRequest) async throws -> (Data, Int) {
         try await Task.sleep(for: .seconds(1))
         let body = try JSONDecoder().decode(JSONValue.self, from: request.httpBody ?? Data())
-        let last = body["messages"]?.array?.last?["content"]?.array ?? []
+        let last = body["messages"]?.array?.last
         func item(_ title: String, _ days: Int, _ time: String) -> JSONValue {
             ["title": .string(title), "date": .string(addDays(WilListCore.today(), days)), "time": .string(time), "course": "CHEM110", "repeatDays": []]
         }
-        let shared = last.contains { $0["type"] == "document" || $0["type"] == "image" || $0["text"]?.string?.lowercased().contains("syllabus") == true }
-        let content: JSONValue
-        switch last.last(where: { $0["type"] == "tool_result" })?["tool_use_id"]?.string {
-        case "demo1":
-            content = [["type": "tool_use", "id": "demo2", "name": "propose_items", "input": ["items": [
-                item("Quiz 3", 3, "09:00"), item("Lab report", 6, "23:59"), item("Read chapter 7", 2, ""),
-            ]]]]
-        case "demo2":
-            content = [["type": "text", "text": "I found a quiz, a lab report and a reading. Tick what you want and tap Add."]]
-        default:
-            content = shared
-                ? [["type": "tool_use", "id": "demo1", "name": "read_plan", "input": [:]]]
-                : [["type": "text", "text": "You finished 9 things this week, 4 of them A’s, and started 5 days with your A1. Thursday is your heaviest day, so start the lab report tomorrow."]]
+        func call(_ id: String, _ name: String, _ input: JSONValue) -> JSONValue {
+            ["role": "assistant", "content": .null, "tool_calls": [["id": .string(id), "type": "function", "function": [
+                "name": .string(name), "arguments": .string(String(decoding: try! JSONEncoder().encode(input), as: UTF8.self))]]]]
         }
-        let stop = content.array?.first?["type"] == "tool_use" ? "tool_use" : "end_turn"
-        return (try JSONEncoder().encode(["content": content, "stop_reason": .string(stop)] as JSONValue), 200)
+        let words = last?["content"]?.string ?? ""
+        let shared = words.contains("The student attached") || words.lowercased().contains("syllabus")
+        let message: JSONValue
+        switch last?["role"] == "tool" ? last?["tool_call_id"]?.string : nil {
+        case "demo1":
+            message = call("demo2", "propose_items", ["items": [item("Quiz 3", 3, "09:00"), item("Lab report", 6, "23:59"), item("Read chapter 7", 2, "")]])
+        case "demo2":
+            message = ["role": "assistant", "content": "I found a quiz, a lab report and a reading. Tick what you want and tap Add."]
+        default:
+            message = shared
+                ? call("demo1", "read_plan", [:])
+                : ["role": "assistant", "content": "You finished 9 things this week, 4 of them A’s. Thursday is your heaviest day, so start the lab report tomorrow."]
+        }
+        let finish: JSONValue = message["tool_calls"] == nil ? "stop" : "tool_calls"
+        return (try JSONEncoder().encode(["choices": [["index": 0, "message": message, "finish_reason": finish]]] as JSONValue), 200)
     }
 }
 #endif

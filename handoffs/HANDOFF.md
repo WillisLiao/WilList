@@ -14,12 +14,13 @@ Read it first; update the top section at the end of every substantial session.
 
 - Then, at the owner's asks: Today shows only what is added to it (no A1 comes up from Plan by itself; the A1 picked in the first run or in Plan tomorrow is added for its day); Settings has Delete progress (Progress and Goals' 21 days from zero, finished tasks kept so a misclick can be undone); Progress lost "A first"; every tab lies on a light galaxy silver. On this Mac, outside the repo, taste-skill became the default design skill and ui-ux-pro-max went to the Trash.
 - Then: a Trash in Settings keeps every deleted task and to-do for 30 days (`AppState.trash`, optional in the save file), with Restore; Today is one card (lettered tasks on top, to-dos under them) with Add a to-do in a bar at the foot, as in Microsoft To Do; and the Agent runs on Claude Haiku 5.5 (`claude-haiku-5-5`), not Opus 5.5, at the owner's word ("it's a simple task agent"), without the server-side fallback Haiku doesn't have.
+- Then, at the owner's word ("it should be key agnostic so the api key just provides the model, but the agent framework should be the same"): the Agent speaks the chat completions format nearly every provider takes and sends only text, so any provider's key works with the same prompt, tools and cards. Photos and scanned PDF pages are read on the phone (Apple's text recognition, rows kept); PDFs give their own text. The provider, key and model are the server's settings; debug builds use `AGENT_URL`, `AGENT_KEY` and `AGENT_MODEL`. Nothing names Anthropic in the app any more.
 - CI failed once on `56af015`: the accessibility audit caught an empty keyboard suggestion slot that came back with no element; the audit now skips that too.
 
 **Checked (latest round):** 74 core tests, lint, every UI test (16: 15 passed, `WidgetTests` skipped as usual), a zero-warning release build, and Today, Progress, Plan, Goals, Settings and the Delete progress flow in the simulator.
 **Checked before:** 73 core tests (the planner's went with it), lint, the UI tests (16: 15 passed, `WidgetTests` skipped as usual) and a zero-warning release build; Progress, Plan, Later, a task's and a study block's details, Settings, the Agent's card (demo), Today and New task looked at in the simulator (iPhone 17).
 **On the owner's devices:** the iPhone and the iPad both have `4de1d6d` (installed 2026-10-25).
-**To ask the owner:** the four open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
+**To ask the owner:** which provider and model the Agent's server should use (their terms must allow serving students), and the open questions in `handoffs/NEXT-SESSION-2026-10-25.md`.
 
 ## Before that (2026-10-24, after the owner tried the build)
 

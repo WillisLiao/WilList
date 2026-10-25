@@ -21,7 +21,7 @@
 //   -focus YES                       start a focus session on the A1 (NO, the default here, ends one left running)
 //   -focusSpent 30                   with -focus YES: 30 minutes of it already spent
 //   -agentDemo YES                   the Agent answers from a script, with no subscription (on by default here)
-//   -agentConsent YES|NO             the Agent's ask before sending anything to Anthropic, answered or not (YES here)
+//   -agentConsent YES|NO             the Agent's ask before sending anything to the AI model, answered or not (YES here)
 //   -agentAsk "Here's my syllabus"   the Agent is sent these words on launch
 //
 // If a notification permission prompt keeps covering the app, an earlier run asked and was never

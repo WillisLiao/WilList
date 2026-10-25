@@ -1,10 +1,17 @@
 import Compression
 import Foundation
 import ImageIO
+import PDFKit
 import UniformTypeIdentifiers
+import Vision
+#if canImport(UIKit)
+import UIKit
+#endif
 
-// Any file someone has, as something Claude can read: PDFs and photos go as they are, Word,
-// PowerPoint and Excel files are unzipped to their text, everything else is read as text.
+// Any file someone has, as text, read on the device: a PDF page by page (a scanned page like a
+// photo), a photo by Apple's text recognition, Word, PowerPoint and Excel files unzipped, anything
+// else as text. Only text is sent, so the Agent works the same with any model, even one that can't
+// see pictures.
 
 public enum FileError: LocalizedError, Equatable {
     case tooBig, damaged, empty, picture
@@ -21,7 +28,7 @@ public enum FileError: LocalizedError, Equatable {
     }
 }
 
-private let maxBytes = 20 * 1024 * 1024 // the API takes 32 MB per request; base64 adds a third
+private let maxBytes = 20 * 1024 * 1024
 
 // MARK: zip (Office files)
 
@@ -108,46 +115,72 @@ func officeText(_ data: Data, kind: String) throws -> String {
     }
 }
 
-// MARK: content blocks
+// MARK: photos and PDFs
 
-private func base64Block(_ type: String, _ mediaType: String, _ data: Data) -> [String: JSONValue] {
-    ["type": .string(type), "source": .object(["type": "base64", "media_type": .string(mediaType), "data": .string(data.base64EncodedString())])]
+/// The words in a picture, a line at a time: pieces side by side, such as a timetable's cells,
+/// stay on one line, split by tabs.
+func pictureText(_ image: CGImage) async throws -> String {
+    var request = RecognizeTextRequest()
+    request.automaticallyDetectsLanguage = true
+    let found = try await request.perform(on: image).compactMap { o in o.topCandidates(1).first.map { (box: o.boundingBox, text: $0.string) } }
+    func mid(_ b: NormalizedRect) -> CGFloat { b.origin.y + b.height / 2 }
+    var lines: [[(box: NormalizedRect, text: String)]] = []
+    // Top to bottom (the origin is at the bottom left); a piece whose middle is within half a line
+    // of the line's first piece joins it.
+    for f in found.sorted(by: { mid($0.box) > mid($1.box) }) {
+        if let first = lines.last?.first, abs(mid(first.box) - mid(f.box)) < min(first.box.height, f.box.height) / 2 {
+            lines[lines.count - 1].append(f)
+        } else {
+            lines.append([f])
+        }
+    }
+    return lines.map { $0.sorted { $0.box.origin.x < $1.box.origin.x }.map(\.text).joined(separator: "\t") }.joined(separator: "\n")
 }
 
-// Photos are re-encoded as JPEG no larger than 2000 px: iPhone HEIC photos aren't accepted as
-// they are, and a smaller picture reads just as well for less.
-private func photo(_ data: Data) throws -> Data {
+/// A photo, turned upright and no larger than 3000 px, which reads as well as the full size.
+private func photoText(_ data: Data) async throws -> String {
     guard let src = CGImageSourceCreateWithData(data as CFData, nil),
           let img = CGImageSourceCreateThumbnailAtIndex(src, 0, [
               kCGImageSourceCreateThumbnailFromImageAlways: true,
               kCGImageSourceCreateThumbnailWithTransform: true,
-              kCGImageSourceThumbnailMaxPixelSize: 2000,
+              kCGImageSourceThumbnailMaxPixelSize: 3000,
           ] as CFDictionary) else { throw FileError.picture }
-    let out = NSMutableData()
-    guard let dst = CGImageDestinationCreateWithData(out, UTType.jpeg.identifier as CFString, 1, nil) else { throw FileError.picture }
-    CGImageDestinationAddImage(dst, img, [kCGImageDestinationLossyCompressionQuality: 0.9] as CFDictionary)
-    guard CGImageDestinationFinalize(dst) else { throw FileError.picture }
-    return out as Data
+    return try await pictureText(img)
 }
 
-private let passThrough: [String: String] = ["jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "gif": "image/gif", "webp": "image/webp"]
+/// Each page's own text, or for a scanned page with none, the words in its picture.
+private func pdfText(_ data: Data) async throws -> String {
+    guard let doc = PDFDocument(data: data) else { throw FileError.damaged }
+    var pages: [String] = []
+    for i in 0..<doc.pageCount {
+        guard let page = doc.page(at: i) else { continue }
+        var text = (page.string ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.isEmpty {
+            let thumb = page.thumbnail(of: CGSize(width: 2000, height: 2000), for: .mediaBox)
+            #if canImport(UIKit)
+            let image = thumb.cgImage
+            #else
+            let image = thumb.cgImage(forProposedRect: nil, context: nil, hints: nil)
+            #endif
+            if let image { text = try await pictureText(image) }
+        }
+        if !text.isEmpty { pages.append(text) }
+    }
+    return pages.joined(separator: "\n\n")
+}
 
-/// Content blocks for one file, ready to send with a request.
-public func fileBlocks(_ data: Data, name: String) throws -> [JSONValue] {
+// MARK: any file
+
+/// The text of one file, ready to send. Away from the main thread: reading a scan takes a moment.
+@concurrent public func fileText(_ data: Data, name: String) async throws -> String {
     guard data.count <= maxBytes else { throw FileError.tooBig }
     let ext = (name as NSString).pathExtension.lowercased()
-    let type = UTType(filenameExtension: ext)
-    if ext == "pdf" || data.starts(with: Array("%PDF".utf8)) {
-        var block = base64Block("document", "application/pdf", data)
-        block["title"] = .string(name)
-        return [.object(block)]
-    }
-    if type?.conforms(to: .image) == true {
-        if let media = passThrough[ext], data.count < 3_500_000 { return [.object(base64Block("image", media, data))] }
-        return [.object(base64Block("image", "image/jpeg", try photo(data)))]
-    }
     let text: String
-    if ["docx", "pptx", "xlsx"].contains(ext) {
+    if ext == "pdf" || data.starts(with: Array("%PDF".utf8)) {
+        text = try await pdfText(data)
+    } else if UTType(filenameExtension: ext)?.conforms(to: .image) == true {
+        text = try await photoText(data)
+    } else if ["docx", "pptx", "xlsx"].contains(ext) {
         text = try officeText(data, kind: ext)
     } else if ["doc", "ppt", "xls", "pages", "numbers", "key"].contains(ext) {
         throw FileError.unsupported(ext)
@@ -155,8 +188,9 @@ public func fileBlocks(_ data: Data, name: String) throws -> [JSONValue] {
         guard !data.prefix(4000).contains(0) else { throw FileError.unsupported(ext) }
         text = String(decoding: data, as: UTF8.self)
     }
-    guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw FileError.empty }
-    return [.object(["type": "text", "text": .string("\(name)\n\n\(text)")])]
+    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { throw FileError.empty }
+    return trimmed
 }
 
 extension JSONValue: ExpressibleByStringLiteral {

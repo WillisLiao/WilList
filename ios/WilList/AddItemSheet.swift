@@ -111,7 +111,7 @@ struct AddItemSheet: View {
             // A task's date and repeat show in their own rows.
             if study {
                 if let d = p.date {
-                    LabeledContent("When", value: [Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)), Fmt.time(p.time)].compactMap { $0 }.joined(separator: ", "))
+                    LabeledContent("When", value: ["\(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated))) \(Fmt.numeric(d))", Fmt.time(p.time)].compactMap { $0 }.joined(separator: ", "))
                 }
                 if p.time != nil { LabeledContent("Lasts", value: Fmt.minutes(p.durationMin ?? 60)) }
                 if let r = p.recur {

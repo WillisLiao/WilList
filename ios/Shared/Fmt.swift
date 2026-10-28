@@ -14,16 +14,23 @@ enum Fmt {
         return Calendar.current.date(from: DateComponents(year: p[0], month: p[1], day: p[2])) ?? .now
     }
 
-    /// "Today", "Tomorrow", "Fri" within the week, otherwise "24 Oct" in the device's order.
+    /// "Today", "Tomorrow", "Fri" within the week, otherwise the month and day in numbers, "10/24"
+    /// (the owner's ask, 2026-10-28).
     static func day(_ d: Day, _ today: Day, inSentence: Bool = false) -> String {
         let s: String = switch diffDays(today, d) {
         case 0: "Today"
         case 1: "Tomorrow"
         case -1: "Yesterday"
         case 2...6: date(d).formatted(.dateTime.weekday(.abbreviated))
-        default: date(d).formatted(.dateTime.month(.abbreviated).day())
+        default: numeric(d)
         }
         return inSentence && ["Today", "Tomorrow", "Yesterday"].contains(s) ? s.lowercased() : s
+    }
+
+    /// "10/24": month, slash, day.
+    static func numeric(_ d: Day) -> String {
+        let p = d.split(separator: "-").compactMap { Int($0) }
+        return p.count == 3 ? "\(p[1])/\(p[2])" : d
     }
 
     /// A title set large keeps its last two words on one line, so no word is left alone on the

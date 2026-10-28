@@ -178,7 +178,7 @@ struct DateMenu<Label: View>: View {
     private func pick(_ title: String, _ d: Day) -> some View {
         Button { date = d } label: {
             Text(title)
-            Text(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))
+            Text("\(Fmt.date(d).formatted(.dateTime.weekday(.abbreviated))) \(Fmt.numeric(d))")
         }
     }
 }
@@ -286,7 +286,7 @@ private struct DayChip: View {
         let sameYear = Calendar.current.isDate(date, equalTo: .now, toGranularity: .year)
         Button { picking = true } label: {
             // A fixed colour: inside a button, the primary style takes on the tint.
-            Text(sameYear ? date.formatted(.dateTime.month(.abbreviated).day()) : date.formatted(date: .abbreviated, time: .omitted))
+            Text(sameYear ? Fmt.numeric(day) : "\(Fmt.numeric(day))/\(date.formatted(.dateTime.year(.twoDigits)))")
                 .foregroundStyle(Color.primary)
                 .lineLimit(1)
                 .padding(.horizontal, 11)

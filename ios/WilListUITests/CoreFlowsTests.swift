@@ -237,14 +237,14 @@ final class CoreFlowsTests: XCTestCase {
     }
 
     func testTheAgentAddsOnlyWhatIsTicked() {
-        // The Agent answers from its script (`AgentDemo`): no server, key or subscription.
-        let app = launch(plan: "busy", tab: "agent", more: ["-agentDemo", "YES", "-agentConsent", "YES"])
-        let field = app.textFields["Message"]
-        XCTAssertTrue(field.waitForExistence(timeout: wait))
-        XCTAssertTrue(tap(field, shows: app.keyboards.firstMatch), "the field takes the keyboard")
-        field.typeText("Here's my syllabus")
+        // The Agent answers from its script (`AgentDemo`): no server, key or subscription. A pretend
+        // file is read on launch, as there is no picking one in a test.
+        let app = launch(plan: "busy", tab: "agent", more: ["-agentDemo", "YES", "-agentConsent", "YES", "-agentAsk", "Midterm Nov 13"])
+        XCTAssertTrue(app.buttons["Choose a file"].waitForExistence(timeout: wait))
+        XCTAssertTrue(app.buttons["Choose a photo"].exists)
+        XCTAssertFalse(app.textFields.firstMatch.exists, "not a chat: nowhere to type")
         let add = app.buttons["Add 3"]
-        XCTAssertTrue(tap(app.buttons["Send"], shows: add), "the Agent proposes three things")
+        XCTAssertTrue(add.waitForExistence(timeout: wait), "the Agent proposes three things")
         let reading = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Read chapter 7'")).firstMatch
         XCTAssertTrue(tap(reading, shows: app.buttons["Add 2"]), "unticking one leaves two")
         XCTAssertTrue(tap(app.buttons["Add 2"], shows: app.staticTexts["Added 2 items"]))

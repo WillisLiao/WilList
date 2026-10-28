@@ -33,7 +33,7 @@ It needs a timeout of at least 300 seconds, as the app waits that long; the defa
 The app sends `POST` to the `WLAgentServer` address followed by `/chat/completions`, so the server is itself a chat completions address, with:
 
 - `authorization: Bearer <JWS>`: the App Store's signed transaction for the student's subscription (`jwsRepresentation` of the verified entitlement for `com.lull.willist.agent.monthly`, from StoreKit 2).
-- `content-type: application/json`, and a body with only `messages` (the system prompt first) and `tools`, and no `model`.
+- `content-type: application/json`, and a body with only `messages` (the system prompt first) and `tools` (the one, `propose_items`), and no `model`. The app sends only the files it read as text and today's date: never the student's plan, and it has no free text from the student.
 
 Files arrive as text inside `messages`, so a body is rarely more than a few hundred kilobytes.
 

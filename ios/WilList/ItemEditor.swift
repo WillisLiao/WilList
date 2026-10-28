@@ -10,23 +10,35 @@ struct ItemEditor: View {
 
     init(item: Item) { _item = State(initialValue: item) }
 
+    /// Adding to Today, or taking it off, happens at once, not at Save: it isn't an edit to the
+    /// task, just where it shows. Everything else waits for Save.
+    private var addedToToday: Binding<Day?> {
+        Binding(get: { item.myDay }, set: { day in
+            item.myDay = day
+            store.change { s in if let i = s.index(of: item.id) { s.items[i].myDay = day } }
+        })
+    }
+
     var body: some View {
         NavigationStack {
             Form {
                 Section {
                     TextField("Title", text: $item.title, axis: .vertical).font(.title3)
-                    // A study block has its time instead of a letter.
-                    if item.type != .study {
-                        Picker("Letter", selection: $item.priority) {
-                            Text("None").tag(Letter?.none)
-                            ForEach(Letter.allCases, id: \.self) { Text("\($0.rawValue)  \($0.name)").tag(Letter?.some($0)) }
+                }
+
+                // A study block has its time instead of a letter. A row of the five, as when adding
+                // a task; tapping the chosen one clears it.
+                if item.type != .study {
+                    Section {
+                        LetterChips(letter: item.priority) { item.priority = $0 }
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                        if item.priority == .D {
+                            TextField("Who will do it?", text: $item.delegateTo)
                         }
+                    } footer: {
+                        if let l = item.priority { Text(l.meaning) }
                     }
-                    if item.priority == .D {
-                        TextField("Who will do it?", text: $item.delegateTo)
-                    }
-                } footer: {
-                    if let l = item.priority { Text(l.meaning) }
                 }
 
                 Section("Steps") {
@@ -34,7 +46,7 @@ struct ItemEditor: View {
                 }
 
                 Section {
-                    if item.type != .study { AddToTodayRow(myDay: $item.myDay, today: store.today) }
+                    if item.type != .study { AddToTodayRow(myDay: addedToToday, today: store.today) }
                     ReminderRow(at: $item.remindAt, today: store.today)
                     DueRow(date: $item.date, time: $item.time, today: store.today,
                            title: item.type.dueWord, add: "Add a date")

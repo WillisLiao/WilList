@@ -15,7 +15,7 @@ final class AuditTests: XCTestCase {
             ("Agent, coming soon", "busy", ["-tab", "agent"]),
             ("Agent, asking first", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "NO"]),
             ("Agent", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "YES"]),
-            ("Agent, answered", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "YES", "-agentAsk", "Here's my syllabus"]),
+            ("Agent, found", "busy", ["-tab", "agent", "-agentDemo", "YES", "-agentConsent", "YES", "-agentAsk", "Midterm Nov 13"]),
             ("Plan tomorrow", "busy", ["-evening", "2"]),
             ("Focus", "busy", ["-focus", "YES"]),
             ("Settings", "busy", ["-open", "settings"]),

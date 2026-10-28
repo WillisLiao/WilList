@@ -411,9 +411,7 @@ private struct ItemsCard: View {
                     if on { entry.keep.remove(i) } else { entry.keep.insert(i) }
                 } label: {
                     HStack(spacing: 12) {
-                        Image(systemName: on ? "checkmark.circle.fill" : "circle")
-                            .font(.title3)
-                            .foregroundStyle(on ? Color.brand : Color(.tertiaryLabel))
+                        DrawnCheck(done: on).frame(width: 28, height: 28)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(items[i].title).foregroundStyle(Color.primary)
                             Text(Fmt.subline(items[i], store.today)).font(.subheadline).foregroundStyle(Color.secondary)

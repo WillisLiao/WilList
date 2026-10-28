@@ -10,7 +10,7 @@ struct WilListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView().environment(store)
+            RootView().environment(store).environment(Account.shared)
         }
     }
 }
@@ -211,6 +211,7 @@ struct RootView: View {
         .onChange(of: store.quickAction) { if store.quickAction != nil { tab = .today } }
         // Subscription changes (a renewal, a refund) can arrive at any time.
         .task { await AgentPass.shared.watch() }
+        .task { await Account.shared.check() }
         .task(id: badge.count(store.state, today: store.today)) {
             try? await UNUserNotificationCenter.current().setBadgeCount(badge.count(store.state, today: store.today))
         }

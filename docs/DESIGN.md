@@ -82,7 +82,7 @@ Each screen has one job and one primary action.
 | Goals | The main goal set large on the teal, the other goals, and the last 21 days as dots, filled where the day started with an A | Write the main goal |
 | Agent | Not a chat: hand it a file or a photo and it lists the tasks it found, on a card to tick and Add. Behind a subscription, and it asks once before anything is sent to the AI model; files and photos are read to text on the phone | Send |
 
-The profile picture at the top left of every tab opens **Settings** (a sheet): to-do and study settings, the planning time, calendar links the Agent followed, backups, the Trash (every deleted task and to-do for 30 days, newest first, each with Restore and how many days are left; swipe to delete one for good, Empty at the top right), and Delete progress (Progress and Goals' 21 days start from zero; finished tasks stay, so a mistaken tick can still be undone).
+The profile picture at the top left of every tab opens **Settings** (a sheet): the account first (the black Sign in with Apple button; once signed in, the name, email and Sign out, and the profile picture becomes the person's initials on the teal, `Avatar` in `Account.swift`), to-do and study settings, the planning time, calendar links the Agent followed, backups, the Trash (every deleted task and to-do for 30 days, newest first, each with Restore and how many days are left; swipe to delete one for good, Empty at the top right), and Delete progress (Progress and Goals' 21 days start from zero; finished tasks stay, so a mistaken tick can still be undone).
 It will hold the account and sign-in once those exist.
 
 The five tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).

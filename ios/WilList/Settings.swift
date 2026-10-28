@@ -10,11 +10,7 @@ struct ProfileButton: View {
 
     var body: some View {
         Button { store.showingSettings = true } label: {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: 30))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(Color.brand)
-                .tapArea()
+            Avatar().tapArea()
         }
         .buttonStyle(.borderless)
         .accessibilityLabel("Settings")
@@ -47,6 +43,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                AccountSection()
                 Section {
                     Toggle("New to-dos on top", isOn: $newOnTop).tint(.brand)
                     Toggle("Starred on top", isOn: $starredOnTop).tint(.brand)

@@ -39,7 +39,7 @@ enum Chime {
     }
 }
 
-/// The round check-off. Filling it plays a success tap.
+/// The round check-off, drawn by hand (`SketchCircle`). Filling it plays a success tap.
 struct CheckButton: View {
     let done: Bool
     let action: () -> Void
@@ -49,11 +49,7 @@ struct CheckButton: View {
         Button(action: action) {
             ZStack {
                 if !reduceMotion { TickBurst(done: done) }
-                Image(systemName: done ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(done ? Color.brand : Color(.tertiaryLabel))
-                    .contentTransition(.symbolEffect(.replace))
-                    .symbolEffect(.bounce, value: done)
+                DrawnCheck(done: done)
             }
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
@@ -64,7 +60,7 @@ struct CheckButton: View {
     }
 }
 
-/// A ring and six sparks thrown off the box as it fills, gone before the row moves away. Drawn
+/// A drawn ring and six pen dots thrown off the box as it fills, gone before the row moves away. Drawn
 /// larger when the card says the day's A's are done.
 struct TickBurst: View {
     let done: Bool
@@ -77,9 +73,9 @@ struct TickBurst: View {
     var body: some View {
         KeyframeAnimator(initialValue: Frame(), trigger: done) { f in
             ZStack {
-                Circle()
+                SketchCircle()
                     .stroke(Color.brand, lineWidth: 2 * (1 - f.spread) + 0.5)
-                    .frame(width: 24 + 16 * f.spread, height: 24 + 16 * f.spread)
+                    .frame(width: 25 + 16 * f.spread, height: 25 + 16 * f.spread)
                 ForEach(0..<6, id: \.self) { i in
                     Circle()
                         .fill(Color.brand)

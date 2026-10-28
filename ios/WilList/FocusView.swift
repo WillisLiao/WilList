@@ -107,7 +107,8 @@ struct FocusView: View {
     private func clock(_ f: FocusSession, left: TimeInterval) -> some View {
         let spent = min(max(1 - left / f.total, 0), 1)
         return Text(left == 0 ? "Break" : Self.clock(left))
-            .font(.system(size: 76, weight: .bold))
+            // Rounded, the system's friendliest face, so the digits sit with the drawn ring.
+            .font(.system(size: 76, weight: .bold, design: .rounded))
             .monospacedDigit()
             .tracking(-1)
             .foregroundStyle(.white)
@@ -120,10 +121,13 @@ struct FocusView: View {
             .aspectRatio(1, contentMode: .fit)
             .background {
                 ZStack {
-                    Circle().stroke(.white.opacity(0.3), lineWidth: 8)
-                    Circle().trim(from: 0, to: spent)
+                    // Drawn by hand, like every other ring in the app, and starting at the top,
+                    // so the pen lays the minutes down clockwise without the circle being turned.
+                    // No overshoot here: a quarter drawn must be a quarter of the time.
+                    SketchCircle(overshoot: false)
+                        .stroke(.white.opacity(0.3), style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                    SketchCircle(overshoot: false).trim(from: 0, to: spent)
                         .stroke(.white, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
                         .animation(reduceMotion ? nil : .linear(duration: 1), value: spent)
                 }
                 .padding(4)

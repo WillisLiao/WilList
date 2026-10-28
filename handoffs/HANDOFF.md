@@ -3,7 +3,28 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-25)
+## Now (2026-10-28, the sketch hand)
+
+**Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
+Two sessions worked on this branch today: Sign in with Apple (`fdea1ab`, its own devlog section) and this one, on top of it.
+
+**This session (the owner's ask: "for the countdown of play button, focus countdown, it could be more sketchy ... like creative sketch, not too many, not too little, just simple, and adds a twist", then "it's specific for the whole app"):**
+- The app has a hand-drawn personality, grounded in the method rather than in a style: WilList is Tracy's written list, where you letter each task with a pen and circle the one that comes first.
+- **The twist: a pen circle means "this one"** and nothing else in the app carries one: the check you have ticked, the focus ring you are inside, the tab you are in, and the A1.
+- `ios/WilList/Sketch.swift` is the whole language: `SketchCircle`, `SketchTick`, `SketchRule`, `Color.pencil`.
+  The wobble is hand-set, not random, so every mark is the same pen and nothing shimmers as a list is laid out again.
+  See **The sketch hand** in `docs/DESIGN.md`.
+- Used in five places: every circle you tick or choose (`DrawnCheck`: every row's check, a step in a task's details, Today's add bar once a line is written, and the guided flows' lines and chooser), the focus ring (no overshoot, so a quarter drawn is a quarter of the time; the time left moved to the system's rounded face), the chosen tab's symbol (in place of the pale teal pill), the A1's letter on Today and in Plan, and a rule under the day's date on Today and Plan.
+- Left alone on purpose: the letters' chips, the star, the course colours, the charts, and the widgets (pitfall 13).
+- **The one place the language stops short:** the Agent's find rows still tick with the system's circles, as this session was told not to touch the Agent. A one-line swap to `DrawnCheck` would finish it.
+- Motion is unchanged in kind: the tick is trimmed by whether the row is done, so a tap draws it on and a row already done simply has it.
+  Nothing draws itself on arrival; Reduce Motion is respected as before.
+
+**Checked:** 77 core tests, lint, a zero-warning release build, the UI tests, and every changed screen looked at in the simulator (Today, Plan, Progress, Goals, the add bar mid-line, a row the moment it is ticked, Focus part-way and at Break, and Focus at Display Zoom's 320 points).
+**Not checked:** the look with Reduce Motion or Increase Contrast on, and nothing has been on a real device.
+**To ask the owner:** whether the pen circle round the Goals tab's target symbol (itself three rings) is too much there, and whether the widgets should be drawn by the same hand one day.
+
+## Before that (2026-10-25)
 
 **Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
 

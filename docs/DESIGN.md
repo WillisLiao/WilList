@@ -55,6 +55,49 @@ Goals leads with the main goal set large in white on a teal card (just “Main g
 - Everything else: SF system text styles (`.body`, `.subheadline`, `.footnote`), so Dynamic Type works.
 - Sentence case everywhere. No all-caps labels.
 
+## The sketch hand
+
+WilList is Tracy's *written* list: you letter each task with a pen and circle the one that comes first.
+So the marks that say "this one" are drawn rather than set, at the owner's ask on 2026-10-28 ("could be more sketch, like creative sketch, not too many, not too little, just simple, and adds a twist"; asked whether they meant the focus countdown, they said "it's specific for the whole app").
+
+**The twist: a circle drawn by hand means *this one*.**
+The one you have done, the one you are on, the tab you are in, and the task that comes first all carry the same pen circle, and nothing else in the app does.
+
+The primitives are in `ios/WilList/Sketch.swift`, and there are only three shapes and one colour:
+
+| Mark | What it is |
+|---|---|
+| `SketchCircle` | A circle round enough to read as a circle and uneven enough to read as a pen, starting at the top and going clockwise so trimming it from 0 shows time without turning it first. In a rect that isn't square it becomes the matching oval (the A1's chip). `overshoot` (on by default) carries the pen a little past its own start and crosses it, the detail that makes it read as drawn; it is off where the circle measures something, so a quarter drawn is a quarter of the time. |
+| `SketchTick` | A tick: down to the elbow, then a longer stroke up. Trimmed from 0 it lays itself down the way a pen would. |
+| `SketchRule` | A rule drawn left to right, waving a little: under the day's date, as on paper. |
+| `Color.pencil` | `#44505C`, graphite (`#232C35` with Increase Contrast). The pen sits beside the teal without competing with it, and never reads as a problem the way red would. 8:1 on a white card. |
+
+The wobble is hand-set, not random: every mark in the app has the same one, so a list reads as one pen and nothing shimmers as it is laid out again.
+A near-circle is built by running a smooth curve through ten hand-set points; a stroke that ends where it began reads its neighbours round the loop (`wrap`), or the pen leaves a peak at the join.
+
+Where it is used, and nowhere else:
+
+- **Everything ticked or chosen** (`DrawnCheck`, one view for all of it): the empty circle is drawn, and filling it keeps the pen edge, so a done check reads as drawn and then coloured in, with the hand's tail past the top.
+  Filled alone it read as a blob.
+  It is every row's check on every tab (`CheckButton`), a step in a task's details, Today's add bar once a line is being written (that + becomes the to-do's own check), and the lines and the "Which one first?" rows in the guided flows.
+  Where a circle is only ever empty it is `DrawnCheck(done: false)`, so there is one circle in the app and not two.
+- **The focus ring** (`FocusView`): the same circle, no overshoot, laid down clockwise as the minutes pass, closed at Break.
+  The time left is set in the system's rounded face, which sits with a drawn ring where the plain one did not.
+- **The tab you are in** (`TabBar`): the chosen tab's symbol is circled in the deep teal.
+  It replaces the pale teal pill, which said the same thing in the language of every other app.
+- **The A1** (`penCircled`, on Today and in Plan): the day's first task has a graphite circle round its letter, drawn outside the chip so the chip keeps its own size and place.
+  No other row is circled.
+- **The day's date** (`penRule`, Today and Plan): one rule under the date, the width of the words above it.
+  Section titles do not get one; a rule on every heading would be the move over-applied.
+
+Motion still only answers an action (see **Motion**).
+The tick is trimmed by whether the row is done, so a tap draws it on while a row that is already done, scrolled into view, simply has it; nothing draws itself on arrival.
+The burst thrown off a filling check is the same drawn circle with six pen dots.
+With Reduce Motion the tick is simply there, as before.
+
+Not sketched, on purpose: the letters' own chips (five colours already carry that meaning, and a drawn edge is invisible at 26 points), the star, the course colours, the charts, and the widgets, where WidgetKit is particular about what it will draw (pitfall 13).
+Not yet sketched, and the one place the language stops short: the Agent's find rows, whose ticks are still the system's circles.
+
 ## Words
 
 As few words as do the job: on 2026-10-23 the owner said "each item, thing, description should have minimal words as possible".
@@ -86,7 +129,7 @@ The profile picture at the top left of every tab opens **Settings** (a sheet): t
 It will hold the account and sign-in once those exist.
 
 The five tabs sit on a solid white capsule at the bottom of every tab, the iPad's included, and never change colour or shrink (pitfall 27).
-The chosen tab is in the deep teal on a pale teal pill.
+The chosen tab is in the deep teal, its symbol circled by hand (see **The sketch hand**).
 
 Every tab's bar holds the profile picture at the left and its tools at the right (Today: Search and Sort; Plan: Search and +, which asks Task or Study block), in the system's glass on iOS 26, so they look the same and sit in the same place on every tab.
 Today has no title in its bar: its date sits in the list, in the large title's font and place, so a long date can wrap.
@@ -118,12 +161,13 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and a study block's planned time among them, marked "As planned". Choosing one starts focus.
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.
 - **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date beside a calendar icon, without the word Due, which the icon says ("Tomorrow, 10:00 AM", teal when today, red when overdue, "Yesterday"; the owner's call, 2026-10-24), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
-- **CheckButton:** 44 pt, an empty grey circle that fills teal with a bounce, throws off a ring and six sparks (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
+- **CheckButton:** 44 pt, an empty circle drawn by hand (`SketchCircle`) that fills teal while a drawn tick is laid across it, keeping its pen edge and the hand's tail past the top; it throws off a drawn ring and six pen dots (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
 - **LetterMark:** a chip filled in the letter's colour (red, orange, yellow, green, blue from A to E), with E struck through as well; an item without a letter has no mark at all, and nothing asks for one (the owner's call, 2026-10-24: "unlettered shouldn't be a problem"); its details give it one. On a field of colour (Focus, the Live Activity) the A is white with its letter in the field's colour and the others are white outlines. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
+  The day's A1, and no other row, has a graphite pen circle round its chip (`penCircled`, see **The sketch hand**).
   New task's letter row shows each letter as a pale wash of its colour with dark words, and in full once chosen; yellow and green words can't be read on white.
 - **StarButton:** grey outline, filled teal when important.
 - **MonthCalendar** (`MonthCalendar.swift`, under the rows of Plan): the month and year with a month back and on, the days of the week in single letters, and the days in rows of seven, today's number in the teal. Under each number, what's planned that day: up to two titles in small chips of their letter's colour, or one and "+2". Tapping a day fills its number teal and lists that day in full under the calendar; tapping it again lets it go.
-- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 76 pt bold inside a thin white ring of the time spent (8 points, on a track of white at 30%, from the top clockwise, at most 300 points across), which closes at Break (the owner's ask, 2026-10-25); and one white button, Pause or Resume (Close at Break).
+- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 76 pt bold, in the system's rounded face, inside a thin white ring of the time spent drawn by hand (8 points, on a track of white at 30%, from the top clockwise, at most 300 points across), which closes at Break (the owner's ask, 2026-10-25); and one white button, Pause or Resume (Close at Break).
   Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`).
   The Dynamic Island stays black: the letter is white with the course colour in it, and the time, bar and keyline use the course colour lifted with 35% white (`CourseColor.onDark`, 5.5:1 or better on black).
 - **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 7 days' finished items and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top, with the day and its count under it ("Today" in bold).

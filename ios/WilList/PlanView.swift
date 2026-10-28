@@ -107,6 +107,7 @@ struct PlanList: View {
     private var dayHeader: some View {
         Text(Fmt.long(today))
             .font(.title3.weight(.semibold))
+            .penRule()
             .onGround()
             .accessibilityAddTraits(.isHeader)
             .listRowSeparator(.hidden)
@@ -127,7 +128,10 @@ struct PlanList: View {
             .rowWords { editing = row.item }
             RowEnd {
                 if row.priority != .E { PlayButton(itemId: row.item.id) { store.startFocus(row, minutes: $0) } }
-                letterMenu(row.item) { LetterMark(letter: row.priority, label: row.label) }
+                // The A1 is circled by hand: this one, first.
+                letterMenu(row.item) {
+                    LetterMark(letter: row.priority, label: row.label).penCircled(row.label == "A1")
+                }
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))

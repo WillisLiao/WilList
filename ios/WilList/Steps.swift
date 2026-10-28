@@ -123,8 +123,7 @@ struct LinesEntry: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(lines.indices, id: \.self) { i in
                 HStack(spacing: 12) {
-                    Image(systemName: "circle").font(.title3).foregroundStyle(Color(.tertiaryLabel))
-                        .accessibilityHidden(true)
+                    DrawnCheck(done: false).accessibilityHidden(true)
                     Text(lines[i]).frame(maxWidth: .infinity, alignment: .leading)
                     Button {
                         withAnimation(.snappy) { _ = lines.remove(at: i) }
@@ -178,7 +177,8 @@ struct A1Choice: View {
                         if chosen {
                             LetterMark(letter: .A, label: "A1")
                         } else {
-                            Image(systemName: "circle").font(.title3).foregroundStyle(Color(.tertiaryLabel))
+                            // Drawn by the same hand as every other circle you choose or tick.
+                            DrawnCheck(done: false)
                         }
                     }
                     .frame(width: 36)

@@ -172,6 +172,8 @@ struct TodayView: View {
             Text(Fmt.long(today))
                 .font(.largeTitle.bold())
                 .accessibilityAddTraits(.isHeader)
+                // A pen rule under the date, as on a page of paper.
+                .penRule()
             Text(summary(open.count + fromPlan.count))
                 .font(.subheadline)
         }
@@ -212,12 +214,17 @@ struct TodayView: View {
             HStack(spacing: 10) {
                 // The field itself is the control for VoiceOver.
                 Button { typing = true } label: {
-                    Image(systemName: adding ? "circle" : "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(adding ? Color(.tertiaryLabel) : Color.brand)
-                        .contentTransition(.symbolEffect(.replace))
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                    ZStack {
+                        // Once a line is being written the + becomes the to-do's own empty check,
+                        // so it is drawn by the same hand as the rows above it.
+                        DrawnCheck(done: false).opacity(adding ? 1 : 0)
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(Color.brand)
+                            .opacity(adding ? 0 : 1)
+                    }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.borderless)
                 .accessibilityHidden(true)
@@ -382,7 +389,12 @@ struct TodayView: View {
                         if let row { store.startFocus(row, minutes: m) } else { store.startFocus(item, minutes: m) }
                     }
                 }
-                MarkColumn { if item.priority != nil { LetterMark(letter: item.priority, label: row?.label) } }
+                // The A1 is circled by hand: this one, first.
+                MarkColumn {
+                    if item.priority != nil {
+                        LetterMark(letter: item.priority, label: row?.label).penCircled(row?.label == "A1")
+                    }
+                }
             }
         }
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 8))

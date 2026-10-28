@@ -98,12 +98,21 @@ struct TabBar: View {
                         Image(systemName: item.symbol)
                             .font(.system(size: 19, weight: .semibold))
                             .frame(height: 24)
+                            // The tab you are in is circled by hand, as the A1 is: the same pen
+                            // saying "this one". It replaces the pale pill that said it before.
+                            // Wide enough to go round the widest symbol, not through it.
+                            .frame(width: 42, height: 32)
+                            .overlay {
+                                if on {
+                                    SketchCircle()
+                                        .stroke(Color.brandDeep, style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+                                }
+                            }
                         Text(item.title).font(.caption2.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
                     }
-                    // The deeper teal on its pale pill: the teal itself reads at only 4.4:1 there.
+                    // The deeper teal: the teal itself reads at only 4.4:1 on a pale ground.
                     .foregroundStyle(on ? Color.brandDeep : Color.primary)
                     .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(Color.brand.opacity(on ? 0.12 : 0), in: Capsule())
                     .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)

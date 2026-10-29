@@ -28,7 +28,7 @@ struct StepsList: View {
         .onDelete { steps.remove(atOffsets: $0) }
         .onMove { steps.move(fromOffsets: $0, toOffset: $1) }
         HStack(spacing: 12) {
-            Image(systemName: "plus").font(.title3).foregroundStyle(Color.brand).frame(width: 24)
+            SketchIcon(glyph: .plus, size: 19).foregroundStyle(Color.brand).frame(width: 24)
             TextField(steps.isEmpty ? "Add a step" : "Next step", text: $draft)
                 .focused($adding)
                 .submitLabel(.next)
@@ -56,25 +56,25 @@ struct ReminderRow: View {
                 if let date {
                     // "Remind me at 9:00 AM" over "Tomorrow", as Microsoft To Do puts it.
                     HStack(spacing: 12) {
-                        Image(systemName: "bell.fill")
+                        SketchIcon(glyph: .bell, size: 19, filled: true)
                             .foregroundStyle(date < .now ? Color.red : Color.brand)
                             .frame(width: 24)
                         VStack(alignment: .leading, spacing: 1) {
                             Text("Remind me at \(date.formatted(date: .omitted, time: .shortened))")
                                 .foregroundStyle(Color.primary)
                             Text(Fmt.day(WilListCore.today(date), today))
-                                .font(.subheadline)
+                                .font(.hand(.subheadline))
                                 .foregroundStyle(date < .now ? Color.red : Color.secondary)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 } else {
-                    Label("Remind me", systemImage: "bell").frame(maxWidth: .infinity, alignment: .leading)
+                    Label("Remind me", sketch: .bell).frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             if at != nil {
                 Button { at = nil } label: {
-                    Image(systemName: "xmark.circle.fill").foregroundStyle(Color(.tertiaryLabel))
+                    SketchIcon(glyph: .xmark, size: 15).foregroundStyle(Color(.tertiaryLabel)).tapArea()
                 }
                 .buttonStyle(.borderless)
                 .accessibilityLabel("Remove reminder")
@@ -230,7 +230,7 @@ struct DueRow: View {
         // squeezed onto two lines; VoiceOver still reads it). The clear button takes off the time
         // first, then the date.
         if let d = date {
-            SetRow(symbol: "calendar", overdue: diffDays(today, d) < 0,
+            SetRow(symbol: .calendar, overdue: diffDays(today, d) < 0,
                    clearLabel: time == nil ? "Remove the date" : "Remove the time",
                    clear: { if time == nil { date = nil } else { time = nil } }) {
                 HStack(spacing: 6) {
@@ -244,7 +244,7 @@ struct DueRow: View {
                         // Set like the date beside it.
                         Button { time = "17:00" } label: {
                             HStack(spacing: 4) {
-                                Image(systemName: "plus").font(.subheadline.weight(.semibold))
+                                SketchIcon(glyph: .plus, size: 13)
                                 Text("Time")
                             }
                             .padding(.horizontal, 11)
@@ -260,7 +260,7 @@ struct DueRow: View {
                 .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
             }
         } else {
-            DateMenu(date: $date, today: today, title: title) { Label(add, systemImage: "calendar").fillsRow() }
+            DateMenu(date: $date, today: today, title: title) { Label(add, sketch: .calendar).fillsRow() }
         }
     }
 }
@@ -315,7 +315,7 @@ struct RepeatRow: View {
 
     var body: some View {
         if let r = recur {
-            SetRow(symbol: "repeat", overdue: false, clear: { recur = nil }) {
+            SetRow(symbol: .repeatArrows, overdue: false, clear: { recur = nil }) {
                 RepeatMenu(recur: $recur, date: $date, today: today) {
                     HStack {
                         Text("Repeat").foregroundStyle(Color.primary)
@@ -325,7 +325,7 @@ struct RepeatRow: View {
                 }
             }
         } else {
-            RepeatMenu(recur: $recur, date: $date, today: today) { Label("Repeat", systemImage: "repeat").fillsRow() }
+            RepeatMenu(recur: $recur, date: $date, today: today) { Label("Repeat", sketch: .repeatArrows).fillsRow() }
         }
     }
 }
@@ -401,7 +401,7 @@ private struct CustomRepeat: View {
                                     if on { days.remove(d) } else { days.insert(d) }
                                 } label: {
                                     Text(Calendar.current.veryShortWeekdaySymbols[d])
-                                        .font(.subheadline.weight(.semibold))
+                                        .font(.hand(.subheadline))
                                         .foregroundStyle(on ? Color.white : Color.primary)
                                         .frame(maxWidth: .infinity, minHeight: 40)
                                         .background(on ? Color.brand : Color(.secondarySystemFill), in: Circle())
@@ -443,7 +443,7 @@ private struct CustomRepeat: View {
 
 /// A row that has a value: its symbol (red when the time has passed), the control, and a clear button.
 private struct SetRow<Content: View>: View {
-    let symbol: String
+    let symbol: SketchIcon.Glyph
     let overdue: Bool
     var clearLabel = "Clear"
     let clear: () -> Void
@@ -451,12 +451,12 @@ private struct SetRow<Content: View>: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: symbol)
+            SketchIcon(glyph: symbol, size: 19, filled: symbol == .sun)
                 .foregroundStyle(overdue ? Color.red : Color.brand)
                 .frame(width: 24)
             content
             Button(action: clear) {
-                Image(systemName: "xmark.circle.fill").foregroundStyle(Color(.tertiaryLabel))
+                SketchIcon(glyph: .xmark, size: 15).foregroundStyle(Color(.tertiaryLabel)).tapArea()
             }
             .buttonStyle(.borderless)
             .accessibilityLabel(clearLabel)
@@ -475,7 +475,7 @@ struct LetterChips: View {
             ForEach(Letter.allCases, id: \.self) { l in
                 Button { choose(l == letter ? nil : l) } label: {
                     Text(l.rawValue)
-                        .font(.headline)
+                        .font(.hand(.headline))
                         .strikethrough(l == .E)
                         .foregroundStyle(letter == l ? l.ink : Color.primary)
                         .frame(maxWidth: .infinity, minHeight: 40)
@@ -497,11 +497,11 @@ struct AddToTodayRow: View {
 
     var body: some View {
         if myDay == today {
-            SetRow(symbol: "sun.max.fill", overdue: false, clear: { myDay = nil }) {
+            SetRow(symbol: .sun, overdue: false, clear: { myDay = nil }) {
                 Text("Added to Today").frame(maxWidth: .infinity, alignment: .leading)
             }
         } else {
-            Button { myDay = today } label: { Label("Add to Today", systemImage: "sun.max") }
+            Button { myDay = today } label: { Label("Add to Today", sketch: .sun) }
         }
     }
 }
@@ -512,10 +512,8 @@ struct StarButton: View {
 
     var body: some View {
         Button { on.toggle() } label: {
-            Image(systemName: on ? "star.fill" : "star")
-                .font(.title3)
+            SketchIcon(glyph: .star, size: 21, filled: on)
                 .foregroundStyle(on ? Color.brand : Color(.tertiaryLabel))
-                .contentTransition(.symbolEffect(.replace))
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())
         }
@@ -554,7 +552,7 @@ struct PlayButton: View {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 let left = f.remaining(at: context.date)
                 Text(left == 0 ? "Break" : FocusView.clock(left))
-                    .font(.footnote.weight(.semibold))
+                    .font(.hand(.footnote))
                     .monospacedDigit()
                     .foregroundStyle(Color.brandDeep)
                     .padding(.horizontal, 8)
@@ -579,8 +577,7 @@ struct PlayButton: View {
                 Button("Custom") { typed = ""; custom = true }
             }
         } label: {
-            Image(systemName: "play.fill")
-                .font(.subheadline)
+            SketchIcon(glyph: .play, size: 19)
                 .foregroundStyle(Color.brand)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

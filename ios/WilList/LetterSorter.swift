@@ -49,8 +49,9 @@ struct LetterSorter: View {
         HStack {
             if at > 0 {
                 Button { go(-1) } label: {
-                    Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
+                    SketchIcon(glyph: .chevron, size: 17).rotationEffect(.degrees(180)).tapArea()
                 }
+                .accessibilityLabel("Back")
             }
             Spacer()
             // The last page has its own Done.
@@ -62,12 +63,12 @@ struct LetterSorter: View {
         .overlay {
             if item != nil {
                 Text("\(at + 1) of \(ids.count)")
-                    .font(.subheadline.monospacedDigit())
+                    .font(.hand(.subheadline))
                     .foregroundStyle(.secondary)
                     .contentTransition(.numericText(value: Double(at)))
             }
         }
-        .font(.body.weight(.medium))
+        .font(.hand(.body))
         .padding(.horizontal, 12)
         .padding(.top, 8)
     }
@@ -84,10 +85,10 @@ struct LetterSorter: View {
     private func page(_ item: Item) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             if let about = about(item) {
-                Text(about).font(.subheadline).foregroundStyle(.secondary)
+                Text(about).font(.hand(.subheadline)).foregroundStyle(.secondary)
             }
             Text(item.title)
-                .font(.title.bold())
+                .font(.hand(.title))
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, 14)
@@ -95,7 +96,7 @@ struct LetterSorter: View {
             Button { go(1) } label: {
                 Text("Skip").frame(maxWidth: .infinity).tapArea()
             }
-            .font(.body.weight(.medium))
+            .font(.hand(.body))
                 .padding(.top, 6)
         }
         .padding(.horizontal, 24)
@@ -115,10 +116,10 @@ struct LetterSorter: View {
         let current = item.priority == letter
         let shape = RoundedRectangle(cornerRadius: 16, style: .continuous)
         let words = VStack(alignment: .leading, spacing: 2) {
-            Text(letter.name).font(.headline)
-            Text(letter.detail).font(.subheadline).foregroundStyle(.secondary)
+            Text(letter.name).font(.hand(.headline))
+            Text(letter.detail).font(.hand(.subheadline)).foregroundStyle(.secondary)
         }
-        let check = Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(letter.color)
+        let check = SketchIcon(glyph: .check, size: 17).foregroundStyle(letter.color)
         return Button { choose(letter, for: item) } label: {
             Group {
                 if typeSize.isAccessibilitySize {
@@ -156,9 +157,9 @@ struct LetterSorter: View {
     private var finished: some View {
         let a1 = doRows(store.state.items, today).first
         let left = unsorted(store.state.items, today).filter { ids.contains($0.id) }.count
-        return FinishPage(symbol: "checkmark.circle.fill") {
+        return FinishPage(symbol: .check) {
             Text(left == 0 ? "All lettered" : "Done for now")
-                .font(.title.bold())
+                .font(.hand(.title))
                 .accessibilityAddTraits(.isHeader)
             if let a1 {
                 Text("Your A1 is \u{201C}\(a1.item.title)\u{201D}.")

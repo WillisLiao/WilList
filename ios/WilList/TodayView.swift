@@ -90,8 +90,7 @@ struct TodayView: View {
                             HStack(spacing: 6) {
                                 Text("Completed")
                                 Text("\(completed.count)")
-                                Image(systemName: "chevron.right")
-                                    .font(.caption.weight(.semibold))
+                                SketchIcon(glyph: .chevron, size: 11)
                                     .rotationEffect(.degrees(completedOpen ? 90 : 0))
                             }
                             .onGround()
@@ -116,7 +115,8 @@ struct TodayView: View {
                     ToolbarItem(placement: .confirmationAction) { Button("Add", action: add).disabled(blank) }
                 } else if hasTools {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("Search", systemImage: "magnifyingglass") { searching = true }
+                        Button { searching = true } label: { SketchIcon(glyph: .magnifier, size: 21) }
+                            .accessibilityLabel("Search")
                     }
                     ToolbarItem(placement: .primaryAction) { sortMenu }
                 }
@@ -170,12 +170,12 @@ struct TodayView: View {
     private func header(fromPlan: [Item]) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(Fmt.long(today))
-                .font(.largeTitle.bold())
+                .font(.hand(.largeTitle))
                 .accessibilityAddTraits(.isHeader)
                 // A pen rule under the date, as on a page of paper.
                 .penRule()
             Text(summary(open.count + fromPlan.count))
-                .font(.subheadline)
+                .font(.hand(.subheadline))
         }
         .onGround()
     }
@@ -188,8 +188,9 @@ struct TodayView: View {
             .pickerStyle(.inline)
             Toggle("Show completed", isOn: $showCompleted)
         } label: {
-            Label("Sort and view", systemImage: "arrow.up.arrow.down")
+            SketchIcon(glyph: .sort, size: 21)
         }
+        .accessibilityLabel("Sort and view")
     }
 
     /// Everything on Today still to do; the overdue to-dos; all finished today.
@@ -218,8 +219,7 @@ struct TodayView: View {
                         // Once a line is being written the + becomes the to-do's own empty check,
                         // so it is drawn by the same hand as the rows above it.
                         DrawnCheck(done: false).opacity(adding ? 1 : 0)
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
+                        SketchIcon(glyph: .plusCircle, size: 25)
                             .foregroundStyle(Color.brand)
                             .opacity(adding ? 0 : 1)
                     }
@@ -233,7 +233,7 @@ struct TodayView: View {
                         .focused($typing)
                         .submitLabel(.done)
                     // What the line will be saved as: its day, repeat and reminder.
-                    if let reads { reads.font(.footnote).foregroundStyle(Color.brand) }
+                    if let reads { reads.font(.hand(.footnote)).foregroundStyle(Color.brand) }
                 }
             }
             if adding {
@@ -241,13 +241,13 @@ struct TodayView: View {
                     LetterChips(letter: letter) { letter = $0 }
                     HStack(spacing: 0) {
                         // Not "Remind me": that's the row in a to-do's details, which can be open over this.
-                        ReminderMenu(at: $remindAt, today: today) { option(remindAt == nil ? "bell" : "bell.fill", on: remindAt != nil) }
+                        ReminderMenu(at: $remindAt, today: today) { option(.bell, on: remindAt != nil) }
                             .accessibilityLabel("Reminder")
                             .accessibilityValue(Fmt.reminder(remindAt, today) ?? "None")
-                        DateMenu(date: date, today: today) { option("calendar", on: date.wrappedValue != nil) }
+                        DateMenu(date: date, today: today) { option(.calendar, on: date.wrappedValue != nil) }
                             .accessibilityLabel("Date")
                             .accessibilityValue(Fmt.dueLine(date.wrappedValue, nil, today, word: false) ?? "None")
-                        RepeatMenu(recur: recur, date: date, today: today) { option("repeat", on: recur.wrappedValue != nil) }
+                        RepeatMenu(recur: recur, date: date, today: today) { option(.repeatArrows, on: recur.wrappedValue != nil) }
                             .accessibilityLabel("Repeat")
                             .accessibilityValue(recur.wrappedValue.map(Fmt.recur) ?? "None")
                     }
@@ -268,9 +268,8 @@ struct TodayView: View {
         .frame(maxWidth: ReadableColumn.width)
     }
 
-    private func option(_ symbol: String, on: Bool) -> some View {
-        Image(systemName: symbol)
-            .font(.body)
+    private func option(_ symbol: SketchIcon.Glyph, on: Bool) -> some View {
+        SketchIcon(glyph: symbol, size: 18, filled: on && symbol == .bell)
             .foregroundStyle(on ? Color.brand : Color.secondary)
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
@@ -292,7 +291,7 @@ struct TodayView: View {
         let d = date.wrappedValue
         let parts = [Fmt.dueLine(d, d == nil ? nil : parsed?.time, today), recur.wrappedValue.map(Fmt.recur)].compactMap { $0 }
         let words = parts.isEmpty ? nil : Text(parts.joined(separator: ", "))
-        let bell = Fmt.reminder(remindAt, today).map { Text(Image(systemName: "bell")) + Text(" \($0)") }
+        let bell = Fmt.reminder(remindAt, today).map { Text(SketchIcon.inline(.bell)) + Text(" \($0)") }
         switch (words, bell) {
         case let (w?, b?): return w + Text(", ") + b
         case let (w, b): return w ?? b
@@ -352,7 +351,7 @@ struct TodayView: View {
                 Text(todo.title)
                     .strikethrough(checked, color: .secondary)
                     .foregroundStyle(todo.done ? .secondary : .primary)
-                if let meta = meta(todo) { meta.font(.footnote) }
+                if let meta = meta(todo) { meta.font(.hand(.footnote)) }
             }
             .rowWords { editing = todo.id }
             RowEnd {
@@ -377,7 +376,7 @@ struct TodayView: View {
                 Text(item.title).strikethrough(checked, color: .secondary)
                 if let line = Fmt.meta([Fmt.subline(item, today, in: store.state)?.foregroundStyle(Color.secondary)]
                                        + Fmt.marks(item.steps, remind: item.remindAt, today: false)) {
-                    line.font(.footnote)
+                    line.font(.hand(.footnote))
                 }
             }
             .rowWords { editingItem = item }
@@ -437,15 +436,15 @@ struct TodayView: View {
         // Red says it's overdue, as the calendar icon says it's due.
         if let due = Fmt.dueLine(t.date, t.time, today, word: false) {
             let late = !t.done && diffDays(today, t.date ?? today) < 0
-            parts.append(Text("\(Image(systemName: "calendar")) \(due)").foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.brand : Color.secondary))
+            parts.append((Text(SketchIcon.inline(.calendar)) + Text(" \(due)")).foregroundStyle(late ? Color.red : t.date == today && !t.done ? Color.brand : Color.secondary))
         }
         // With a due date shown, the bell alone says there's a reminder; without one, it says when.
         if !t.done, let r = Fmt.reminder(t.remindAt, today) {
-            parts.append(Text(t.date == nil ? "\(Image(systemName: "bell")) \(r)" : "\(Image(systemName: "bell"))").foregroundStyle(Color.secondary))
+            parts.append((Text(SketchIcon.inline(.bell)) + Text(t.date == nil ? " \(r)" : "")).foregroundStyle(Color.secondary))
         }
-        if t.recur != nil { parts.append(Text(Image(systemName: "repeat")).foregroundStyle(Color.secondary)) }
+        if t.recur != nil { parts.append(Text(SketchIcon.inline(.repeatArrows)).foregroundStyle(Color.secondary)) }
         if !t.notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            parts.append(Text(Image(systemName: "note.text")).foregroundStyle(Color.secondary))
+            parts.append(Text(SketchIcon.inline(.page)).foregroundStyle(Color.secondary))
         }
         return Fmt.meta(parts)
     }

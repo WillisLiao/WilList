@@ -23,7 +23,7 @@ struct GoalsList: View {
                             Text(goal.title)
                             if isValidDay(goal.deadline) {
                                 Text("By \(Fmt.date(goal.deadline).formatted(.dateTime.day().month(.wide).year()))")
-                                    .font(.subheadline).foregroundStyle(.secondary)
+                                    .font(.hand(.subheadline)).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -33,7 +33,9 @@ struct GoalsList: View {
                     let ids = idx.map { store.state.goals[$0].id }
                     store.change(undo: "Deleted a goal") { s in s.goals.removeAll { ids.contains($0.id) } }
                 }
-                Button("Add a goal", systemImage: "plus") { editingGoal = Goal(id: "", title: "") }
+                Button { editingGoal = Goal(id: "", title: "") } label: {
+                    Label("Add a goal", sketch: .plus).fillsRow().frame(minHeight: 36)
+                }
             } header: {
                 Text("Other goals").onGround()
             }
@@ -62,13 +64,13 @@ private struct MainGoal: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Main goal").font(.subheadline.weight(.medium))
+                Text("Main goal").font(.hand(.subheadline))
                 Spacer()
-                Image(systemName: goal.isEmpty ? "plus" : "pencil").font(.body.weight(.semibold)).accessibilityHidden(true)
+                SketchIcon(glyph: goal.isEmpty ? .plus : .pencil, size: 17)
             }
             if !goal.isEmpty {
                 Text(Fmt.noWidow(goal))
-                    .font(.system(size: size, weight: .bold))
+                    .font(.hand(.largeTitle, size: size))
                     .tracking(-0.5)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -106,7 +108,7 @@ struct StreakDots: View {
             Text(streak == 0
                  ? "Finish an A first to start a streak."
                  : "\(streak)-day streak")
-                .font(.subheadline)
+                .font(.hand(.subheadline))
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 6)
@@ -125,7 +127,7 @@ struct PurposeEditor: View {
             Form {
                 Section {
                     TextField("Graduate with honours and land a design internship", text: $text, axis: .vertical)
-                        .font(.title3)
+                        .font(.hand(.title3))
                         .lineLimit(3...8)
                         .focused($writing)
                 } footer: {

@@ -11,11 +11,12 @@ struct LetterMark: View {
     /// and the other letters are drawn in white.
     var onBrand = false
     @Environment(\.field) private var field
+    @Environment(\.markFont) private var markFont
 
     var body: some View {
         let text = label ?? letter?.rawValue ?? "–"
         Text(text)
-            .font(large ? .headline : .footnote.weight(.semibold))
+            .font(markFont?(large) ?? (large ? .headline : .footnote.weight(.semibold)))
             .monospacedDigit()
             .strikethrough(letter == .E)
             // A mark never wraps, however narrow the space it's offered: "A1" stays on one line.
@@ -51,6 +52,13 @@ struct LetterMark: View {
     private var stroke: Color {
         onBrand ? .white.opacity(letter == .B ? 1 : 0.6) : Color(.tertiaryLabel)
     }
+}
+
+extension EnvironmentValues {
+    /// The face a letter's chip is set in. The app writes everything in its own hand and sets this
+    /// (`Font.hand`); the widgets leave it nil and keep the system's type, which is all WidgetKit
+    /// draws, so a letter on the Home Screen is unchanged.
+    @Entry var markFont: (@Sendable (Bool) -> Font)?
 }
 
 extension Letter {

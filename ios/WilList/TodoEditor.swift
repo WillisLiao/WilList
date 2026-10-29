@@ -16,7 +16,7 @@ struct TodoEditor: View {
                 if let todo = store.state.todos.first(where: { $0.id == id }) {
                     form(todo)
                 } else {
-                    ContentUnavailableView("Deleted", systemImage: "trash")
+                    ContentUnavailableView { Label("Deleted", sketch: .trash, size: 44) }
                 }
             }
             .navigationTitle("To-do")
@@ -37,7 +37,7 @@ struct TodoEditor: View {
                         withAnimation(.snappy) { store.change { $0.toggleTodo(id, today: today) } }
                     }
                     TextField("Title", text: field(\.title), axis: .vertical)
-                        .font(.title3.weight(.semibold))
+                        .font(.hand(.title3))
                         .strikethrough(todo.done, color: .secondary)
                     StarButton(on: field(\.starred))
                 }
@@ -61,7 +61,7 @@ struct TodoEditor: View {
                     Menu {
                         LetterChoices { letter in letter.map { give(todo, $0) } }
                     } label: {
-                        Label("Give it a letter", systemImage: "list.number").fillsRow()
+                        Label("Give it a letter", sketch: .listNumber).fillsRow()
                     }
                 }
             }

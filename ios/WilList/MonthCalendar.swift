@@ -48,19 +48,19 @@ struct MonthCalendar: View {
         VStack(spacing: 8) {
             HStack(spacing: 0) {
                 Text(Fmt.date(month).formatted(.dateTime.month(.wide).year()))
-                    .font(.headline)
+                    .font(.hand(.headline))
                     .accessibilityAddTraits(.isHeader)
                 Spacer()
-                Button("Previous month", systemImage: "chevron.left") { month = shift(-1) }
-                    .labelStyle(.iconOnly).tapArea()
-                Button("Next month", systemImage: "chevron.right") { month = shift(1) }
-                    .labelStyle(.iconOnly).tapArea()
+                Button { month = shift(-1) } label: { SketchIcon(glyph: .chevron, size: 15).rotationEffect(.degrees(180)).tapArea() }
+                    .accessibilityLabel("Previous month")
+                Button { month = shift(1) } label: { SketchIcon(glyph: .chevron, size: 15).tapArea() }
+                    .accessibilityLabel("Next month")
             }
-            .font(.body.weight(.semibold))
+            .font(.hand(.body))
             .buttonStyle(.borderless)
             HStack(spacing: 2) {
                 ForEach(Array(weekdays.enumerated()), id: \.offset) { _, w in
-                    Text(w).font(.caption.weight(.semibold)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
+                    Text(w).font(.hand(.caption)).foregroundStyle(.secondary).frame(maxWidth: .infinity)
                 }
             }
             .accessibilityHidden(true)
@@ -96,14 +96,14 @@ struct MonthCalendar: View {
         return Button { selection = chosen ? nil : d } label: {
             VStack(spacing: 2) {
                 Text("\(Int(d.suffix(2)) ?? 0)")
-                    .font(.subheadline.weight(d == today || chosen ? .semibold : .regular))
+                    .font(.hand(.subheadline))
                     .monospacedDigit()
                     .foregroundStyle(chosen ? Color.white : d == today ? Color.brand : Color.primary)
                     .frame(width: 28, height: 28)
                     .background(chosen ? Color.brand : .clear, in: Circle())
                 ForEach(0..<shown, id: \.self) { i in
                     Text(marks[i].title)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.hand(.caption2, size: 10))
                         .lineLimit(1)
                         .foregroundStyle(marks[i].ink)
                         .padding(.horizontal, 2)
@@ -112,7 +112,7 @@ struct MonthCalendar: View {
                         .background(marks[i].fill, in: RoundedRectangle(cornerRadius: 3, style: .continuous))
                 }
                 if marks.count > shown {
-                    Text("+\(marks.count - shown)").font(.system(size: 10, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("+\(marks.count - shown)").font(.hand(.caption2, size: 10)).foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .top)

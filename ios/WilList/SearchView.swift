@@ -87,7 +87,7 @@ struct SearchView: View {
                 Text(title)
                     .strikethrough(done, color: .secondary)
                     .foregroundStyle(done ? Color.secondary : Color.primary)
-                if let sub, !sub.isEmpty { Text(sub).font(.footnote).foregroundStyle(Color.secondary) }
+                if let sub, !sub.isEmpty { Text(sub).font(.hand(.footnote)).foregroundStyle(Color.secondary) }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if letter != nil { LetterMark(letter: letter) }

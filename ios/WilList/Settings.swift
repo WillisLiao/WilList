@@ -78,7 +78,7 @@ struct SettingsView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(feed.name)
                                 Text(feed.error ?? feed.syncedAt.map { "Read \($0.formatted(.relative(presentation: .named)))" } ?? "Not read yet")
-                                    .font(.subheadline)
+                                    .font(.hand(.subheadline))
                                     .foregroundStyle(feed.error == nil ? AnyShapeStyle(.secondary) : AnyShapeStyle(.red))
                             }
                         }
@@ -90,9 +90,9 @@ struct SettingsView: View {
 
                 Section {
                     ShareLink(item: backup, preview: SharePreview("WilList backup")) {
-                        Label("Back up", systemImage: "square.and.arrow.up")
+                        Label("Back up", sketch: .share)
                     }
-                    Button("Restore", systemImage: "arrow.counterclockwise") { restoring = true }
+                    Button { restoring = true } label: { Label("Restore", sketch: .restore) }
                 } header: {
                     Text("Backup").onGround()
                 } footer: {
@@ -104,7 +104,7 @@ struct SettingsView: View {
                         LabeledContent {
                             if !store.state.trash.isEmpty { Text("\(store.state.trash.count)") }
                         } label: {
-                            Label("Trash", systemImage: "trash")
+                            Label("Trash", sketch: .trash)
                         }
                     }
                 }
@@ -201,7 +201,7 @@ struct TrashView: View {
                         Text(t.title)
                         // Where it goes back to, and how long it stays.
                         Text("\(t.item == nil ? "Today" : "Plan"), \(AppState.daysLeft(t.deletedAt, today)) \(AppState.daysLeft(t.deletedAt, today) == 1 ? "day" : "days") left")
-                            .font(.footnote)
+                            .font(.hand(.footnote))
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -209,7 +209,7 @@ struct TrashView: View {
                     Button("Restore") {
                         withAnimation { store.change(undo: "Restored \u{201C}\(t.title)\u{201D}") { $0.restore(t.id) } }
                     }
-                    .font(.subheadline.weight(.semibold))
+                    .font(.hand(.subheadline))
                     .buttonStyle(.borderless)
                     .tapArea()
                     .accessibilityLabel("Restore \(t.title)")

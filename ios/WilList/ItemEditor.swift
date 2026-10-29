@@ -23,7 +23,7 @@ struct ItemEditor: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Title", text: $item.title, axis: .vertical).font(.title3)
+                    TextField("Title", text: $item.title, axis: .vertical).font(.hand(.title3))
                 }
 
                 // A study block has its time instead of a letter. A row of the five, as when adding
@@ -59,7 +59,7 @@ struct ItemEditor: View {
                     } icon: {
                         // In the course's colour, once it has one: a course already in the plan shows
                         // its colour as it's typed.
-                        Image(systemName: "graduationcap").foregroundStyle(CourseColor.of(store.state.courseColor(item.course)))
+                        SketchIcon(glyph: .cap, size: 19).foregroundStyle(CourseColor.of(store.state.courseColor(item.course)))
                     }
                 }
 

@@ -3,7 +3,29 @@
 The living snapshot of where WilList stands.
 Read it first; update the top section at the end of every substantial session.
 
-## Now (2026-10-28, the sketch hand)
+## Now (2026-10-29, the hand everywhere)
+
+**Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
+
+**This session (the owner's ask: "would be better if the text and icons are all sketch, human sketch, not generic sketch"):**
+- The owner saw the five drawn marks on every tab and asked for the rest of it, so the earlier restraint is lifted for type and icons (not for the circles).
+- **Every word in the app is written in Patrick Hand**, bundled as `ios/WilList/PatrickHand-Regular.ttf` under the SIL Open Font License (`PatrickHand-OFL.txt`), registered as `UIAppFonts`, reached only through `Font.hand(_:size:)` in `Sketch.swift`.
+  Six hands went on screen side by side first; Bradley Hand was the one to beat (it ships with iOS) and lost on the quiet grey line under a row, where its strokes go spindly under "11/9", "9:00 AM" and "1 of 3".
+  Dynamic Type still works everywhere (`relativeTo:`).
+- **A hand has one pen, so there is no bold.** Patrick Hand has one weight and SwiftUI will not synthesise another, so every `.weight(.semibold)` and `.bold()` is gone and emphasis is size and colour.
+- **Every icon WilList lays out itself is drawn by the same pen**: `SketchIcon`, thirty glyphs, strokes through hand-set points, one stroke style, scaling with Dynamic Type.
+  The Goals target is one ring with a dart in it rather than rings inside rings, so the tab bar's own pen circle still reads as the twist; the play mark is drawn rather than filled in.
+- Marks inside a run of words (bell, calendar, repeat, page) go through `SketchIcon.inline`, which renders each once and keeps it as a template image, since `Text` will only take an `Image`.
+- One file in `ios/Shared` moved: `LetterMark` reads `\.markFont` from the environment and falls back to the system's type, so the app's letters are in the hand and **the widgets are unchanged**.
+- System UI stays the system's: menu popovers, swipe actions, the keyboard, the share sheet, Sign in with Apple, `PhotosPicker`, the file importer, steppers and toggles, and the symbols the system's own `TabView` and App Shortcuts are given.
+- See **The sketch hand** in `docs/DESIGN.md` (its two new parts, the hand and the icons) and the 2026-10-29 section of `devlogs/2026-10-28.md`.
+
+**Checked:** 77 core tests, lint, a zero-warning Release build, the UI tests, and every tab, Focus, Settings and a task's details looked at in the simulator; Today and Focus held to 320 points for Display Zoom.
+Two things only the simulator showed, both fixed: an icon-only sketch `Label` left a button with no description at all (the accessibility audit caught five), and iOS 26's glass toolbar draws the words of a `Label` whose icon is not an `Image`, so Search, Sort and view, Add and Clear came back as text until they took the drawn icon directly.
+**Not checked:** the look with Reduce Motion or Increase Contrast on, the largest accessibility text sizes, and nothing has been on a real device.
+**To ask the owner:** whether the hand should reach the widgets one day (it would mean changing `ios/Shared`, and WidgetKit is particular about what it will draw), and whether the few menu popovers that still show SF Symbols are worth working around.
+
+## Before that (2026-10-28, the sketch hand)
 
 **Branch:** still `claude/optimistic-ride-55ift9`, pushed; nothing merged into `main` since `d911eac`.
 Two sessions worked on this branch today: Sign in with Apple (`fdea1ab`, its own devlog section) and this one, on top of it.

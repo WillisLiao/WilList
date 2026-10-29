@@ -38,7 +38,7 @@ struct AddItemSheet: View {
             Form {
                 Section {
                     TextField("What and when", text: $text)
-                        .font(.title3)
+                        .font(.hand(.title3))
                         .focused($focused)
                         .submitLabel(.done)
                         .onSubmit(add)

@@ -77,16 +77,18 @@ struct PlanList: View {
         .profileButton()
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button("Search", systemImage: "magnifyingglass") { searching = true }
+                Button { searching = true } label: { SketchIcon(glyph: .magnifier, size: 21) }
+                    .accessibilityLabel("Search")
             }
             ToolbarItem(placement: .primaryAction) {
                 Menu {
                     Button("Task", systemImage: "checklist") { adding = .task }
                     Button("Study block", systemImage: "book") { adding = .study }
                 } label: {
-                    Label("Add", systemImage: "plus")
+                    SketchIcon(glyph: .plus, size: 21)
                 }
                 .menuOrder(.fixed)
+                .accessibilityLabel("Add")
             }
         }
         .sheet(isPresented: $searching) { SearchView() }
@@ -106,12 +108,12 @@ struct PlanList: View {
     /// Today's date, straight on the ground under the tab's title.
     private var dayHeader: some View {
         Text(Fmt.long(today))
-            .font(.title3.weight(.semibold))
+            .font(.hand(.title3))
             .penRule()
             .onGround()
             .accessibilityAddTraits(.isHeader)
             .listRowSeparator(.hidden)
-            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 8, trailing: 0))
+            .listRowInsets(EdgeInsets(top: 0, leading: 2, bottom: 8, trailing: 0))
             .listRowBackground(Color.clear)
     }
 
@@ -123,7 +125,7 @@ struct PlanList: View {
                 Text(row.item.title)
                     .strikethrough(row.priority == .E || done, color: .secondary)
                     .foregroundStyle(row.priority == .E ? .secondary : .primary)
-                if let line = line(row) { line.font(.footnote) }
+                if let line = line(row) { line.font(.hand(.footnote)) }
             }
             .rowWords { editing = row.item }
             RowEnd {
@@ -163,7 +165,7 @@ struct PlanList: View {
                 Text(item.title)
                     .strikethrough(item.priority == .E || done, color: .secondary)
                     .foregroundStyle(item.priority == .E ? .secondary : .primary)
-                if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.footnote).foregroundStyle(.secondary) }
+                if let sub = Fmt.subline(item, today, in: store.state) { sub.font(.hand(.footnote)).foregroundStyle(.secondary) }
             }
             .rowWords { editing = item }
             RowEnd {

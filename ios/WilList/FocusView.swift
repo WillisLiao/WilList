@@ -32,7 +32,7 @@ struct FocusView: View {
                 Spacer()
                 if !over {
                     Button { store.focusOpen = false } label: {
-                        Image(systemName: "chevron.down").font(.title3.weight(.semibold)).tapArea()
+                        SketchIcon(glyph: .chevron, size: 19).rotationEffect(.degrees(90)).tapArea()
                     }
                     .foregroundStyle(.white)
                     .accessibilityLabel("Minimize")
@@ -53,7 +53,7 @@ struct FocusView: View {
                     Button { store.stopFocus() } label: { Text("Close").frame(maxWidth: .infinity) }
                 } else {
                     Button { f.paused ? store.resumeFocus() : store.pauseFocus() } label: {
-                        Label(f.paused ? "Resume" : "Pause", systemImage: f.paused ? "play.fill" : "pause.fill")
+                        Label(f.paused ? "Resume" : "Pause", sketch: f.paused ? .play : .pause, size: 17)
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -83,7 +83,7 @@ struct FocusView: View {
                     LetterMark(letter: letter, label: f.label, large: true, onBrand: true)
                 }
                 Text(Fmt.noWidow(f.title))
-                    .font(.title.bold())
+                    .font(.hand(.title))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -108,7 +108,7 @@ struct FocusView: View {
         let spent = min(max(1 - left / f.total, 0), 1)
         return Text(left == 0 ? "Break" : Self.clock(left))
             // Rounded, the system's friendliest face, so the digits sit with the drawn ring.
-            .font(.system(size: 76, weight: .bold, design: .rounded))
+            .font(.hand(.largeTitle, size: 76))
             .monospacedDigit()
             .tracking(-1)
             .foregroundStyle(.white)

@@ -117,8 +117,8 @@ extension Fmt {
         let upcoming = Reminders.remind(remind).flatMap { Calendar.current.date(from: $0) }.map { $0 > .now } ?? false
         return [
             steps.isEmpty ? nil : Text("\(steps.filter(\.done).count)\u{00A0}of\u{00A0}\(steps.count)").foregroundStyle(Color.secondary),
-            upcoming ? Text(Image(systemName: "bell")).foregroundStyle(Color.secondary) : nil,
-            onToday ? Text(Image(systemName: "sun.max")).foregroundStyle(Color.secondary) : nil,
+            upcoming ? Text(SketchIcon.inline(.bell)).foregroundStyle(Color.secondary) : nil,
+            onToday ? Text(SketchIcon.inline(.sun)).foregroundStyle(Color.secondary) : nil,
         ]
     }
 }

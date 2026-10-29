@@ -59,6 +59,8 @@ Goals leads with the main goal set large in white on a teal card (just “Main g
 
 WilList is Tracy's *written* list: you letter each task with a pen and circle the one that comes first.
 So the marks that say "this one" are drawn rather than set, at the owner's ask on 2026-10-28 ("could be more sketch, like creative sketch, not too many, not too little, just simple, and adds a twist"; asked whether they meant the focus countdown, they said "it's specific for the whole app").
+Seeing that, the owner asked for the rest of it on 2026-10-29: "would be better if the text and icons are all sketch, human sketch, not generic sketch".
+So every word is now written in one hand and every icon WilList lays out itself is drawn by the same pen.
 
 **The twist: a circle drawn by hand means *this one*.**
 The one you have done, the one you are on, the tab you are in, and the task that comes first all carry the same pen circle, and nothing else in the app does.
@@ -95,8 +97,52 @@ The tick is trimmed by whether the row is done, so a tap draws it on while a row
 The burst thrown off a filling check is the same drawn circle with six pen dots.
 With Reduce Motion the tick is simply there, as before.
 
-Not sketched, on purpose: the letters' own chips (five colours already carry that meaning, and a drawn edge is invisible at 26 points), the star, the course colours, the charts, and the widgets, where WidgetKit is particular about what it will draw (pitfall 13).
-Not yet sketched, and the one place the language stops short: the Agent's find rows, whose ticks are still the system's circles.
+Not sketched, on purpose: the letters' own chip edges (five colours already carry that meaning, and a drawn edge is invisible at 26 points), the course colours, the charts, and the widgets, where WidgetKit is particular about what it will draw (pitfall 13).
+
+### The hand it is written in
+
+Every word on every screen is set in **Patrick Hand** (`Font.hand`, in `Sketch.swift`), bundled as `ios/WilList/PatrickHand-Regular.ttf` under the SIL Open Font License (`PatrickHand-OFL.txt`) and registered as `UIAppFonts` in `Info.plist`.
+
+Six hands were put on screen side by side at the app's own sizes and colours before it was picked: Noteworthy (Light and Bold), Bradley Hand, Marker Felt (Thin and Wide), Chalkboard SE, Caveat and Architects Daughter.
+Marker Felt and Chalkboard SE read as a sketch effect rather than a person; Noteworthy is Apple's own notes face and reads as a font; Caveat registers only one weight from its variable file and is too light and too small in the eye at footnote size.
+Bradley Hand is genuinely a person's pen and ships with iOS, but its strokes are spindly where it matters most: the quiet grey line under a row, which carries "11/9", "9:00 AM", "14:25" and "1 of 3".
+Patrick Hand is the same kind of human hand with an even, confident stroke that stays crisp in grey at 13 points, which is why it is worth bundling a file for.
+
+- Always built with `relativeTo:`, so every size still grows with Dynamic Type. `Font.handSize` holds the system's own point size per text style, because `UIFont.preferredFont` hands back a size that is already scaled and `relativeTo:` would scale it twice.
+- Sizes are nudged up 6% (`Font.handScale`): the hand's lowercase sits a little under the system's.
+- **A hand has one pen, so there is no bold.** The family has a single weight and SwiftUI will not synthesise one, so every `.weight(.semibold)` and `.bold()` is gone; emphasis is size and colour, which is what a person writing actually has.
+- There is no monospaced face either. The hand's digits are near enough even that the focus clock does not jump.
+- `UINavigationBar.appearance()` in `WilListApp.swift` carries the hand into the large title and the small one, which SwiftUI does not reach.
+- One thing in `ios/Shared` moved for this: `LetterMark` now reads `\.markFont` from the environment and falls back to the system's type. The app sets it; the widgets leave it nil, so a letter on the Home Screen is unchanged.
+
+### The icons
+
+`SketchIcon` (in `Sketch.swift`) draws thirty glyphs as strokes through hand-set points in the unit square, run through the same `sketched()` curve as the circles and the tick.
+The wobble is written down, never random, so a list of rows never shimmers as it is laid out again.
+One stroke style everywhere: round caps and joins, `side / 12.5` wide (about 2 pt at 24 pt), in the foreground colour of wherever it sits, and the view scales with Dynamic Type (`@ScaledMetric`).
+
+| Where | Glyphs |
+|---|---|
+| The tab bar | `checklist` (Today), `listNumber` (Plan), `bars` (Progress), `target` (Goals), `sparkles` (Agent) |
+| A row | `play`, `star` (drawn, then filled teal when it is on), `chevron` |
+| A tab's bar | `magnifier`, `sort`, `plus`, `person` (the profile picture when there is no photo), `xmark` |
+| Task details | `bell`, `calendar`, `repeatArrows`, `sun`, `cap`, `plus`, `xmark` |
+| Agent | `sparkles`, `paperclip`, `page`, `photo`, `xmark`, `check` |
+| Progress and Goals | `warning`, `flag`, `restore`, `pencil`, `plus` |
+| Settings | `share`, `restore`, `trash`, `listNumber` |
+| Focus and the flows | `chevron` (turned, to lower the screen), `play`, `pause`, `check`, `sun`, `plusCircle` |
+
+Two of them were drawn against the twist rather than for it.
+The Goals target is **one** ring with a dart in it, not rings inside rings: under the tab bar's own pen circle a bullseye turned to soup, and a second circle there would blunt what that circle means.
+The play mark is drawn, not filled in, so it reads as the same pen as everything beside it.
+
+The few marks that sit inside a run of words (the bell, calendar, repeat and page on a to-do's line) cannot be views, since `Text` will only take an `Image`: `SketchIcon.inline` draws each one once through `ImageRenderer`, keeps it, and hands it over as a template so the words' own colour still tints it.
+
+`Label(_, sketch:)` puts a drawn icon where `Label(_, systemImage:)` was, keeping the words, so every label style still works and VoiceOver and the UI tests still find the control by its name.
+A tab bar button carries its name on `.accessibilityLabel`, since iOS 26's glass toolbar buttons draw the words of a `Label` whose icon is not an `Image`.
+
+**What stays the system's**, because WilList does not draw it and cannot restyle it: menu popovers (`Menu` content), swipe actions, `ContentUnavailableView`'s own symbol, the keyboard, the share sheet, Sign in with Apple, `PhotosPicker`, the file importer, steppers and toggles, and the symbols the system's own `TabView` and App Shortcuts are given.
+The widgets keep SF Symbols and the system's type throughout (pitfall 13).
 
 ## Words
 
@@ -158,23 +204,23 @@ All shared pieces live in `ios/WilList/Theme.swift`, `ios/WilList/TaskFields.swi
 - **Row:** check on the left, title, one quiet line under it in `.footnote`, and on the right Play, then a star (to-dos) or a letter (items) in a 44-point column (`MarkColumn`, empty when there is no letter), so the Play buttons line up down a list.
   Play and the star or letter sit side by side with no gap, up against the words (`RowEnd`): at Display Zoom's 320 points the words get about 126 points, so a to-do's due date stays on one line, at the owner's ask. Tap the text to open details. Swipe right to finish, left to delete.
   E items (dropped) have no Play.
-- **PlayButton** (`TaskFields.swift`): a teal play mark; a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and a study block's planned time among them, marked "As planned". Choosing one starts focus.
+- **PlayButton** (`TaskFields.swift`): a teal play mark drawn by hand (`SketchIcon(.play)`); a tap opens "Focus for" with 15, 25, 45 minutes, 1 hour and 1 h 30 min, and a study block's planned time among them, marked "As planned". Choosing one starts focus.
   On every tab the check sits in a 44-point column 12 points in and the words start 10 points after it, so lists line up as you switch tabs. Rows without a check keep the words in that column.
-- **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date beside a calendar icon, without the word Due, which the icon says ("Tomorrow, 10:00 AM", teal when today, red when overdue, "Yesterday"; the owner's call, 2026-10-24), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today.
+- **The line under a title** (`Fmt.meta`, `Fmt.marks`): only what the task has, spaced apart: the due date beside a calendar icon, without the word Due, which the icon says ("Tomorrow, 10:00 AM", teal when today, red when overdue, "Yesterday"; the owner's call, 2026-10-24), "1 of 3" steps, a bell for a reminder still to come, a repeat arrow, a note mark, a sun when it's on Today. All of them are drawn (`SketchIcon.inline`, see **The sketch hand**).
 - **CheckButton:** 44 pt, an empty circle drawn by hand (`SketchCircle`) that fills teal while a drawn tick is laid across it, keeping its pen edge and the hand's tail past the top; it throws off a drawn ring and six pen dots (not with Reduce Motion), a success haptic and the chime (`Chime.play()`, follows the silent switch, can be turned off in Settings). The row waits 450 ms filled, then glides away.
 - **LetterMark:** a chip filled in the letter's colour (red, orange, yellow, green, blue from A to E), with E struck through as well; an item without a letter has no mark at all, and nothing asks for one (the owner's call, 2026-10-24: "unlettered shouldn't be a problem"); its details give it one. On a field of colour (Focus, the Live Activity) the A is white with its letter in the field's colour and the others are white outlines. Tapping a letter opens `LetterChoices`: all five with their meaning, the suggested one marked.
   The day's A1, and no other row, has a graphite pen circle round its chip (`penCircled`, see **The sketch hand**).
   New task's letter row shows each letter as a pale wash of its colour with dark words, and in full once chosen; yellow and green words can't be read on white.
-- **StarButton:** grey outline, filled teal when important.
+- **StarButton:** the drawn star (`SketchIcon(.star)`), grey outline, drawn and then filled teal when important.
 - **MonthCalendar** (`MonthCalendar.swift`, under the rows of Plan): the month and year with a month back and on, the days of the week in single letters, and the days in rows of seven, today's number in the teal. Under each number, what's planned that day: up to two titles in small chips of their letter's colour, or one and "+2". Tapping a day fills its number teal and lists that day in full under the calendar; tapping it again lets it go.
-- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left in 76 pt bold, in the system's rounded face, inside a thin white ring of the time spent drawn by hand (8 points, on a track of white at 30%, from the top clockwise, at most 300 points across), which closes at Break (the owner's ask, 2026-10-25); and one white button, Pause or Resume (Close at Break).
+- **Focus** (`FocusView.swift`): the whole screen in the session's course colour, with the time spent rising from the bottom in a deeper shade of it (the colour mixed with 24% black), like a glass filling, until it reaches the top when the planned minutes are up; the time left at 76 pt in the app's hand, inside a thin white ring of the time spent drawn by hand (8 points, on a track of white at 30%, from the top clockwise, at most 300 points across), which closes at Break (the owner's ask, 2026-10-25); and one white button, Pause or Resume (Close at Break).
   Its Live Activity on the Lock Screen is drawn the same way, on the course colour (`FocusAttributes.color`).
   The Dynamic Island stays black: the letter is white with the course colour in it, and the time, bar and keyline use the course colour lifted with 35% white (`CourseColor.onDark`, 5.5:1 or better on black).
 - **Done chart** (`DoneChart` in `ProgressTab.swift`): each of the last 7 days' finished items and to-dos stacked by letter in the letters' colours, A at the floor, to-dos and anything without a letter in grey on top, with the day and its count under it ("Today" in bold).
   It is drawn by hand like the week chart, not with Swift Charts, whose bars left out the empty days at either end; its scale starts at three, so one thing done doesn't fill the card.
 - **Week chart** (`WeekChart` in `ProgressTab.swift`): each day's planned study stacked by course colour, palette order from the floor up, under a dashed line at the daily study time, with a key of the week's courses below.
   A day past the line shows its time in red under the bar; red is never stacked on the bars, where it would read as a course.
-- **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left in a ring that closes as the minutes pass, the screen filling from the bottom as the chosen minutes pass, Pause or Resume and, top right, a chevron (`chevron.down`) that lowers the screen while the timer runs on (no Mark done: only a task's own circle ticks it off, the owner's word); the task's Play button then shows the time left, and its menu has Open timer and Stop timer. At the end it says to take a break, with the chime, and Close takes Pause's place. Play's menu ends with Custom, which asks for minutes. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
+- **Focus** (`FocusView.swift`, from Play beside any task): one task, one timer, nothing else. The letter (when it has one) and the title, the time left in a ring that closes as the minutes pass, the screen filling from the bottom as the chosen minutes pass, Pause or Resume and, top right, a drawn chevron turned to point down that lowers the screen while the timer runs on (no Mark done: only a task's own circle ticks it off, the owner's word); the task's Play button then shows the time left, and its menu has Open timer and Stop timer. At the end it says to take a break, with the chime, and Close takes Pause's place. Play's menu ends with Custom, which asks for minutes. The same timer runs as a Live Activity on the Lock Screen and in the Dynamic Island (`FocusActivity.swift`, faces in `ios/Shared/FocusViews.swift`), with Mark done on it, and it says Break there too when the time is up. The real minutes are logged, as on the website.
 - **Agent** (`AgentView.swift`): not a chat, on purpose (the owner, 2026-10-28: a chat is not good practice security-wise): there is nothing to type, no questions and no analysis, so nothing a student writes can steer the model, and it is never sent their plan.
   Two white buttons, Choose a file and Choose a photo; what is picked shows as chips (five at most, a spinner while a photo or scan is read on the phone), and Find tasks sends their text.
   What it finds comes as a white card of rows to tick, each with its date and course, and one Add button; once added it says Added, and Undo brings the button back. Something it says (nothing found) is plain text (`Text(verbatim:)`, never Markdown or links). Clear at the top right empties the screen.

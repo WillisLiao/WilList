@@ -41,7 +41,7 @@ struct ProgressTab: View {
                             courseKey?.accessibilityHidden(true)
                             Text("Dashed line: \(Fmt.minutes(store.state.settings.perDayMin)) a day")
                         }
-                        .font(.subheadline)
+                        .font(.hand(.subheadline))
                         .foregroundStyle(.secondary)
                         .listRowSeparator(.hidden, edges: .top)
                     }
@@ -79,11 +79,11 @@ struct ProgressTab: View {
             ForEach(cells, id: \.1) { value, label in
                 VStack(alignment: .leading, spacing: 2) {
                     Text(value)
-                        .font(.title2.weight(.bold))
+                        .font(.hand(.title2))
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
-                    Text(label).font(.footnote).foregroundStyle(.secondary)
+                    Text(label).font(.hand(.footnote)).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
@@ -96,21 +96,19 @@ struct ProgressTab: View {
 
     private func suggestionRow(_ tip: Suggestion) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: symbol(tip))
-                .font(.body.weight(.semibold))
+            SketchIcon(glyph: symbol(tip), size: 20)
                 .foregroundStyle(tint(tip))
                 .frame(width: 44)
-                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(words(tip).title)
                 if let detail = words(tip).detail {
-                    Text(detail).font(.subheadline).foregroundStyle(.secondary)
+                    Text(detail).font(.hand(.subheadline)).foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             if let (label, run) = action(tip) {
                 Button(label, action: run)
-                    .font(.subheadline.weight(.semibold))
+                    .font(.hand(.subheadline))
                     .buttonStyle(.borderless)
                     .tapArea()
             }
@@ -119,11 +117,11 @@ struct ProgressTab: View {
         .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 16))
     }
 
-    private func symbol(_ tip: Suggestion) -> String {
+    private func symbol(_ tip: Suggestion) -> SketchIcon.Glyph {
         switch tip {
-        case .overloaded: "exclamationmark.triangle"
-        case .startEarly: "flag"
-        case .review: "tray.full"
+        case .overloaded: .warning
+        case .startEarly: .flag
+        case .review: .restore
         }
     }
 
@@ -208,7 +206,7 @@ struct DoneChart: View {
                             .fontWeight(d.date == today ? .semibold : .regular)
                         Text(d.total > 0 ? "\(d.total)" : "–").monospacedDigit().foregroundStyle(.secondary)
                     }
-                    .font(.caption2)
+                    .font(.hand(.caption2))
                     .frame(maxWidth: .infinity)
                 }
             }
@@ -291,10 +289,10 @@ struct WeekChart: View {
         let day = days.first { $0.date == d }
         return VStack(spacing: 3) {
             Text(d == today ? "Today" : Fmt.date(d).formatted(.dateTime.weekday(.abbreviated)))
-                .font(.caption2)
+                .font(.hand(.caption2))
                 .fontWeight(d == today ? .semibold : .regular)
             Text(day.map { $0.load > 0 ? hours($0.load) : "–" } ?? "–")
-                .font(.caption2)
+                .font(.hand(.caption2))
                 .monospacedDigit()
                 .foregroundStyle(day?.over == true ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
         }

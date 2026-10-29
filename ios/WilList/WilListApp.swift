@@ -10,20 +10,26 @@ struct WilListApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView().environment(store).environment(Account.shared)
+            RootView()
+                .environment(store)
+                .environment(Account.shared)
+                // Everything that sets no face of its own is written in the app's hand.
+                .environment(\.font, .hand())
+                .environment(\.markFont, { $0 ? .hand(.title3) : .hand(.footnote) })
         }
     }
 }
 
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
-    // Screen titles in bold, like the date on Today. Large titles are only on the tabs, in the
-    // ground's deep ink; sheets' titles stay small and dark on their light ground.
+    // Screen titles in the app's hand (`Font.hand`), like the date on Today. Large titles are only
+    // on the tabs, in the ground's deep ink; sheets' titles stay small and dark on their light
+    // ground. SwiftUI does not reach the title UIKit draws in a navigation bar, so it is set here.
     // Set once the app has launched: touching UIKit appearance any earlier (in App.init) loses the
     // accent colour.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let bar = UINavigationBar.appearance()
-        bar.largeTitleTextAttributes = [.font: Self.titleFont(.largeTitle), .foregroundColor: UIColor(Color.groundInk)]
-        bar.titleTextAttributes = [.font: Self.titleFont(.headline)]
+        bar.largeTitleTextAttributes = [.font: UIFont.hand(.largeTitle, size: 34), .foregroundColor: UIColor(Color.groundInk)]
+        bar.titleTextAttributes = [.font: UIFont.hand(.headline, size: 17)]
         UNUserNotificationCenter.current().delegate = self
         // The Claude key students once typed into More is no longer used: the Agent runs on
         // WilList's own server. Leave no secret behind.
@@ -59,10 +65,6 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         Store.shared.answerReminder(id, action: response.actionIdentifier)
     }
 
-    private static func titleFont(_ style: UIFont.TextStyle) -> UIFont {
-        let base = UIFont.preferredFont(forTextStyle: style).fontDescriptor
-        return UIFont(descriptor: base.withSymbolicTraits(.traitBold) ?? base, size: 0)
-    }
 }
 
 enum AppTab: String, Hashable, CaseIterable {
@@ -77,6 +79,18 @@ enum AppTab: String, Hashable, CaseIterable {
         case .progress: "chart.bar.xaxis"
         case .goals: "target"
         case .agent: "sparkles"
+        }
+    }
+
+    /// The same five, drawn by the app's own pen (`SketchIcon`). The symbol above stays for the
+    /// system's own tab view, which is hidden under WilList's bar but still names the tabs.
+    var glyph: SketchIcon.Glyph {
+        switch self {
+        case .today: .checklist
+        case .plan: .listNumber
+        case .progress: .bars
+        case .goals: .target
+        case .agent: .sparkles
         }
     }
 }
@@ -95,8 +109,7 @@ struct TabBar: View {
                 let on = item == tab
                 Button { tab = item } label: {
                     VStack(spacing: 3) {
-                        Image(systemName: item.symbol)
-                            .font(.system(size: 19, weight: .semibold))
+                        SketchIcon(glyph: item.glyph, size: 21)
                             .frame(height: 24)
                             // The tab you are in is circled by hand, as the A1 is: the same pen
                             // saying "this one". It replaces the pale pill that said it before.
@@ -108,7 +121,7 @@ struct TabBar: View {
                                         .stroke(Color.brandDeep, style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
                                 }
                             }
-                        Text(item.title).font(.caption2.weight(.semibold)).lineLimit(1).minimumScaleFactor(0.8)
+                        Text(item.title).font(.hand(.caption2)).lineLimit(1).minimumScaleFactor(0.8)
                     }
                     // The deeper teal: the teal itself reads at only 4.4:1 on a pale ground.
                     .foregroundStyle(on ? Color.brandDeep : Color.primary)

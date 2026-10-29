@@ -55,11 +55,10 @@ private struct AgentIntro: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Image(systemName: "sparkles")
-                .font(.title.weight(.semibold))
+            SketchIcon(glyph: .sparkles, size: 30)
                 .foregroundStyle(Color.brand)
                 .accessibilityHidden(true)
-            Text(title).font(.title2.bold())
+            Text(title).font(.hand(.title2))
             Text(detail).foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -183,7 +182,7 @@ private struct AgentUpload: View {
                         .accessibilityLabel("The Agent is reading")
                 }
                 if let problem {
-                    Text(problem).font(.subheadline).foregroundStyle(.red)
+                    Text(problem).font(.hand(.subheadline)).foregroundStyle(.red)
                 }
             }
             .padding(16)
@@ -199,7 +198,8 @@ private struct AgentUpload: View {
         .toolbar {
             if !found.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Clear", systemImage: "xmark.circle") { found = []; problem = nil }
+                    Button { found = []; problem = nil } label: { SketchIcon(glyph: .xmark, size: 19) }
+                        .accessibilityLabel("Clear")
                 }
             }
         }
@@ -254,8 +254,8 @@ private struct AgentUpload: View {
             AgentIntro(title: "Hand it anything with dates", detail: "A syllabus, timetable, photo or email. It lists what to add, and you choose.")
         }
         HStack(spacing: 12) {
-            pick("Choose a file", "doc") { choosingFile = true }
-            pick("Choose a photo", "photo") { choosingPhoto = true }
+            pick("Choose a file", .page) { choosingFile = true }
+            pick("Choose a photo", .photo) { choosingPhoto = true }
         }
         if !files.isEmpty || !reading.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
@@ -266,9 +266,9 @@ private struct AgentUpload: View {
                 }
                 ForEach(files, id: \.name) { f in
                     chip(f.name) {
-                        Image(systemName: "paperclip")
-                        Button("Remove \(f.name)", systemImage: "xmark.circle.fill") { files.removeAll { $0.name == f.name } }
-                            .labelStyle(.iconOnly)
+                        SketchIcon(glyph: .paperclip, size: 21)
+                        Button { files.removeAll { $0.name == f.name } } label: { SketchIcon(glyph: .xmark, size: 15) }
+                            .accessibilityLabel("Remove \(f.name)")
                             .foregroundStyle(.secondary)
                             .tapArea()
                     }
@@ -283,10 +283,10 @@ private struct AgentUpload: View {
         }
     }
 
-    private func pick(_ title: String, _ symbol: String, action: @escaping () -> Void) -> some View {
+    private func pick(_ title: String, _ symbol: SketchIcon.Glyph, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Label(title, systemImage: symbol)
-                .font(.body.weight(.medium))
+            Label(title, sketch: symbol)
+                .font(.hand(.body))
                 .foregroundStyle(Color.brandDeep)
                 .frame(maxWidth: .infinity, minHeight: 56)
                 .background(Color.white, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -300,7 +300,7 @@ private struct AgentUpload: View {
             Text(name).lineLimit(1)
             Spacer(minLength: 0)
         }
-        .font(.subheadline.weight(.medium))
+        .font(.hand(.subheadline))
         .padding(.horizontal, 12)
         .frame(minHeight: 44)
         .background(Color.white, in: Capsule())
@@ -414,7 +414,7 @@ private struct ItemsCard: View {
                         DrawnCheck(done: on).frame(width: 28, height: 28)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(items[i].title).foregroundStyle(Color.primary)
-                            Text(Fmt.subline(items[i], store.today)).font(.subheadline).foregroundStyle(Color.secondary)
+                            Text(Fmt.subline(items[i], store.today)).font(.hand(.subheadline)).foregroundStyle(Color.secondary)
                         }
                         Spacer(minLength: 0)
                     }
@@ -428,7 +428,7 @@ private struct ItemsCard: View {
             }
             Group {
                 if added {
-                    Label("Added", systemImage: "checkmark").foregroundStyle(Color.brandDeep).font(.body.weight(.semibold))
+                    Label("Added", sketch: .check, size: 17).foregroundStyle(Color.brandDeep).font(.hand(.body))
                         .frame(maxWidth: .infinity, minHeight: 44)
                 } else {
                     Button {

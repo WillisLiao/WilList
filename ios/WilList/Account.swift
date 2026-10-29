@@ -74,17 +74,14 @@ struct Avatar: View {
     var body: some View {
         if let initials = account.initials {
             Text(initials)
-                .font(.system(size: size * 0.42, weight: .semibold, design: .rounded))
+                .font(.hand(.body, size: size * 0.42))
                 .foregroundStyle(.white)
                 .frame(width: size, height: size)
                 .background(Color.brand, in: Circle())
         } else if account.signedIn {
-            Image(systemName: "person.crop.circle.fill").font(.system(size: size)).foregroundStyle(Color.brand)
+            SketchIcon(glyph: .person, size: size * 0.82).foregroundStyle(Color.brand)
         } else {
-            Image(systemName: "person.crop.circle.fill")
-                .font(.system(size: size))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(Color.brand)
+            SketchIcon(glyph: .person, size: size * 0.82).foregroundStyle(Color.brand)
         }
     }
 }
@@ -99,8 +96,8 @@ struct AccountSection: View {
                 HStack(spacing: 12) {
                     Avatar(size: 44)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(account.name ?? "Signed in with Apple").font(.headline)
-                        if let email = account.email { Text(email).font(.subheadline).foregroundStyle(.secondary) }
+                        Text(account.name ?? "Signed in with Apple").font(.hand(.headline))
+                        if let email = account.email { Text(email).font(.hand(.subheadline)).foregroundStyle(.secondary) }
                     }
                 }
                 Button("Sign out", role: .destructive) { account.signOut() }
@@ -110,7 +107,7 @@ struct AccountSection: View {
                     .frame(height: 50)
                     .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
-                if let failure = account.failure { Text(failure).font(.footnote).foregroundStyle(.red) }
+                if let failure = account.failure { Text(failure).font(.hand(.footnote)).foregroundStyle(.red) }
             }
         }
     }

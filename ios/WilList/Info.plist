@@ -65,6 +65,10 @@
 			<string>UIApplicationShortcutIconTypeSearch</string>
 		</dict>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>PatrickHand-Regular.ttf</string>
+	</array>
 	<!-- Always light. -->
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>

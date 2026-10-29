@@ -85,17 +85,17 @@ struct PlanTomorrow: View {
     /// The last page is drawn on the A1's course colour, as its focus session will be.
     private var finished: some View {
         let field = rows.first.map { CourseColor.of(store.state.courseColor($0.item.course)) } ?? Self.night
-        return FinishPage(field: field, symbol: "sunrise.fill") {
+        return FinishPage(field: field, symbol: .sun) {
             if let a1 = rows.first {
                 Text("Tomorrow starts with")
-                    .font(.headline)
+                    .font(.hand(.headline))
                     .foregroundStyle(.white)
                 Text(Fmt.noWidow(a1.item.title))
-                    .font(.largeTitle.bold())
+                    .font(.hand(.largeTitle))
                     .accessibilityAddTraits(.isHeader)
             } else {
                 Text("Nothing for tomorrow")
-                    .font(.title.bold())
+                    .font(.hand(.title))
                     .accessibilityAddTraits(.isHeader)
             }
         } buttons: {

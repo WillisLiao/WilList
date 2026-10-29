@@ -34,8 +34,9 @@ struct StepPage<Content: View>: View {
             HStack {
                 if step > 1 {
                     Button(action: back) {
-                        Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly).tapArea()
+                        SketchIcon(glyph: .chevron, size: 17).rotationEffect(.degrees(180)).tapArea()
                     }
+                    .accessibilityLabel("Back")
                 }
                 Spacer()
                 Button(action: leave) { Text(exit).tapArea() }
@@ -43,11 +44,11 @@ struct StepPage<Content: View>: View {
             // In the middle, where Back coming and going doesn't move it; the number rolls on.
             .overlay {
                 Text("\(step) of \(of)")
-                    .font(.subheadline.monospacedDigit())
+                    .font(.hand(.subheadline))
                     .foregroundStyle(.white)
                     .contentTransition(.numericText(value: Double(step)))
             }
-            .font(.body.weight(.medium))
+            .font(.hand(.body))
             .tint(.white)
             .padding(.horizontal, 12)
             .padding(.top, 4)
@@ -58,10 +59,10 @@ struct StepPage<Content: View>: View {
                 ZStack(alignment: .topLeading) {
                     VStack(alignment: .leading, spacing: 8) {
                         if let about {
-                            Text(about).font(.subheadline).foregroundStyle(.white)
+                            Text(about).font(.hand(.subheadline)).foregroundStyle(.white)
                         }
                         Text(title)
-                            .font(.largeTitle.bold())
+                            .font(.hand(.largeTitle))
                             .foregroundStyle(.white)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
@@ -128,7 +129,7 @@ struct LinesEntry: View {
                     Button {
                         withAnimation(.snappy) { _ = lines.remove(at: i) }
                     } label: {
-                        Label("Remove", systemImage: "xmark.circle.fill").labelStyle(.iconOnly).tapArea()
+                        SketchIcon(glyph: .xmark, size: 15).tapArea()
                     }
                     .foregroundStyle(Color(.tertiaryLabel))
                     .accessibilityLabel("Remove \(lines[i])")
@@ -137,7 +138,7 @@ struct LinesEntry: View {
                 Divider().padding(.leading, 36)
             }
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle.fill").font(.title3).foregroundStyle(field)
+                SketchIcon(glyph: .plusCircle, size: 21).foregroundStyle(field)
                     .accessibilityHidden(true)
                 TextField(lines.isEmpty ? placeholder : "And next?", text: $draft)
                     .focused(typing)
@@ -189,7 +190,7 @@ struct A1Choice: View {
                             .foregroundStyle(Color.primary)
                             .fontWeight(chosen ? .semibold : .regular)
                         if let detail {
-                            Text(detail).font(.subheadline).foregroundStyle(Color.secondary)
+                            Text(detail).font(.hand(.subheadline)).foregroundStyle(Color.secondary)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -213,11 +214,12 @@ struct A1Choice: View {
 /// the sheet is laid on.
 struct FinishPage<Middle: View, Buttons: View>: View {
     var field: Color?
-    let symbol: String
+    let symbol: SketchIcon.Glyph
     @ViewBuilder let middle: () -> Middle
     @ViewBuilder let buttons: () -> Buttons
-    /// The symbol bounces once the page has come in.
+    /// The drawn mark lands once the page has come in.
     @State private var arrived = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(spacing: 12) {
@@ -242,11 +244,11 @@ struct FinishPage<Middle: View, Buttons: View>: View {
 
     private var lines: some View {
         VStack(spacing: 12) {
-            Image(systemName: symbol)
-                .font(.system(size: 56))
+            SketchIcon(glyph: symbol, size: 56)
                 .foregroundStyle(field == nil ? Color.brand : .white)
-                .symbolEffect(.bounce, options: .nonRepeating, value: arrived)
-                .accessibilityHidden(true)
+                // The pen's one flourish on an end page: it lands as the page comes in.
+                .scaleEffect(arrived || reduceMotion ? 1 : 0.7)
+                .animation(reduceMotion ? nil : .bouncy(duration: 0.5), value: arrived)
             middle()
         }
         .frame(maxWidth: .infinity)

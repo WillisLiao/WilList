@@ -14,14 +14,14 @@ enum Fmt {
         return Calendar.current.date(from: DateComponents(year: p[0], month: p[1], day: p[2])) ?? .now
     }
 
-    /// "Today", "Tomorrow", "Fri" within the week, otherwise the month and day in numbers, "10/24"
+    /// "Today", "Tomorrow", "Fri 10/30" within the week (the weekday and the date, the owner's ask, 2026-10-29), otherwise the month and day in numbers, "10/24"
     /// (the owner's ask, 2026-10-28).
     static func day(_ d: Day, _ today: Day, inSentence: Bool = false) -> String {
         let s: String = switch diffDays(today, d) {
         case 0: "Today"
         case 1: "Tomorrow"
         case -1: "Yesterday"
-        case 2...6: date(d).formatted(.dateTime.weekday(.abbreviated))
+        case 2...6: "\(date(d).formatted(.dateTime.weekday(.abbreviated))) \(numeric(d))"
         default: numeric(d)
         }
         return inSentence && ["Today", "Tomorrow", "Yesterday"].contains(s) ? s.lowercased() : s
